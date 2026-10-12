@@ -1,1 +1,946 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>0차 - 1~5번째 화면</title>
+<style>
+:root{--bg:#f2f2f0;--paper:#fff;--ink:#222;--sub:#777;--line:#c9c9c4;--fill:#e8e8e4;--acc:#2f5bd8;--accbg:#e6ecfc}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+body{display:flex;justify-content:center;height:100dvh;overflow:hidden}
+.app{width:100%;max-width:390px;height:100dvh;min-height:0;background:var(--paper);display:flex;flex-direction:column;position:relative;overflow:hidden}
+header{height:66px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 17px;border-bottom:1.5px solid var(--ink);background:var(--paper)}
+.logo{display:flex;align-items:center;gap:7px;font-size:22px;font-weight:800;letter-spacing:-1px}
+.logo-mark{width:23px;height:23px;border:2px solid var(--ink);border-radius:50%;display:inline-block}
+.timer{border:1.5px solid var(--ink);border-radius:99px;padding:5px 10px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+main{padding:22px 17px 16px;display:flex;flex:1;flex-direction:column;gap:14px}
+h1{font-size:19px;line-height:1.45;margin:0;font-weight:800;letter-spacing:-.6px}
+.sub{font-size:12px;color:var(--sub);margin-top:-7px}
+.field{border:1.5px solid var(--ink);padding:12px;border-radius:9px;background:var(--paper)}
+.label{font-size:11px;color:var(--sub);margin-bottom:6px}
+.location-input{width:100%;border:0;outline:0;font:inherit;font-size:14px;background:transparent;color:var(--ink)}
+.location-input::placeholder{color:#777}
+.time-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.step{width:34px;height:34px;border:1.5px solid var(--ink);border-radius:8px;background:var(--paper);font-size:20px;cursor:pointer}
+.time-value{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{border:1.2px solid var(--line);border-radius:99px;padding:6px 10px;background:var(--paper);font-size:12px;cursor:pointer;color:var(--ink)}
+.chip.active{background:var(--acc);border-color:var(--acc);color:#fff}
+.previous{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.primary{width:100%;border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:9px;padding:15px 12px;font-size:14px;font-weight:700;cursor:pointer}
+main.home-main .primary{margin-top:auto}
+.nav{height:66px;min-height:66px;flex:0 0 66px;border-top:1.5px solid var(--ink);display:flex;justify-content:space-around;align-items:center;background:var(--paper);padding-bottom:env(safe-area-inset-bottom);z-index:2}
+.nav button{border:0;background:transparent;color:var(--sub);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-width:54px;padding:0}
+.nav .symbol{display:none}
+.nav button:before{content:"";display:block;width:18px;height:18px;border:1.5px solid currentColor;border-radius:5px;margin:0 auto 1px}
+.nav button.active{color:var(--ink);font-weight:800}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.show{display:flex}
+/* 6~8번 화면은 iframe 안에 표시하므로 부모 화면 높이에 맞춤 */
+.screen.external-screen{padding:0;overflow:hidden}
+.screen.external-screen iframe{display:block;width:100%;height:100%;min-height:0;flex:1;border:0;background:#fff}
+.list-main{padding-top:15px;gap:12px;overflow-y:auto;padding-bottom:18px}
+.searchbox{display:flex;gap:8px;align-items:center}
+.searchbox input{min-width:0;flex:1;border:0;outline:0;font:inherit;font-size:13px;background:transparent}
+.results-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--sub)}
+.small-actions{display:flex;gap:6px}
+.small-btn{border:1.2px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--paper);font-size:11px;color:var(--ink);cursor:pointer}
+.place-list{display:flex;flex-direction:column;gap:10px}
+.place-card{display:grid;grid-template-columns:76px minmax(0,1fr) 24px;gap:10px;align-items:center;border:1.5px solid var(--ink);border-radius:9px;padding:9px;cursor:pointer;background:#fff}
+.place-img{height:78px;border:1px solid var(--line);border-radius:6px;background:repeating-linear-gradient(135deg,#e4e4e1 0,#e4e4e1 8px,#f5f5f2 8px,#f5f5f2 16px);display:flex;align-items:center;justify-content:center;color:#777;font-size:10px}
+.place-name{font-size:13px;font-weight:800;margin-bottom:4px}
+.place-kind{font-size:11px;color:var(--sub);margin-bottom:6px}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:10px;background:var(--fill);border-radius:5px;padding:4px 5px;white-space:nowrap}
+.tag.good{background:var(--accbg);color:var(--acc)}
+.tag.tight{background:#f0f0ee;color:#777}
+.heart{border:0;background:transparent;font-size:20px;cursor:pointer;color:#777;padding:0}
+.heart.saved{color:var(--acc)}
+.empty{font-size:12px;color:var(--sub);text-align:center;padding:24px 10px}
+.toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#222;color:#fff;border-radius:8px;padding:10px 14px;font-size:12px;display:none;z-index:5;white-space:nowrap}
+.toast.show{display:block}
+.modal-bg{display:none;position:absolute;inset:0;background:#0005;z-index:3;align-items:flex-end}
+.modal-bg.open{display:flex}
+.sheet{width:100%;background:var(--paper);border-top:2px solid var(--ink);border-radius:18px 18px 0 0;padding:18px 17px 22px;display:flex;flex-direction:column;gap:14px}
+.sheet-title{font-size:15px;font-weight:800;display:flex;justify-content:space-between}
+.sheet-section{display:flex;flex-direction:column;gap:8px}
+.sheet-label{font-size:12px;font-weight:700}
+.sheet .chips{margin-top:0}
+.sheet .chip{padding:8px 10px}
+.sheet .primary{margin-top:2px}
+ 
+.detail-main{padding:10px 17px 16px;display:flex;flex:1;min-height:0;flex-direction:column;gap:12px}
+.detail-image{height:140px;flex:none;border:1.5px solid var(--line);border-radius:8px;background:linear-gradient(to top right,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px)),linear-gradient(to bottom right,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px))}
+.detail-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.detail-title-row h1{font-size:17px}
+.detail-title-row .place-kind{margin-top:3px;margin-bottom:0}
+.detail-info{display:flex;flex-direction:column;gap:13px}
+.detail-line{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px}
+.detail-line span{color:var(--sub);white-space:nowrap}
+.detail-line strong{font-size:12px;text-align:right}
+.detail-actions{display:flex;gap:8px;margin-top:auto}
+.secondary-action{flex:1;border:1.5px solid var(--ink);border-radius:9px;background:var(--paper);padding:12px 6px;font-size:12px;font-weight:700;white-space:nowrap}
+.detail-actions .primary{flex:1;padding:12px 6px;font-size:12px;white-space:nowrap}
+.map-screen{min-height:0;overflow:hidden}
+.map-main{padding:0;gap:0;min-height:0;overflow:hidden}
+.map-canvas{position:relative;flex:1;min-height:0;overflow:hidden;background-color:var(--fill);background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:36px 36px}
+.map-canvas svg{position:absolute;inset:0;width:100%;height:100%}
+.map-pin{position:absolute;padding:3px 8px;border-radius:99px;background:var(--ink);color:var(--paper);font-size:11px;font-weight:700;white-space:nowrap;z-index:1}
+.map-pin.dest{background:var(--acc);color:#fff}
+.course-summary{flex:none;background:var(--paper);border-top:2px solid var(--ink);padding:12px 16px 10px;display:flex;flex-direction:column;gap:7px}
+.course-summary-title{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:800}
+.course-summary-info{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--sub)}
+.course-actions{display:flex;gap:8px}
+.course-actions button{flex:1;border:1.5px solid var(--ink);border-radius:8px;background:var(--paper);padding:9px 5px;font-size:12px;font-weight:700;white-space:nowrap}
+.course-actions button.primary{background:var(--ink);color:#fff}
+@media(min-width:500px){body{padding:18px 0;height:100dvh}.app{min-height:0;height:calc(100dvh - 36px);border:1.5px solid #bbb;border-radius:28px;box-shadow:0 12px 40px #0001}.modal-bg{border-radius:28px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><span class="logo-mark"></span>0차</div>
+    <button class="timer" id="timer" aria-label="남은 웨이팅 시간 수정">⏱ <span id="timerText">3:00:00</span></button>
+  </header>
 
+  <section class="screen show" id="homeScreen">
+    <main class="home-main">
+      <h1>본격적인 식사 전,<br>기다리는 동안의 첫 번째 코스</h1>
+      <div class="sub">웨이팅 시간을 알차게 보내는 주변 공간 추천</div>
+      <div class="field">
+        <div class="label">식당 위치</div>
+        <div class="searchbox">📍 <input id="locationInput" class="location-input" placeholder="식당 주변 검색 (예: 성수역)" value="성수역"></div>
+      </div>
+      <div class="field">
+        <div class="label">남은 웨이팅 시간</div>
+        <div class="time-row">
+          <button class="step" id="minusTime" aria-label="시간 줄이기">−</button>
+          <div class="time-value" id="timeValue">3시간 00분</div>
+          <button class="step" id="plusTime" aria-label="시간 늘리기">+</button>
+        </div>
+        <div class="chips" id="timeChips">
+          <button class="chip" data-minutes="30">30분</button>
+          <button class="chip" data-minutes="60">1시간</button>
+          <button class="chip" data-minutes="120">2시간</button>
+          <button class="chip active" data-minutes="180">3시간</button>
+        </div>
+      </div>
+      <div class="field previous" id="loadPrevious"><span>이전 웨이팅 불러오기</span><span>›</span></div>
+      <button class="primary" id="findPlaces">주변 공간 찾기　→</button>
+    </main>
+  </section>
+
+  <section class="screen" id="listScreen">
+    <main class="list-main">
+      <div class="field searchbox">🔍 <input id="placeSearch" placeholder="지역·장소 검색"></div>
+      <div class="chips" id="selectedCategoryChips">
+        <button class="chip active" data-remove-category="카페">카페 ✕</button>
+        <button class="chip active" data-remove-category="소품샵">소품샵 ✕</button>
+      </div>
+      <div class="results-row">
+        <span id="resultCount">결과 6건</span>
+        <div class="small-actions">
+          <button class="small-btn" id="sortButton">거리순 ▾</button>
+          <button class="small-btn" id="filterButton">필터 ⚙</button>
+        </div>
+      </div>
+      <div class="place-list" id="placeList"></div>
+    </main>
+  </section>
+
+  <section class="screen" id="detailScreen">
+    <main class="detail-main">
+      <div class="detail-image" aria-label="공간 대표 이미지"></div>
+      <div class="detail-title-row">
+        <div><h1 id="detailName">카페 모리</h1><div class="place-kind" id="detailCategory">카페</div></div>
+        <span class="tag good" id="detailTimeTag">여유 1시간</span>
+      </div>
+      <div class="field detail-info">
+        <div class="detail-line"><span>주소</span><strong>서울 성동구 …</strong></div>
+        <div class="detail-line"><span>영업시간</span><strong>00:00–00:00</strong></div>
+        <div class="detail-line"><span>이동거리</span><strong id="detailDistance">480m</strong></div>
+        <div class="detail-line"><span>예상 이동시간</span><strong id="detailWalk">도보 6분</strong></div>
+        <div class="detail-line"><span>추천 체류시간</span><strong id="detailStay">90분</strong></div>
+      </div>
+      <div class="detail-actions">
+        <button class="secondary-action" id="saveDetail">♡ 관심공간 저장</button>
+        <button class="primary" id="addToCourse">＋ 0차 공간 추가</button>
+      </div>
+    </main>
+  </section>
+
+  <section class="screen map-screen" id="mapScreen">
+    <main class="map-main">
+      <div class="map-canvas" id="mapCanvas" aria-label="식당과 추가한 공간의 이동 경로 지도">
+        <svg viewBox="0 0 375 500" preserveAspectRatio="none" aria-hidden="true">
+          <polyline id="routeLine" points="60,430 60,320 145,320 145,210 250,210 250,100 315,100" fill="none" stroke="var(--acc)" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+        <div class="map-pin" style="left:5%;bottom:12%">식당</div>
+        <div class="map-pin dest" id="mapPinOne" style="left:30%;bottom:43%">1 카페 모리</div>
+        <div class="map-pin dest" id="mapPinTwo" style="left:57%;bottom:65%">2 소품샵 담</div>
+        <div class="map-pin" style="right:5%;top:10%">식당 복귀</div>
+      </div>
+      <div class="course-summary">
+        <div class="course-summary-title"><span>오늘의 0차 코스</span><span class="tag" id="courseCount">장소 2곳</span></div>
+        <div class="course-summary-info"><span id="courseDuration">총 2시간 20분</span><span id="courseReturn">복귀 마감까지 여유 18분</span></div>
+        <div class="course-actions"><button id="courseDetailButton">코스 상세</button><button class="primary" id="addMorePlaces">장소 더 추가</button></div>
+      </div>
+    </main>
+  </section>
+
+
+  <section class="screen external-screen" id="favoritesScreen">
+    <iframe title="6번 관심공간 화면" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot;&gt;
+&lt;title&gt;0차 · 6번 관심공간&lt;/title&gt;
+&lt;style&gt;
+:root{--bg:#f2f2f0;--paper:#fff;--ink:#222;--sub:#777;--line:#d1d1cd;--fill:#e8e8e4;--acc:#2f5bd8;--accbg:#e6ecfc;--good:#20734b;--warn:#a85a16}
+*{box-sizing:border-box}
+body{margin:0;background:#e8e8e5;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,&quot;Noto Sans KR&quot;,&quot;Malgun Gothic&quot;,sans-serif;line-height:1.5}
+button{font:inherit;cursor:pointer}
+.app{width:100%;max-width:430px;min-height:100dvh;margin:0 auto;background:var(--paper);display:flex;flex-direction:column;position:relative;box-shadow:0 0 30px #0000000b;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.header{display:flex;justify-content:space-between;align-items:center;padding:15px 18px 13px;border-bottom:1px solid var(--line);background:var(--paper)}
+.brand{font-size:22px;font-weight:850;letter-spacing:-1px;display:flex;gap:8px;align-items:center}
+.brand-mark{width:23px;height:23px;border:2px solid var(--ink);border-radius:50%;display:inline-block}
+.timer{border:1.5px solid var(--ink);border-radius:99px;padding:5px 11px;font-size:12px;font-weight:750;font-variant-numeric:tabular-nums}
+main{padding:20px 17px 24px;flex:1;overflow:auto}
+.heading-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:5px}
+h1{font-size:22px;letter-spacing:-.8px;margin:0;font-weight:850}
+.count{font-size:12px;background:var(--accbg);color:var(--acc);font-weight:750;border-radius:99px;padding:5px 9px;white-space:nowrap}
+.intro{color:var(--sub);font-size:12px;margin:0 0 18px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.toolbar-note{font-size:12px;color:var(--sub)}
+.text-button{border:0;background:transparent;color:var(--ink);font-weight:700;font-size:12px;padding:6px 0;text-decoration:underline;text-underline-offset:3px}
+.list{display:flex;flex-direction:column;gap:12px}
+.place-card{border:1px solid var(--line);border-radius:14px;padding:11px;display:flex;gap:11px;align-items:stretch;background:#fff;transition:border-color .15s,background .15s}
+.place-card.removing{opacity:.45}
+.photo{width:86px;min-width:86px;height:98px;border-radius:9px;background:linear-gradient(145deg,#d9d9d4,#f2f2ef 48%,#c9c9c3);display:flex;align-items:center;justify-content:center;color:#888;font-size:11px;position:relative;overflow:hidden}
+.photo:before,.photo:after{content:&quot;&quot;;position:absolute;width:130%;height:1px;background:#b5b5af;transform:rotate(42deg)}
+.photo:after{transform:rotate(-42deg)}
+.photo span{z-index:1;background:#ffffffa8;padding:2px 5px;border-radius:4px}
+.info{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.category{font-size:10px;color:var(--sub);margin:1px 0 3px}
+.name{font-size:15px;font-weight:800;letter-spacing:-.3px;margin:0 0 4px;line-height:1.3}
+.address{font-size:11px;color:var(--sub);margin-bottom:7px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto}
+.tag{font-size:10px;border-radius:5px;background:var(--accbg);color:var(--acc);padding:3px 6px;font-weight:700}
+.tag.tight{background:#f7eadb;color:var(--warn)}
+.heart{width:31px;height:31px;flex:none;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--acc);font-size:17px;display:flex;align-items:center;justify-content:center}
+.heart.active{background:var(--ink);color:white;border-color:var(--ink)}
+.card-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}
+.small-btn{font-size:11px;font-weight:750;padding:7px 10px;border-radius:8px;border:1.3px solid var(--ink);background:#fff;color:var(--ink)}
+.small-btn.primary{background:var(--ink);color:white}
+.small-btn.added{background:var(--accbg);border-color:var(--acc);color:var(--acc)}
+.empty{display:none;border:1px dashed var(--line);border-radius:14px;padding:30px 20px;text-align:center;color:var(--sub);font-size:13px}
+.empty strong{display:block;color:var(--ink);font-size:15px;margin-bottom:6px}
+.bottom-nav{display:flex;border-top:1.5px solid var(--ink);padding:8px 4px calc(8px + env(safe-area-inset-bottom));background:#fff;position:sticky;bottom:0}
+.nav-item{flex:1;min-width:0;border:0;background:transparent;color:var(--sub);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:3px 0}
+.nav-icon{width:20px;height:20px;border:1.5px solid currentColor;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1}
+.nav-item.active{color:var(--ink);font-weight:800}
+.toast{position:fixed;bottom:85px;left:50%;transform:translate(-50%,12px);background:#222;color:#fff;border-radius:10px;padding:10px 14px;font-size:12px;opacity:0;pointer-events:none;transition:.2s;white-space:nowrap;z-index:10;max-width:90vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:600px){body{padding:24px 0}.app{min-height:850px;border-radius:28px;overflow:hidden;border:1px solid #d7d7d3}.bottom-nav{position:relative}}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;app&quot;&gt;
+  &lt;span id=&quot;timer&quot; hidden&gt;2:36:40&lt;/span&gt;
+  &lt;main&gt;
+    &lt;div class=&quot;heading-row&quot;&gt;
+      &lt;h1&gt;관심공간&lt;/h1&gt;
+      &lt;span class=&quot;count&quot; id=&quot;count&quot;&gt;3곳 저장&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;p class=&quot;intro&quot;&gt;마음에 드는 공간을 모아두고, 웨이팅 시간에 맞는 코스를 만들어 보세요.&lt;/p&gt;
+    &lt;div class=&quot;toolbar&quot;&gt;
+      &lt;span class=&quot;toolbar-note&quot; id=&quot;list-description&quot;&gt;현재 웨이팅 시간 기준 방문 가능 여부&lt;/span&gt;
+      &lt;button class=&quot;text-button&quot; id=&quot;edit-toggle&quot; type=&quot;button&quot;&gt;편집&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;section class=&quot;list&quot; id=&quot;place-list&quot; aria-label=&quot;저장한 관심공간&quot;&gt;
+      &lt;article class=&quot;place-wrap&quot; data-id=&quot;cafe&quot;&gt;
+        &lt;div class=&quot;place-card&quot;&gt;
+          &lt;div class=&quot;photo&quot;&gt;&lt;span&gt;이미지&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;info&quot;&gt;
+            &lt;div class=&quot;category&quot;&gt;카페&lt;/div&gt;
+            &lt;h2 class=&quot;name&quot;&gt;카페 모리&lt;/h2&gt;
+            &lt;div class=&quot;address&quot;&gt;서울 성동구 연무장길 18&lt;/div&gt;
+            &lt;div class=&quot;tags&quot;&gt;&lt;span class=&quot;tag&quot;&gt;도보 6분&lt;/span&gt;&lt;span class=&quot;tag&quot;&gt;방문 가능&lt;/span&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;button class=&quot;heart active&quot; type=&quot;button&quot; aria-label=&quot;카페 모리 관심공간 해제&quot; aria-pressed=&quot;true&quot;&gt;♥&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;card-actions&quot;&gt;&lt;button class=&quot;small-btn primary add-route&quot; type=&quot;button&quot;&gt;＋ 경로 추가&lt;/button&gt;&lt;button class=&quot;small-btn remove-btn&quot; type=&quot;button&quot; hidden&gt;저장 해제&lt;/button&gt;&lt;/div&gt;
+      &lt;/article&gt;
+      &lt;article class=&quot;place-wrap&quot; data-id=&quot;shop&quot;&gt;
+        &lt;div class=&quot;place-card&quot;&gt;
+          &lt;div class=&quot;photo&quot;&gt;&lt;span&gt;이미지&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;info&quot;&gt;
+            &lt;div class=&quot;category&quot;&gt;소품샵&lt;/div&gt;
+            &lt;h2 class=&quot;name&quot;&gt;소품샵 담&lt;/h2&gt;
+            &lt;div class=&quot;address&quot;&gt;서울 성동구 서울숲길 22&lt;/div&gt;
+            &lt;div class=&quot;tags&quot;&gt;&lt;span class=&quot;tag&quot;&gt;도보 9분&lt;/span&gt;&lt;span class=&quot;tag&quot;&gt;방문 가능&lt;/span&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;button class=&quot;heart active&quot; type=&quot;button&quot; aria-label=&quot;소품샵 담 관심공간 해제&quot; aria-pressed=&quot;true&quot;&gt;♥&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;card-actions&quot;&gt;&lt;button class=&quot;small-btn primary add-route&quot; type=&quot;button&quot;&gt;＋ 경로 추가&lt;/button&gt;&lt;button class=&quot;small-btn remove-btn&quot; type=&quot;button&quot; hidden&gt;저장 해제&lt;/button&gt;&lt;/div&gt;
+      &lt;/article&gt;
+      &lt;article class=&quot;place-wrap&quot; data-id=&quot;store&quot;&gt;
+        &lt;div class=&quot;place-card&quot;&gt;
+          &lt;div class=&quot;photo&quot;&gt;&lt;span&gt;이미지&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;info&quot;&gt;
+            &lt;div class=&quot;category&quot;&gt;쇼핑&lt;/div&gt;
+            &lt;h2 class=&quot;name&quot;&gt;페이지 서점&lt;/h2&gt;
+            &lt;div class=&quot;address&quot;&gt;서울 성동구 왕십리로 8길 10&lt;/div&gt;
+            &lt;div class=&quot;tags&quot;&gt;&lt;span class=&quot;tag&quot;&gt;도보 15분&lt;/span&gt;&lt;span class=&quot;tag tight&quot;&gt;시간 부족 가능&lt;/span&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;button class=&quot;heart active&quot; type=&quot;button&quot; aria-label=&quot;페이지 서점 관심공간 해제&quot; aria-pressed=&quot;true&quot;&gt;♥&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;card-actions&quot;&gt;&lt;button class=&quot;small-btn primary add-route&quot; type=&quot;button&quot;&gt;＋ 경로 추가&lt;/button&gt;&lt;button class=&quot;small-btn remove-btn&quot; type=&quot;button&quot; hidden&gt;저장 해제&lt;/button&gt;&lt;/div&gt;
+      &lt;/article&gt;
+    &lt;/section&gt;
+    &lt;div class=&quot;empty&quot; id=&quot;empty-state&quot;&gt;&lt;strong&gt;아직 저장한 공간이 없어요&lt;/strong&gt;검색 화면에서 마음에 드는 공간의 하트를 눌러 저장해 보세요.&lt;/div&gt;
+  &lt;/main&gt;
+&lt;/div&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+const timerEl=document.getElementById(&#x27;timer&#x27;);
+let remaining=2*3600+36*60+40;
+function tick(){if(remaining&gt;0)remaining--;const h=Math.floor(remaining/3600),m=Math.floor((remaining%3600)/60),s=remaining%60;timerEl.textContent=`${h}:${String(m).padStart(2,&#x27;0&#x27;)}:${String(s).padStart(2,&#x27;0&#x27;)}`;}
+setInterval(tick,1000);
+const list=document.getElementById(&#x27;place-list&#x27;),count=document.getElementById(&#x27;count&#x27;),empty=document.getElementById(&#x27;empty-state&#x27;),edit=document.getElementById(&#x27;edit-toggle&#x27;);
+let editing=false;
+function updateCount(){const n=list.querySelectorAll(&#x27;.place-wrap&#x27;).length;count.textContent=`${n}곳 저장`;empty.style.display=n?&#x27;none&#x27;:&#x27;block&#x27;;list.style.display=n?&#x27;flex&#x27;:&#x27;none&#x27;;}
+function showToast(message){const t=document.getElementById(&#x27;toast&#x27;);t.textContent=message;t.classList.add(&#x27;show&#x27;);clearTimeout(showToast.timeout);showToast.timeout=setTimeout(()=&gt;t.classList.remove(&#x27;show&#x27;),2100);}
+edit.addEventListener(&#x27;click&#x27;,()=&gt;{editing=!editing;edit.textContent=editing?&#x27;완료&#x27;:&#x27;편집&#x27;;document.querySelectorAll(&#x27;.remove-btn&#x27;).forEach(b=&gt;b.hidden=!editing);document.querySelectorAll(&#x27;.add-route&#x27;).forEach(b=&gt;b.hidden=editing);});
+document.querySelectorAll(&#x27;.heart&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;{const card=btn.closest(&#x27;.place-wrap&#x27;);card.remove();updateCount();showToast(&#x27;관심공간에서 삭제했어요.&#x27;);}));
+document.querySelectorAll(&#x27;.remove-btn&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;{btn.closest(&#x27;.place-wrap&#x27;).remove();updateCount();showToast(&#x27;관심공간에서 삭제했어요.&#x27;);}));
+document.querySelectorAll(&#x27;.add-route&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;{if(btn.classList.contains(&#x27;added&#x27;)){showToast(&#x27;이미 오늘의 코스에 추가된 공간이에요.&#x27;);return;}btn.classList.add(&#x27;added&#x27;);btn.textContent=&#x27;✓ 추가됨&#x27;;showToast(&#x27;오늘의 코스에 공간을 추가했어요.&#x27;);}));
+document.querySelectorAll(&#x27;.nav-item&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;{const label=btn.dataset.nav;if(label===&#x27;관심공간&#x27;)return;showToast(`${label} 화면은 다른 페이지와 연결하면 이동할 수 있어요.`);}));
+updateCount();
+&lt;/script&gt;
+
+&lt;script&gt;
+(function(){
+  const map = {&#x27;홈&#x27;:&#x27;home&#x27;,&#x27;검색&#x27;:&#x27;list&#x27;,&#x27;지도&#x27;:&#x27;map&#x27;,&#x27;관심공간&#x27;:&#x27;favorites&#x27;,&#x27;마이페이지&#x27;:&#x27;mypage&#x27;};
+  document.addEventListener(&#x27;click&#x27;, function(e){
+    const btn = e.target.closest(&#x27;nav button, .nav-item&#x27;);
+    if (!btn) return;
+    const label = (btn.dataset.tab || btn.dataset.nav || btn.textContent || &#x27;&#x27;).trim();
+    const target = map[label];
+    if (!target) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    parent.postMessage({type:&#x27;0cha-navigation&#x27;, screen:target}, &#x27;*&#x27;);
+  }, true);
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;"></iframe>
+  </section>
+
+  <section class="screen external-screen" id="mypageScreen">
+    <iframe title="7번 마이페이지 화면" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot;&gt;
+&lt;meta name=&quot;theme-color&quot; content=&quot;#f5f5f2&quot;&gt;
+&lt;title&gt;0차 | 마이페이지&lt;/title&gt;
+&lt;style&gt;
+:root{--bg:#f5f5f2;--paper:#fff;--ink:#20211f;--sub:#777970;--line:#dedfd8;--soft:#f0f1ec;--blue:#315bd7;--blue-soft:#eaf0ff;--green:#21734c;--green-soft:#e7f5ec}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,&quot;Apple SD Gothic Neo&quot;,&quot;Noto Sans KR&quot;,sans-serif;background:var(--bg);color:var(--ink)}
+body{display:flex;justify-content:center}
+button{font:inherit;cursor:pointer}
+.app{width:100%;max-width:430px;min-height:100dvh;background:var(--paper);display:flex;flex-direction:column;position:relative;box-shadow:0 0 28px #0000000b}
+.status{height:env(safe-area-inset-top, 0px);min-height:0;background:var(--paper)}
+header{padding:13px 20px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;letter-spacing:-.6px}
+.brand-mark{width:25px;height:25px;border:2px solid var(--ink);border-radius:50%;display:inline-block;position:relative}
+.brand-mark:after{content:&quot;&quot;;position:absolute;width:7px;height:7px;background:var(--ink);border-radius:50%;right:-2px;bottom:-1px}
+.timer{font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:99px;padding:7px 10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+main{padding:20px 20px 26px;flex:1;overflow:auto}
+.eyebrow{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.5px;margin-bottom:7px}
+h1{font-size:24px;letter-spacing:-.9px;line-height:1.35;margin:0 0 7px}
+.intro{font-size:13px;line-height:1.6;color:var(--sub);margin:0 0 22px}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px}
+.section-heading h2{font-size:15px;margin:0;font-weight:800}
+.section-heading button{border:0;background:none;color:var(--sub);font-size:12px;padding:5px 0}
+.panel{border:1px solid var(--line);border-radius:14px;background:var(--paper);padding:14px;margin-bottom:22px}
+.panel-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-title{font-size:14px;font-weight:750}
+.panel-sub{font-size:12px;color:var(--sub);margin-top:4px}
+.arrow{color:var(--sub);font-size:20px}
+.count{font-size:11px;font-weight:750;background:var(--soft);border-radius:99px;padding:5px 9px;white-space:nowrap}
+.recent-list{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.place{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:13px;padding:10px;min-width:0;background:#fff}
+.place-art{width:65px;height:65px;flex:none;border-radius:10px;background:var(--soft);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.place-art:before,.place-art:after{content:&quot;&quot;;position:absolute;border:1px solid #c8cbc1;transform:rotate(-35deg);width:90px;height:1px}
+.place-art:after{transform:rotate(35deg)}
+.art-icon{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;border:1px solid var(--line)}
+.place-info{flex:1;min-width:0}
+.place-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.place-type{font-size:11px;color:var(--sub);margin-top:4px}
+.place-time{font-size:11px;color:var(--sub);margin-top:7px}
+.place-arrow{border:0;background:none;color:var(--sub);font-size:20px;padding:4px}
+.empty{border:1px dashed var(--line);border-radius:13px;text-align:center;padding:22px 14px;color:var(--sub);font-size:12px;line-height:1.6}
+.empty strong{display:block;color:var(--ink);font-size:13px;margin-bottom:5px}
+.action-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.text-link{border:0;background:none;color:var(--blue);font-size:12px;font-weight:750;padding:5px 0}
+.history-list{display:flex;flex-direction:column;gap:0}
+.history-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.history-item:last-child{border-bottom:0;padding-bottom:2px}
+.history-title{font-size:13px;font-weight:700}
+.history-detail{font-size:11px;color:var(--sub);margin-top:4px}
+.history-arrow{font-size:19px;color:var(--sub)}
+nav{display:flex;justify-content:space-around;gap:3px;border-top:1px solid var(--line);padding:10px 5px calc(10px + env(safe-area-inset-bottom, 0px));background:#fff}
+nav button{flex:1;border:0;background:none;color:#898b83;font-size:10px;padding:2px 0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.nav-icon{height:19px;width:19px;border:1.5px solid currentColor;border-radius:5px;display:block;position:relative}
+nav button.active{color:var(--ink);font-weight:800}
+nav button.active .nav-icon{background:var(--ink);border-color:var(--ink)}
+nav button.active .nav-icon:after{content:&quot;&quot;;position:absolute;left:5px;top:4px;width:6px;height:4px;border-left:1.5px solid white;border-bottom:1.5px solid white;transform:rotate(-45deg)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translate(-50%,12px);background:#222;color:#fff;border-radius:10px;padding:12px 16px;font-size:13px;max-width:calc(100% - 36px);width:max-content;opacity:0;pointer-events:none;transition:.2s;z-index:5;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:600px){body{padding:24px 0}.app{min-height:calc(100dvh - 48px);border-radius:24px;overflow:hidden;border:1px solid var(--line)}}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;app&quot;&gt;
+  &lt;span id=&quot;timer&quot; hidden&gt;2:36:40&lt;/span&gt;
+  &lt;main&gt;
+    &lt;div class=&quot;eyebrow&quot;&gt;MY PAGE&lt;/div&gt;
+    &lt;h1&gt;나의 공간을 모아봤어요&lt;/h1&gt;
+    &lt;p class=&quot;intro&quot;&gt;관심 있는 장소와 최근 확인한 공간을 한곳에서 관리해요.&lt;/p&gt;
+
+    &lt;section class=&quot;panel&quot; id=&quot;favoritesPanel&quot;&gt;
+      &lt;div class=&quot;panel-row&quot;&gt;
+        &lt;div&gt;&lt;div class=&quot;panel-title&quot;&gt;관심공간&lt;/div&gt;&lt;div class=&quot;panel-sub&quot;&gt;마음에 드는 장소를 저장해두세요.&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;action-row&quot;&gt;&lt;span class=&quot;count&quot; id=&quot;favoriteCount&quot;&gt;3곳&lt;/span&gt;&lt;span class=&quot;arrow&quot;&gt;›&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;div class=&quot;section-heading&quot;&gt;
+      &lt;h2&gt;최근 본 공간&lt;/h2&gt;
+      &lt;button id=&quot;sortBtn&quot; type=&quot;button&quot;&gt;확인한 순서 ↓&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;section class=&quot;recent-list&quot; id=&quot;recentList&quot; aria-label=&quot;최근 본 공간&quot;&gt;
+      &lt;button class=&quot;place&quot; type=&quot;button&quot; data-name=&quot;카페 모리&quot; data-type=&quot;카페&quot; data-time=&quot;방금 전 확인&quot;&gt;
+        &lt;span class=&quot;place-art&quot;&gt;&lt;span class=&quot;art-icon&quot;&gt;☕&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;place-info&quot;&gt;&lt;span class=&quot;place-name&quot;&gt;카페 모리&lt;/span&gt;&lt;span class=&quot;place-type&quot; style=&quot;display:block&quot;&gt;카페 · 도보 6분&lt;/span&gt;&lt;span class=&quot;place-time&quot; style=&quot;display:block&quot;&gt;방금 전 확인&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;place-arrow&quot;&gt;›&lt;/span&gt;
+      &lt;/button&gt;
+      &lt;button class=&quot;place&quot; type=&quot;button&quot; data-name=&quot;소품샵 담&quot; data-type=&quot;소품샵&quot; data-time=&quot;2번째로 확인&quot;&gt;
+        &lt;span class=&quot;place-art&quot;&gt;&lt;span class=&quot;art-icon&quot;&gt;✿&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;place-info&quot;&gt;&lt;span class=&quot;place-name&quot;&gt;소품샵 담&lt;/span&gt;&lt;span class=&quot;place-type&quot; style=&quot;display:block&quot;&gt;소품샵 · 도보 9분&lt;/span&gt;&lt;span class=&quot;place-time&quot; style=&quot;display:block&quot;&gt;2번째로 확인&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;place-arrow&quot;&gt;›&lt;/span&gt;
+      &lt;/button&gt;
+      &lt;button class=&quot;place&quot; type=&quot;button&quot; data-name=&quot;페이지 서점&quot; data-type=&quot;서점&quot; data-time=&quot;3번째로 확인&quot;&gt;
+        &lt;span class=&quot;place-art&quot;&gt;&lt;span class=&quot;art-icon&quot;&gt;▤&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;place-info&quot;&gt;&lt;span class=&quot;place-name&quot;&gt;페이지 서점&lt;/span&gt;&lt;span class=&quot;place-type&quot; style=&quot;display:block&quot;&gt;서점 · 도보 12분&lt;/span&gt;&lt;span class=&quot;place-time&quot; style=&quot;display:block&quot;&gt;3번째로 확인&lt;/span&gt;&lt;/span&gt;
+        &lt;span class=&quot;place-arrow&quot;&gt;›&lt;/span&gt;
+      &lt;/button&gt;
+    &lt;/section&gt;
+
+    &lt;div class=&quot;section-heading&quot;&gt;
+      &lt;h2&gt;저장한 웨이팅 상태&lt;/h2&gt;
+      &lt;span class=&quot;count&quot;&gt;최근 기록&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;section class=&quot;panel&quot; id=&quot;waitingPanel&quot;&gt;
+      &lt;div class=&quot;panel-row&quot;&gt;
+        &lt;div&gt;&lt;div class=&quot;panel-title&quot; id=&quot;savedStateTitle&quot;&gt;성수동 식당 웨이팅&lt;/div&gt;&lt;div class=&quot;panel-sub&quot; id=&quot;savedStateDetail&quot;&gt;남은 시간 2시간 36분 · 장소 2곳&lt;/div&gt;&lt;/div&gt;
+        &lt;button class=&quot;place-arrow&quot; id=&quot;loadStateBtn&quot; type=&quot;button&quot; aria-label=&quot;저장한 웨이팅 상태 불러오기&quot;&gt;›&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+    &lt;div class=&quot;empty&quot; id=&quot;emptyState&quot; hidden&gt;&lt;strong&gt;아직 저장한 웨이팅 상태가 없어요&lt;/strong&gt;홈에서 웨이팅 시간을 입력하고 코스를 만들어보세요.&lt;/div&gt;
+  &lt;/main&gt;
+&lt;/div&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+const $=s=&gt;document.querySelector(s);
+const $$=s=&gt;[...document.querySelectorAll(s)];
+let remaining=2*3600+36*60+40;
+let newestFirst=true, toastTimer;
+function toast(message){
+  const el=$(&#x27;#toast&#x27;);el.textContent=message;el.classList.add(&#x27;show&#x27;);
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=&gt;el.classList.remove(&#x27;show&#x27;),2300);
+}
+function tick(){
+  const h=Math.floor(remaining/3600),m=Math.floor((remaining%3600)/60),s=remaining%60;
+  $(&#x27;#timer&#x27;).textContent=`${h}:${String(m).padStart(2,&#x27;0&#x27;)}:${String(s).padStart(2,&#x27;0&#x27;)}`;
+  if(remaining&gt;0)remaining--;
+}
+setInterval(tick,1000);
+$(&#x27;#sortBtn&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{
+  newestFirst=!newestFirst;
+  const list=$(&#x27;#recentList&#x27;);
+  const places=$$(&#x27;.place&#x27;);
+  (newestFirst?places:places.slice().reverse()).forEach(p=&gt;list.appendChild(p));
+  $(&#x27;#sortBtn&#x27;).textContent=newestFirst?&#x27;확인한 순서 ↓&#x27;:&#x27;확인한 순서 ↑&#x27;;
+});
+$$(&#x27;.place&#x27;).forEach(place=&gt;place.addEventListener(&#x27;click&#x27;,()=&gt;{
+  toast(`${place.dataset.name} 상세 화면으로 이동하는 기능을 연결할 수 있어요.`);
+}));
+$(&#x27;#favoritesPanel&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;parent.postMessage({type:&#x27;0cha-navigation&#x27;,screen:&#x27;favorites&#x27;},&#x27;*&#x27;));
+$(&#x27;#loadStateBtn&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{
+  $(&#x27;#savedStateTitle&#x27;).textContent=&#x27;성수동 식당 웨이팅 (불러옴)&#x27;;
+  $(&#x27;#savedStateDetail&#x27;).textContent=&#x27;남은 시간 2시간 36분 · 장소 2곳&#x27;;
+  toast(&#x27;저장한 웨이팅 상태를 불러왔어요.&#x27;);
+});
+$$(&#x27;nav button&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;{
+  $$(&#x27;nav button&#x27;).forEach(b=&gt;b.classList.remove(&#x27;active&#x27;));
+  btn.classList.add(&#x27;active&#x27;);
+  if(btn.dataset.tab!==&#x27;마이페이지&#x27;)toast(`${btn.dataset.tab} 화면 연결은 다음 단계에서 설정할 수 있어요.`);
+}));
+&lt;/script&gt;
+
+&lt;script&gt;
+(function(){
+  const map = {&#x27;홈&#x27;:&#x27;home&#x27;,&#x27;검색&#x27;:&#x27;list&#x27;,&#x27;지도&#x27;:&#x27;map&#x27;,&#x27;관심공간&#x27;:&#x27;favorites&#x27;,&#x27;마이페이지&#x27;:&#x27;mypage&#x27;};
+  document.addEventListener(&#x27;click&#x27;, function(e){
+    const btn = e.target.closest(&#x27;nav button, .nav-item&#x27;);
+    if (!btn) return;
+    const label = (btn.dataset.tab || btn.dataset.nav || btn.textContent || &#x27;&#x27;).trim();
+    const target = map[label];
+    if (!target) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    parent.postMessage({type:&#x27;0cha-navigation&#x27;, screen:target}, &#x27;*&#x27;);
+  }, true);
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;"></iframe>
+  </section>
+
+  <section class="screen external-screen" id="courseDetailScreen">
+    <iframe title="8번 코스 상세 화면" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot;&gt;
+&lt;meta name=&quot;theme-color&quot; content=&quot;#f5f5f2&quot;&gt;
+&lt;title&gt;0차 | 코스 상세&lt;/title&gt;
+&lt;style&gt;
+:root{--bg:#f5f5f2;--paper:#fff;--ink:#20211f;--sub:#777970;--line:#dedfd8;--soft:#f0f1ec;--blue:#315bd7;--blue-soft:#eaf0ff;--green:#21734c;--green-soft:#e7f5ec}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,&quot;Apple SD Gothic Neo&quot;,&quot;Noto Sans KR&quot;,sans-serif;background:var(--bg);color:var(--ink)}
+body{display:flex;justify-content:center}
+button{font:inherit;cursor:pointer}
+.app{width:100%;max-width:430px;min-height:100dvh;background:var(--paper);display:flex;flex-direction:column;position:relative;box-shadow:0 0 28px #0000000b}
+.status{height:env(safe-area-inset-top, 0px);min-height:0;background:var(--paper)}
+header{padding:13px 20px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:20px;letter-spacing:-.6px}
+.brand-mark{width:25px;height:25px;border:2px solid var(--ink);border-radius:50%;display:inline-block;position:relative}
+.brand-mark:after{content:&quot;&quot;;position:absolute;width:7px;height:7px;background:var(--ink);border-radius:50%;right:-2px;bottom:-1px}
+.timer{font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:99px;padding:7px 10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+main{padding:19px 20px 22px;flex:1;overflow:auto}
+.backrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.back{border:0;background:none;padding:0;color:var(--ink);font-size:15px;font-weight:750;text-align:left}
+.edit{border:1px solid var(--line);background:white;border-radius:9px;padding:8px 11px;font-size:12px;font-weight:700;white-space:nowrap}
+h1{font-size:23px;letter-spacing:-.8px;line-height:1.35;margin:0 0 6px}
+.subtitle{font-size:13px;color:var(--sub);margin:0 0 18px;line-height:1.5}
+.summary{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:23px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;padding:4px 0}
+.summary-row span:first-child{color:var(--sub)}
+.summary-row strong{font-size:14px}
+.good{color:var(--green)!important}
+.section-title{font-size:15px;font-weight:800;margin:0 0 14px;display:flex;justify-content:space-between;align-items:center}
+.section-title small{font-size:11px;color:var(--sub);font-weight:500}
+.timeline{margin-bottom:20px}
+.stop{display:grid;grid-template-columns:24px minmax(0,1fr);gap:11px;min-height:73px}
+.track{display:flex;align-items:center;flex-direction:column}
+.dot{width:14px;height:14px;border:2px solid #a9aca3;background:#fff;border-radius:50%;flex:none;margin-top:3px}
+.dot.active{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-soft)}
+.line{width:2px;flex:1;background:repeating-linear-gradient(to bottom,#d5d7d0 0 4px,transparent 4px 8px);margin:5px 0}
+.stop-content{padding:0 0 19px;min-width:0}
+.stop-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.stop-name{font-size:14px;font-weight:750;line-height:1.45}
+.stop-detail{font-size:12px;color:var(--sub);margin-top:4px}
+.stop-actions{display:flex;gap:5px;flex:none}
+.icon-btn{width:29px;height:29px;border:1px solid var(--line);background:white;border-radius:8px;font-size:15px;color:var(--ink)}
+.duration{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:9px 10px;background:#fafaf8;border:1px solid var(--line);border-radius:9px}
+.duration label{font-size:12px;color:var(--sub)}
+.duration select{border:0;background:transparent;color:var(--ink);font-size:12px;font-weight:750;outline:none;max-width:120px}
+.travel{font-size:11px;color:var(--sub);padding:0 0 14px;display:flex;align-items:center;gap:7px}
+.travel:before{content:&quot;&quot;;display:block;width:24px;border-top:1px dashed #b9bcb4}
+.tip{display:flex;gap:9px;padding:12px;border-radius:11px;background:var(--blue-soft);color:#2547a7;font-size:12px;line-height:1.5;margin:0 0 18px}
+.tip-icon{font-weight:900;font-size:15px;flex:none}
+.primary{width:100%;border:0;border-radius:12px;background:var(--ink);color:#fff;padding:15px 16px;font-size:14px;font-weight:800;box-shadow:0 3px 0 #0000000c}
+.primary:active{transform:translateY(1px)}
+.secondary{width:100%;border:1px solid var(--line);border-radius:12px;background:white;color:var(--ink);padding:13px 16px;font-size:13px;font-weight:700;margin-top:9px}
+nav{display:flex;justify-content:space-around;gap:3px;border-top:1px solid var(--line);padding:10px 5px calc(10px + env(safe-area-inset-bottom, 0px));background:#fff}
+nav button{flex:1;border:0;background:none;color:#898b83;font-size:10px;padding:2px 0;display:flex;flex-direction:column;align-items:center;gap:5px}
+nav .nav-icon{height:19px;width:19px;border:1.5px solid currentColor;border-radius:5px;display:block;position:relative}
+nav button.active{color:var(--ink);font-weight:800}
+nav button.active .nav-icon{background:var(--ink);border-color:var(--ink)}
+nav button.active .nav-icon:after{content:&quot;&quot;;position:absolute;left:5px;top:4px;width:6px;height:4px;border-left:1.5px solid white;border-bottom:1.5px solid white;transform:rotate(-45deg)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translate(-50%,12px);background:#222;color:#fff;border-radius:10px;padding:12px 16px;font-size:13px;max-width:calc(100% - 36px);width:max-content;opacity:0;pointer-events:none;transition:.2s;z-index:5;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal-backdrop{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;justify-content:center;z-index:10}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));width:100%;max-width:430px}
+.modal h2{font-size:18px;margin:0 0 8px}
+.modal p{font-size:13px;color:var(--sub);line-height:1.5;margin:0 0 17px}
+.modal .primary{margin-top:8px}
+@media(min-width:600px){body{padding:24px 0}.app{min-height:calc(100dvh - 48px);border-radius:24px;overflow:hidden;border:1px solid var(--line)}}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;app&quot;&gt;
+  &lt;div class=&quot;status&quot;&gt;&lt;/div&gt;
+  &lt;header&gt;
+    &lt;div class=&quot;brand&quot;&gt;&lt;span class=&quot;brand-mark&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;0차&lt;/div&gt;
+    &lt;div class=&quot;timer&quot; aria-label=&quot;남은 웨이팅 시간&quot;&gt;⏱ &lt;span id=&quot;timer&quot;&gt;2:38:05&lt;/span&gt;&lt;/div&gt;
+  &lt;/header&gt;
+  &lt;main&gt;
+    &lt;div class=&quot;backrow&quot;&gt;
+      &lt;button class=&quot;back&quot; id=&quot;backBtn&quot; type=&quot;button&quot;&gt;‹ 오늘의 0차 코스&lt;/button&gt;
+      &lt;button class=&quot;edit&quot; id=&quot;editBtn&quot; type=&quot;button&quot;&gt;순서 편집&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;h1&gt;오늘의 코스를 확인해요&lt;/h1&gt;
+    &lt;p class=&quot;subtitle&quot;&gt;식당에 돌아갈 시간을 확인하고, 여유롭게 둘러보세요.&lt;/p&gt;
+
+    &lt;section class=&quot;summary&quot; aria-label=&quot;코스 요약&quot;&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span&gt;식당 복귀 마감&lt;/span&gt;&lt;strong id=&quot;deadline&quot;&gt;18:30&lt;/strong&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span&gt;예상 코스 소요 시간&lt;/span&gt;&lt;strong id=&quot;totalTime&quot;&gt;2시간 20분&lt;/strong&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span&gt;복귀 여유&lt;/span&gt;&lt;strong class=&quot;good&quot; id=&quot;buffer&quot;&gt;18분&lt;/strong&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;div class=&quot;section-title&quot;&gt;이동 경로 &lt;small id=&quot;stopCount&quot;&gt;장소 2곳&lt;/small&gt;&lt;/div&gt;
+    &lt;section class=&quot;timeline&quot; id=&quot;timeline&quot; aria-label=&quot;방문 경로&quot;&gt;
+      &lt;div class=&quot;stop&quot;&gt;
+        &lt;div class=&quot;track&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;stop-content&quot;&gt;
+          &lt;div class=&quot;stop-head&quot;&gt;&lt;div&gt;&lt;div class=&quot;stop-name&quot;&gt;식당 출발&lt;/div&gt;&lt;div class=&quot;stop-detail&quot;&gt;첫 번째 장소로 이동&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;travel&quot;&gt;도보 6분&lt;/div&gt;
+      &lt;div class=&quot;stop&quot; data-stop=&quot;cafe&quot;&gt;
+        &lt;div class=&quot;track&quot;&gt;&lt;span class=&quot;dot active&quot;&gt;&lt;/span&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;stop-content&quot;&gt;
+          &lt;div class=&quot;stop-head&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;stop-name&quot;&gt;1. 카페 모리&lt;/div&gt;&lt;div class=&quot;stop-detail&quot;&gt;커피 한 잔과 잠깐의 휴식&lt;/div&gt;&lt;/div&gt;
+            &lt;div class=&quot;stop-actions&quot;&gt;&lt;button class=&quot;icon-btn up&quot; aria-label=&quot;카페 모리 순서 올리기&quot;&gt;↑&lt;/button&gt;&lt;button class=&quot;icon-btn down&quot; aria-label=&quot;카페 모리 순서 내리기&quot;&gt;↓&lt;/button&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;duration&quot;&gt;&lt;label for=&quot;cafeDuration&quot;&gt;추천 체류시간&lt;/label&gt;&lt;select id=&quot;cafeDuration&quot;&gt;&lt;option value=&quot;60&quot;&gt;60분&lt;/option&gt;&lt;option value=&quot;75&quot;&gt;75분&lt;/option&gt;&lt;option value=&quot;90&quot; selected&gt;90분&lt;/option&gt;&lt;option value=&quot;120&quot;&gt;120분&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;travel&quot;&gt;도보 4분&lt;/div&gt;
+      &lt;div class=&quot;stop&quot; data-stop=&quot;shop&quot;&gt;
+        &lt;div class=&quot;track&quot;&gt;&lt;span class=&quot;dot active&quot;&gt;&lt;/span&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;stop-content&quot;&gt;
+          &lt;div class=&quot;stop-head&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;stop-name&quot;&gt;2. 소품샵 담&lt;/div&gt;&lt;div class=&quot;stop-detail&quot;&gt;가볍게 구경하고 쇼핑하기&lt;/div&gt;&lt;/div&gt;
+            &lt;div class=&quot;stop-actions&quot;&gt;&lt;button class=&quot;icon-btn up&quot; aria-label=&quot;소품샵 담 순서 올리기&quot;&gt;↑&lt;/button&gt;&lt;button class=&quot;icon-btn down&quot; aria-label=&quot;소품샵 담 순서 내리기&quot;&gt;↓&lt;/button&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;duration&quot;&gt;&lt;label for=&quot;shopDuration&quot;&gt;추천 체류시간&lt;/label&gt;&lt;select id=&quot;shopDuration&quot;&gt;&lt;option value=&quot;20&quot;&gt;20분&lt;/option&gt;&lt;option value=&quot;30&quot;&gt;30분&lt;/option&gt;&lt;option value=&quot;40&quot; selected&gt;40분&lt;/option&gt;&lt;option value=&quot;60&quot;&gt;60분&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;travel&quot;&gt;도보 10분&lt;/div&gt;
+      &lt;div class=&quot;stop&quot;&gt;
+        &lt;div class=&quot;track&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;stop-content&quot;&gt;&lt;div class=&quot;stop-name&quot;&gt;식당 복귀&lt;/div&gt;&lt;div class=&quot;stop-detail&quot;&gt;웨이팅 종료 전에 여유 있게 도착해요.&lt;/div&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;div class=&quot;tip&quot;&gt;&lt;span class=&quot;tip-icon&quot;&gt;i&lt;/span&gt;&lt;span&gt;체류시간을 바꾸거나 방문 순서를 조정하면 예상 소요 시간과 복귀 여유가 자동으로 계산돼요.&lt;/span&gt;&lt;/div&gt;
+    &lt;button class=&quot;primary&quot; id=&quot;confirmBtn&quot; type=&quot;button&quot;&gt;이 코스로 결정&lt;/button&gt;
+    &lt;button class=&quot;secondary&quot; id=&quot;addBtn&quot; type=&quot;button&quot;&gt;＋ 장소 더 추가&lt;/button&gt;
+  &lt;/main&gt;
+  &lt;nav aria-label=&quot;하단 메뉴&quot;&gt;
+    &lt;button type=&quot;button&quot; data-tab=&quot;홈&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;&lt;/span&gt;홈&lt;/button&gt;
+    &lt;button type=&quot;button&quot; data-tab=&quot;검색&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;&lt;/span&gt;검색&lt;/button&gt;
+    &lt;button type=&quot;button&quot; class=&quot;active&quot; data-tab=&quot;지도&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;&lt;/span&gt;지도&lt;/button&gt;
+    &lt;button type=&quot;button&quot; data-tab=&quot;관심공간&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;&lt;/span&gt;관심공간&lt;/button&gt;
+    &lt;button type=&quot;button&quot; data-tab=&quot;마이페이지&quot;&gt;&lt;span class=&quot;nav-icon&quot;&gt;&lt;/span&gt;마이페이지&lt;/button&gt;
+  &lt;/nav&gt;
+&lt;/div&gt;
+&lt;div class=&quot;toast&quot; id=&quot;toast&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+&lt;div class=&quot;modal-backdrop&quot; id=&quot;modalBackdrop&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; aria-labelledby=&quot;modalTitle&quot;&gt;
+  &lt;div class=&quot;modal&quot;&gt;
+    &lt;h2 id=&quot;modalTitle&quot;&gt;이 코스로 결정할까요?&lt;/h2&gt;
+    &lt;p id=&quot;modalText&quot;&gt;방문 장소와 복귀 여유를 확인했어요. 결정하면 오늘의 코스로 저장됩니다.&lt;/p&gt;
+    &lt;button class=&quot;primary&quot; id=&quot;modalConfirm&quot; type=&quot;button&quot;&gt;코스 확정하기&lt;/button&gt;
+    &lt;button class=&quot;secondary&quot; id=&quot;modalCancel&quot; type=&quot;button&quot;&gt;계속 수정하기&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+const $ = s =&gt; document.querySelector(s);
+const $$ = s =&gt; [...document.querySelectorAll(s)];
+let remainingSeconds = 2*3600 + 38*60 + 5;
+let editMode = false;
+let toastTimeout;
+function showToast(message){
+  const toast = $(&#x27;#toast&#x27;);
+  toast.textContent = message;
+  toast.classList.add(&#x27;show&#x27;);
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(()=&gt;toast.classList.remove(&#x27;show&#x27;),2300);
+}
+function fmtDuration(minutes){
+  const h = Math.floor(minutes/60), m = minutes%60;
+  return h ? `${h}시간${m ? &#x27; &#x27;+m+&#x27;분&#x27; : &#x27;&#x27;}` : `${m}분`;
+}
+function updateSummary(){
+  const cafe = Number($(&#x27;#cafeDuration&#x27;).value);
+  const shop = Number($(&#x27;#shopDuration&#x27;).value);
+  const total = 6 + cafe + 4 + shop + 10;
+  const available = Math.floor(remainingSeconds/60);
+  const buffer = available - total;
+  $(&#x27;#totalTime&#x27;).textContent = fmtDuration(total);
+  $(&#x27;#buffer&#x27;).textContent = buffer &gt;= 0 ? fmtDuration(buffer) : `${fmtDuration(Math.abs(buffer))} 초과`;
+  $(&#x27;#buffer&#x27;).classList.toggle(&#x27;good&#x27;,buffer&gt;=0);
+  $(&#x27;#buffer&#x27;).style.color = buffer&gt;=0 ? &#x27;var(--green)&#x27; : &#x27;#bd3b2b&#x27;;
+  $(&#x27;#deadline&#x27;).textContent = &#x27;웨이팅 종료 전&#x27;;
+}
+function updateTimer(){
+  const h = Math.floor(remainingSeconds/3600);
+  const m = Math.floor((remainingSeconds%3600)/60);
+  const s = remainingSeconds%60;
+  $(&#x27;#timer&#x27;).textContent = `${h}:${String(m).padStart(2,&#x27;0&#x27;)}:${String(s).padStart(2,&#x27;0&#x27;)}`;
+  updateSummary();
+}
+setInterval(()=&gt;{if(remainingSeconds&gt;0){remainingSeconds--;updateTimer()}},1000);
+$(&#x27;#cafeDuration&#x27;).addEventListener(&#x27;change&#x27;,updateSummary);
+$(&#x27;#shopDuration&#x27;).addEventListener(&#x27;change&#x27;,updateSummary);
+$(&#x27;#editBtn&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{
+  editMode=!editMode;
+  $(&#x27;#editBtn&#x27;).textContent=editMode?&#x27;편집 완료&#x27;:&#x27;순서 편집&#x27;;
+  $$(&#x27;.stop-actions&#x27;).forEach(el=&gt;el.style.visibility=editMode?&#x27;visible&#x27;:&#x27;hidden&#x27;);
+  showToast(editMode?&#x27;↑ ↓ 버튼으로 방문 순서를 바꿔보세요.&#x27;:&#x27;방문 순서를 저장했어요.&#x27;);
+});
+$$(&#x27;.stop-actions&#x27;).forEach(el=&gt;el.style.visibility=&#x27;hidden&#x27;);
+function reorderStops(stop, direction){
+  const current = stop.closest(&#x27;.stop&#x27;);
+  const other = direction===&#x27;up&#x27; ? current.previousElementSibling : current.nextElementSibling;
+  if(!other || !other.matches(&#x27;.stop[data-stop]&#x27;)) return showToast(&#x27;더 이동할 수 없는 순서예요.&#x27;);
+  if(direction===&#x27;up&#x27;) current.parentNode.insertBefore(current,other);
+  else current.parentNode.insertBefore(other,current);
+  const stops = $$(&#x27;.stop[data-stop]&#x27;);
+  stops.forEach((node,i)=&gt;{node.querySelector(&#x27;.stop-name&#x27;).textContent=`${i+1}. ${node.dataset.stop===&#x27;cafe&#x27;?&#x27;카페 모리&#x27;:&#x27;소품샵 담&#x27;}`;});
+  showToast(&#x27;방문 순서를 변경했어요.&#x27;);
+}
+$$(&#x27;.up&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;reorderStops(btn,&#x27;up&#x27;)));
+$$(&#x27;.down&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;reorderStops(btn,&#x27;down&#x27;)));
+$(&#x27;#confirmBtn&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{
+  $(&#x27;#modalTitle&#x27;).textContent=&#x27;이 코스로 결정할까요?&#x27;;
+  $(&#x27;#modalText&#x27;).textContent=`예상 소요 시간은 ${$(&#x27;#totalTime&#x27;).textContent}, 복귀 여유는 ${$(&#x27;#buffer&#x27;).textContent}입니다. 결정하면 오늘의 코스로 저장됩니다.`;
+  $(&#x27;#modalBackdrop&#x27;).classList.add(&#x27;show&#x27;);
+});
+$(&#x27;#modalCancel&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;$(&#x27;#modalBackdrop&#x27;).classList.remove(&#x27;show&#x27;));
+$(&#x27;#modalConfirm&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{
+  $(&#x27;#modalBackdrop&#x27;).classList.remove(&#x27;show&#x27;);
+  showToast(&#x27;오늘의 0차 코스로 저장했어요!&#x27;);
+  $(&#x27;#confirmBtn&#x27;).textContent=&#x27;✓ 코스 결정 완료&#x27;;
+  $(&#x27;#confirmBtn&#x27;).style.background=&#x27;var(--green)&#x27;;
+});
+$(&#x27;#addBtn&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;parent.postMessage({type:&#x27;0cha-navigation&#x27;,screen:&#x27;list&#x27;},&#x27;*&#x27;));
+$(&#x27;#backBtn&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;parent.postMessage({type:&#x27;0cha-navigation&#x27;,screen:&#x27;map&#x27;},&#x27;*&#x27;));
+$$(&#x27;nav button&#x27;).forEach(btn=&gt;btn.addEventListener(&#x27;click&#x27;,()=&gt;{
+  $$(&#x27;nav button&#x27;).forEach(b=&gt;b.classList.remove(&#x27;active&#x27;));
+  btn.classList.add(&#x27;active&#x27;);
+  if(btn.dataset.tab!==&#x27;지도&#x27;) showToast(`${btn.dataset.tab} 화면 연결은 다음 단계에서 설정할 수 있어요.`);
+}));
+updateTimer();
+&lt;/script&gt;
+
+&lt;script&gt;
+(function(){
+  const map = {&#x27;홈&#x27;:&#x27;home&#x27;,&#x27;검색&#x27;:&#x27;list&#x27;,&#x27;지도&#x27;:&#x27;map&#x27;,&#x27;관심공간&#x27;:&#x27;favorites&#x27;,&#x27;마이페이지&#x27;:&#x27;mypage&#x27;};
+  document.addEventListener(&#x27;click&#x27;, function(e){
+    const btn = e.target.closest(&#x27;nav button, .nav-item&#x27;);
+    if (!btn) return;
+    const label = (btn.dataset.tab || btn.dataset.nav || btn.textContent || &#x27;&#x27;).trim();
+    const target = map[label];
+    if (!target) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    parent.postMessage({type:&#x27;0cha-navigation&#x27;, screen:target}, &#x27;*&#x27;);
+  }, true);
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;"></iframe>
+  </section>
+
+  <nav class="nav">
+    <button class="active" data-screen="home"><span class="symbol">⌂</span>홈</button>
+    <button data-screen="list"><span class="symbol">⌕</span>검색</button>
+    <button data-screen="map"><span class="symbol">⌖</span>지도</button>
+    <button data-screen="favorites"><span class="symbol">♡</span>관심공간</button>
+    <button data-screen="mypage"><span class="symbol">☻</span>마이페이지</button>
+  </nav>
+
+  <div class="modal-bg" id="filterModal">
+    <div class="sheet">
+      <div class="sheet-title"><span>카테고리 (복수 선택)</span><button class="small-btn" id="resetFilter">초기화</button></div>
+      <div class="sheet-section">
+        <div class="chips" id="categoryChips">
+          <button class="chip active" data-category="카페">카페</button>
+          <button class="chip active" data-category="소품샵">소품샵</button>
+          <button class="chip" data-category="쇼핑">쇼핑</button>
+          <button class="chip" data-category="편의시설">편의시설</button>
+          <button class="chip" data-category="서점">서점</button>
+          <button class="chip" data-category="전시·팝업">전시·팝업</button>
+        </div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-label">정렬</div>
+        <div class="chips" id="sheetSort">
+          <button class="chip active" data-sort="거리순">거리순</button>
+          <button class="chip" data-sort="체류시간순">체류시간순</button>
+        </div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-label">보기 방식</div>
+        <div class="chips" id="viewMode">
+          <button class="chip active" data-view="목록">목록</button>
+          <button class="chip" data-view="카드">카드</button>
+        </div>
+      </div>
+      <button class="primary" id="applyFilter">12건 보기</button>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const places = [
+ {id:1,name:"카페 모리",category:"카페",distance:6,stay:90,extra:60},
+ {id:2,name:"소품샵 담",category:"소품샵",distance:9,stay:60,extra:90},
+ {id:3,name:"온더테이블",category:"카페",distance:4,stay:45,extra:120},
+ {id:4,name:"성수 문구상점",category:"쇼핑",distance:11,stay:30,extra:130},
+ {id:5,name:"작은 책방",category:"서점",distance:8,stay:50,extra:100},
+ {id:6,name:"아트 팝업 스튜디오",category:"전시·팝업",distance:15,stay:80,extra:25}
+];
+let waitMinutes=180, sortMode="거리순", selectedCategories=new Set(["카페","소품샵"]), favorites=new Set(), secondsLeft=3*3600, currentDetailId=1, courseIds=new Set();
+const $=id=>document.getElementById(id);
+function toast(message){$("toast").textContent=message;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1900)}
+function updateTime(){
+ const h=Math.floor(waitMinutes/60),m=waitMinutes%60;
+ $("timeValue").textContent=`${h? h+"시간 ":""}${String(m).padStart(2,"0")}분`;
+ document.querySelectorAll("#timeChips .chip").forEach(b=>b.classList.toggle("active",Number(b.dataset.minutes)===waitMinutes));
+ secondsLeft=waitMinutes*60;
+ $("timerText").textContent=`${Math.floor(secondsLeft/3600)}:${String(Math.floor(secondsLeft%3600/60)).padStart(2,"0")}:${String(secondsLeft%60).padStart(2,"0")}`;
+}
+function showScreen(which){
+ const ids={home:"homeScreen",list:"listScreen",detail:"detailScreen",map:"mapScreen",favorites:"favoritesScreen",mypage:"mypageScreen",course:"courseDetailScreen"};
+ Object.entries(ids).forEach(([key,id])=>$(id).classList.toggle("show",key===which));
+ $(".app").classList.toggle("external-screen",["favorites","mypage","course"].includes(which));
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===(which==="detail"?"list":which==="course"?"map":which)));
+ if(which==="list")renderPlaces();
+ if(which==="map")renderCourseMap();
+}
+function renderCourseMap(){
+ const ids=[...courseIds];
+ const selected=ids.map(id=>places.find(p=>p.id===id)).filter(Boolean);
+ const fallback=[places[0],places[1]];
+ const routePlaces=selected.length?selected:fallback;
+ $("courseCount").textContent=`장소 ${routePlaces.length}곳`;
+ const totalStay=routePlaces.reduce((sum,p)=>sum+p.stay,0);
+ const totalWalk=routePlaces.reduce((sum,p)=>sum+p.distance,0)+10;
+ const total=totalStay+totalWalk;
+ $("courseDuration").textContent=`총 ${Math.floor(total/60)?Math.floor(total/60)+"시간 ":""}${total%60}분`;
+ $("courseReturn").textContent=`복귀 마감까지 여유 ${Math.max(0,waitMinutes-totalWalk-totalStay)}분`;
+ const pin1=routePlaces[0], pin2=routePlaces[1];
+ $("mapPinOne").textContent=pin1?`1 ${pin1.name}`:"장소 추가";
+ $("mapPinTwo").style.display=pin2?"block":"none";
+ if(pin2)$("mapPinTwo").textContent=`2 ${pin2.name}`;
+ $("routeLine").setAttribute("points",routePlaces.length>1?"60,430 60,320 145,320 145,210 250,210 250,100 315,100":"60,430 60,320 145,320 145,210");
+}
+function renderPlaces(){
+ const q=$("placeSearch").value.trim().toLowerCase();
+ let list=places.filter(p=>(selectedCategories.size===0||selectedCategories.has(p.category))&&(p.name.toLowerCase().includes(q)||p.category.toLowerCase().includes(q)));
+ list.sort((a,b)=>sortMode==="거리순"?a.distance-b.distance:a.stay-b.stay);
+ $("resultCount").textContent=`결과 ${list.length}건`;
+ $("placeList").innerHTML=list.length?list.map(p=>{
+  const canFit=p.distance*2+p.stay<=waitMinutes;
+  return `<article class="place-card" data-id="${p.id}">
+   <div class="place-img">이미지</div>
+   <div><div class="place-name">${p.name}</div><div class="place-kind">${p.category}</div>
+   <div class="tags"><span class="tag">도보 ${p.distance}분</span><span class="tag">체류 ${p.stay}분</span><span class="tag ${canFit?"good":"tight"}">${canFit?"여유 "+Math.max(0,waitMinutes-p.distance*2-p.stay)+"분":"시간이 빠듯해요"}</span></div></div>
+   <button class="heart ${favorites.has(p.id)?"saved":""}" data-fav="${p.id}" aria-label="관심공간 저장">${favorites.has(p.id)?"♥":"♡"}</button>
+  </article>`;
+ }).join(""):`<div class="empty">조건에 맞는 공간이 없어요.<br>검색어 또는 필터를 바꿔보세요.</div>`;
+}
+$("minusTime").addEventListener("click",()=>{waitMinutes=Math.max(30,waitMinutes-30);updateTime()});
+$("plusTime").addEventListener("click",()=>{waitMinutes=Math.min(360,waitMinutes+30);updateTime()});
+document.querySelectorAll("#timeChips .chip").forEach(b=>b.addEventListener("click",()=>{waitMinutes=Number(b.dataset.minutes);updateTime()}));
+$("loadPrevious").addEventListener("click",()=>{
+ const saved=localStorage.getItem("0cha-wait");
+ if(saved){try{const d=JSON.parse(saved);waitMinutes=d.waitMinutes||180;$("locationInput").value=d.location||"";updateTime();toast("이전 웨이팅 정보를 불러왔어요.")}catch(e){toast("저장된 정보가 올바르지 않아요.")}}
+ else{toast("저장된 웨이팅 정보가 없어 현재 정보를 저장했어요.");localStorage.setItem("0cha-wait",JSON.stringify({waitMinutes,location:$("locationInput").value}))}
+});
+$("findPlaces").addEventListener("click",()=>{
+ if(!$("locationInput").value.trim()){toast("식당 위치를 입력해 주세요.");$("locationInput").focus();return}
+ localStorage.setItem("0cha-wait",JSON.stringify({waitMinutes,location:$("locationInput").value.trim()}));
+ $("placeSearch").value="";showScreen("list");
+});
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.screen)));
+$("placeSearch").addEventListener("input",renderPlaces);
+$("filterButton").addEventListener("click",()=>$("filterModal").classList.add("open"));
+function renderSelectedCategories(){
+ const holder=$("selectedCategoryChips");
+ holder.innerHTML=[...selectedCategories].map(c=>`<button class="chip active" data-remove-category="${c}">${c} ✕</button>`).join("");
+}
+$("selectedCategoryChips").addEventListener("click",e=>{
+ const b=e.target.closest("[data-remove-category]");if(!b)return;
+ selectedCategories.delete(b.dataset.removeCategory);
+ document.querySelectorAll("#categoryChips .chip").forEach(ch=>ch.classList.toggle("active",selectedCategories.has(ch.dataset.category)));
+ renderSelectedCategories();renderPlaces();
+});
+$("resetFilter").addEventListener("click",()=>{
+ selectedCategories.clear();
+ document.querySelectorAll("#categoryChips .chip").forEach(ch=>ch.classList.remove("active"));
+ renderSelectedCategories();renderPlaces();
+});
+document.querySelectorAll("#viewMode .chip").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll("#viewMode .chip").forEach(ch=>ch.classList.toggle("active",ch===b));
+}));
+if ($("filterModal")) $("filterModal").addEventListener("click",e=>{if(e.target===$("filterModal"))$("filterModal").classList.remove("open")});
+document.querySelectorAll("#categoryChips .chip").forEach(b=>b.addEventListener("click",()=>{const c=b.dataset.category;if(selectedCategories.has(c)){selectedCategories.delete(c);b.classList.remove("active")}else{selectedCategories.add(c);b.classList.add("active")}renderSelectedCategories()}));
+function setSort(mode){sortMode=mode;document.querySelectorAll("#sheetSort .chip").forEach(b=>b.classList.toggle("active",b.dataset.sort===mode));$("sortButton").textContent=mode+" ▾";renderPlaces()}
+document.querySelectorAll("#sheetSort .chip").forEach(b=>b.addEventListener("click",()=>setSort(b.dataset.sort)));
+$("sortButton").addEventListener("click",()=>setSort(sortMode==="거리순"?"체류시간순":"거리순"));
+$("applyFilter").addEventListener("click",()=>{$("filterModal").classList.remove("open");renderSelectedCategories();renderPlaces()});
+$("placeList").addEventListener("click",e=>{
+ const fav=e.target.closest("[data-fav]");
+ if(fav){const id=Number(fav.dataset.fav);favorites.has(id)?favorites.delete(id):favorites.add(id);renderPlaces();return}
+ const card=e.target.closest(".place-card");if(card){openDetail(Number(card.dataset.id));}
+});
+function openDetail(id){
+ const p=places.find(item=>item.id===id);if(!p)return;
+ currentDetailId=id;
+ $("detailName").textContent=p.name;
+ $("detailCategory").textContent=p.category;
+ $("detailTimeTag").textContent="여유 "+Math.max(0,waitMinutes-p.distance*2-p.stay)+"분";
+ $("detailDistance").textContent=(p.distance*80)+"m";
+ $("detailWalk").textContent="도보 "+p.distance+"분";
+ $("detailStay").textContent=p.stay+"분";
+ $("saveDetail").textContent=favorites.has(id)?"♥ 관심공간 저장":"♡ 관심공간 저장";
+ showScreen("detail");
+}
+$("saveDetail").addEventListener("click",()=>{
+ favorites.has(currentDetailId)?favorites.delete(currentDetailId):favorites.add(currentDetailId);
+ $("saveDetail").textContent=favorites.has(currentDetailId)?"♥ 관심공간 저장":"♡ 관심공간 저장";
+ toast(favorites.has(currentDetailId)?"관심공간에 저장했어요.":"관심공간 저장을 해제했어요.");
+});
+$("addToCourse").addEventListener("click",()=>{
+ courseIds.add(currentDetailId);
+ localStorage.setItem("0cha-course",JSON.stringify([...courseIds]));
+ toast("이번 웨이팅 코스에 공간을 추가했어요.");
+});
+$("timer").addEventListener("click",()=>toast("남은 시간은 홈 화면에서 수정할 수 있어요."));
+$("courseDetailButton").addEventListener("click",()=>showScreen("course"));
+$("addMorePlaces").addEventListener("click",()=>showScreen("list"));
+window.addEventListener("message",e=>{if(e.data&&e.data.type==="0cha-navigation"&&["home","list","map","favorites","mypage"].includes(e.data.screen))showScreen(e.data.screen)});
+try{const savedCourse=JSON.parse(localStorage.getItem("0cha-course")||"[]");savedCourse.forEach(id=>courseIds.add(Number(id)))}catch(e){}
+updateTime();
+renderSelectedCategories();
+</script>
+</body>
+</html>
