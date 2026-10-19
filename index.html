@@ -21,6 +21,14 @@ h1{font-size:19px;line-height:1.45;margin:0;font-weight:800;letter-spacing:-.6px
 .label{font-size:11px;color:var(--sub);margin-bottom:6px}
 .location-input{width:100%;border:0;outline:0;font:inherit;font-size:14px;background:transparent;color:var(--ink)}
 .location-input::placeholder{color:#777}
+.location-search-row{gap:6px}
+.location-search-button{flex:none;border:1px solid var(--ink);border-radius:7px;background:var(--ink);color:#fff;padding:7px 10px;font-size:12px;font-weight:700}
+.location-help{font-size:10px;color:var(--sub);margin-top:7px;line-height:1.4}
+.restaurant-results{display:flex;flex-direction:column;gap:5px;margin-top:9px;max-height:150px;overflow:auto}
+.restaurant-result{width:100%;text-align:left;border:1px solid var(--line);border-radius:7px;background:#fff;padding:9px;font-size:12px;color:var(--ink)}
+.restaurant-result strong{display:block;font-size:12px;margin-bottom:3px}
+.restaurant-result span{display:block;color:var(--sub);font-size:10px;line-height:1.4}
+.selected-restaurant{margin-top:8px;padding:8px;background:var(--accbg);border-radius:7px;font-size:11px;line-height:1.4;color:var(--ink)}
 .time-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .step{width:34px;height:34px;border:1.5px solid var(--ink);border-radius:8px;background:var(--paper);font-size:20px;cursor:pointer}
 .time-value{font-size:20px;font-weight:800;letter-spacing:-.5px}
@@ -29,7 +37,9 @@ h1{font-size:19px;line-height:1.45;margin:0;font-weight:800;letter-spacing:-.6px
 .chip.active{background:var(--acc);border-color:var(--acc);color:#fff}
 .previous{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
 .primary{width:100%;border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:9px;padding:15px 12px;font-size:14px;font-weight:700;cursor:pointer}
-main.home-main .primary{margin-top:auto}
+main.home-main{justify-content:center;}
+main.home-main .primary{margin-top:0}
+main.home-main h1, main.home-main .sub{text-align:center}
 .nav{height:66px;min-height:66px;flex:0 0 66px;border-top:1.5px solid var(--ink);display:flex;justify-content:space-around;align-items:center;background:var(--paper);padding-bottom:env(safe-area-inset-bottom);z-index:2}
 .nav button{border:0;background:transparent;color:var(--sub);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-width:54px;padding:0}
 .nav .symbol{display:none}
@@ -94,7 +104,69 @@ main.home-main .primary{margin-top:auto}
 .course-actions{display:flex;gap:8px}
 .course-actions button{flex:1;border:1.5px solid var(--ink);border-radius:8px;background:var(--paper);padding:9px 5px;font-size:12px;font-weight:700;white-space:nowrap}
 .course-actions button.primary{background:var(--ink);color:#fff}
+
+/* 지도 네비게이션: 첨부된 모바일 지도 화면 스타일 */
+.app.map-active > header{display:none}
+.app.map-active .nav{height:58px;min-height:58px;flex-basis:58px;border-top:1px solid #e5e7eb}
+.app.map-active .nav button:before{width:17px;height:17px;border-radius:50%;border-color:#9ca3af}
+.app.map-active .nav button.active{color:#3868e8}
+.reference-map-main{padding:0!important;gap:0;overflow:hidden;min-height:0}
+.reference-map{position:relative;flex:1;min-height:0;overflow:hidden;background:#edf1e9;color:#222}
+.map-top-content{position:absolute;z-index:5;top:0;left:0;right:0;padding:22px 13px 8px;background:linear-gradient(180deg,rgba(247,249,245,.98),rgba(247,249,245,.94) 80%,rgba(247,249,245,0))}
+.map-greeting{display:flex;flex-direction:column;font-size:11px;color:#525b61;gap:2px;margin-bottom:10px;padding-left:2px}
+.map-greeting strong{font-size:17px;letter-spacing:-.5px;color:#1e293b}
+.map-live-dot{position:absolute;right:15px;top:27px;width:7px;height:7px;border-radius:50%;background:#2f68ee;box-shadow:0 0 0 4px #dbe7ff}
+.map-search{height:39px;background:#fff;border:1px solid #e5e7eb;border-radius:13px;display:flex;align-items:center;gap:8px;padding:0 12px;box-shadow:0 3px 12px #24304712}
+.map-search>span{font-size:23px;color:#687386;line-height:1}
+.map-search input{border:0;outline:0;min-width:0;flex:1;font:inherit;font-size:11px;background:transparent;color:#1f2937}
+.map-search button{border:0;background:transparent;font-size:18px;color:#8b93a0;padding:0 2px}
+.map-categories{display:flex;gap:5px;overflow-x:auto;padding:8px 0 3px;scrollbar-width:none}
+.map-categories::-webkit-scrollbar{display:none}
+.map-categories button{flex:none;border:1px solid #e1e5ec;border-radius:99px;padding:6px 10px;background:#fff;color:#4b5563;font-size:10px;box-shadow:0 1px 4px #00000008}
+.map-categories button.selected{background:#416cf0;color:#fff;border-color:#416cf0}
+.street-map{position:absolute;inset:0;background-color:#f2f3ed;background-image:linear-gradient(23deg,transparent 48%,#d9dfd8 49%,#d9dfd8 50%,transparent 51%),linear-gradient(115deg,transparent 46%,#fff 47%,#fff 50%,transparent 51%);background-size:118px 104px,146px 133px}
+.map-road{position:absolute;background:#fff;border:1px solid #e5e8e1;border-radius:20px;box-shadow:0 0 0 1px #ffffff7a}
+.road-a{width:150%;height:13px;left:-20%;top:42%;transform:rotate(-22deg)}.road-b{width:130%;height:10px;left:-8%;top:60%;transform:rotate(28deg)}.road-c{width:9px;height:110%;left:32%;top:-5%;transform:rotate(17deg)}.road-d{width:11px;height:100%;left:67%;top:8%;transform:rotate(-28deg)}.road-e{width:130%;height:8px;left:-10%;top:73%;transform:rotate(-8deg)}.road-f{width:95%;height:7px;left:10%;top:31%;transform:rotate(42deg)}.road-g{width:7px;height:80%;left:49%;top:21%;transform:rotate(44deg)}.road-h{width:80%;height:7px;left:20%;top:52%;transform:rotate(70deg)}.road-i{width:75%;height:6px;left:-6%;top:50%;transform:rotate(67deg)}.road-j{width:95%;height:7px;left:22%;top:84%;transform:rotate(-35deg)}
+.map-park{position:absolute;background:#dcebd7;border-radius:40% 60% 55% 45%;opacity:.95}.park-one{width:70px;height:48px;left:5%;top:42%;font-size:8px;color:#75936f;display:flex;align-items:center;justify-content:center;transform:rotate(-18deg)}.park-two{width:43px;height:65px;right:9%;top:31%;transform:rotate(22deg)}
+.map-label{position:absolute;color:#9aa39b;font-size:8px;letter-spacing:.5px;transform:rotate(-20deg)}.label-one{left:10%;top:36%}.label-two{right:10%;top:53%;transform:rotate(28deg)}.label-three{left:38%;top:49%;transform:rotate(12deg)}
+.map-location-dot{position:absolute;z-index:2;left:50%;top:52%;transform:translate(-50%,-50%);width:40px;height:40px;border:0;border-radius:50%;background:#4b7cf533;display:grid;place-items:center}
+.map-location-dot span{width:13px;height:13px;background:#3d73f4;border:3px solid #fff;border-radius:50%;box-shadow:0 1px 5px #3558a5aa}
+.map-current-label{position:absolute;z-index:2;left:50%;top:calc(52% + 25px);transform:translateX(-50%);background:#2d5fe5;color:#fff;border-radius:5px;padding:4px 8px;font-size:9px;font-weight:700;white-space:nowrap;box-shadow:0 2px 6px #0002}
+.map-place-pin{position:absolute;z-index:2;width:25px;height:25px;border:2px solid #fff;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#4c7bf0;color:#fff;box-shadow:0 2px 5px #0002;display:grid;place-items:center;padding:0}
+.map-place-pin span{transform:rotate(45deg);font-size:11px}.pin-one{left:24%;top:39%}.pin-two{right:23%;top:34%;background:#f39b42}.pin-three{left:13%;top:60%;background:#45b99a}.pin-four{right:12%;top:61%;background:#8875e8}.pin-five{left:70%;top:47%;background:#f39b42}
+.nearby-panel{position:absolute;z-index:4;left:0;right:0;bottom:0;background:rgba(255,255,255,.98);border-radius:17px 17px 0 0;padding:13px 11px 9px;box-shadow:0 -5px 20px #24304712;max-height:47%;display:flex;flex-direction:column;gap:8px}
+.nearby-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.nearby-heading>div{display:flex;flex-direction:column;gap:2px}.nearby-heading strong{font-size:12px;letter-spacing:-.3px}.nearby-heading span{font-size:9px;color:#89909a}.nearby-heading button{border:0;background:transparent;color:#7d8797;font-size:10px;padding:4px}
+.nearby-list{display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0}.nearby-card{display:grid;grid-template-columns:62px minmax(0,1fr) 22px;gap:8px;align-items:center;padding:5px;border:1px solid #edf0f4;border-radius:10px;background:#fff;min-height:62px}.nearby-photo{height:51px;border-radius:7px;display:grid;place-items:center;font-size:23px;color:#fff}.photo-cafe{background:linear-gradient(135deg,#d4b08a,#805d43)}.photo-shop{background:linear-gradient(135deg,#d8c6a7,#7d8e83)}.photo-book{background:linear-gradient(135deg,#c7b8a7,#796b60)}.nearby-info{display:flex;flex-direction:column;gap:2px;min-width:0}.nearby-info strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nearby-info span{font-size:9px;color:#727b88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nearby-info small{font-size:8px;color:#5274d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nearby-fav{border:0;background:transparent;font-size:19px;color:#8b94a3;padding:0}.nearby-fav.saved{color:#416cf0}
+@media(max-height:700px){.map-top-content{padding-top:12px}.nearby-panel{max-height:43%}.map-greeting{margin-bottom:6px}.map-greeting strong{font-size:15px}.map-categories{padding-top:6px}}
+
 @media(min-width:500px){body{padding:18px 0;height:100dvh}.app{min-height:0;height:calc(100dvh - 36px);border:1.5px solid #bbb;border-radius:28px;box-shadow:0 12px 40px #0001}.modal-bg{border-radius:28px}}
+
+ .app.brand-home-active > header{display:flex}
+.home-skeleton{overflow-y:auto;gap:18px;padding:18px 17px 24px}
+.home-brand{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px}
+.home-brand h1{font-size:24px;margin:0}
+.home-brand button{border:1px solid var(--line);border-radius:6px;background:#fff;padding:7px 10px;font-size:12px}
+.home-intro{border:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:8px}
+.home-intro p{margin:0;color:var(--sub);font-size:12px;line-height:1.5}
+.home-intro h2{font-size:22px;line-height:1.4;margin:0}
+.course-cta{display:flex;justify-content:space-between;align-items:center;width:100%;border:1.5px solid var(--ink);border-radius:9px;background:#fff;color:var(--ink);padding:16px;font-size:15px;font-weight:700;cursor:pointer}
+.course-cta span{font-size:20px}
+.home-ideas{display:flex;flex-direction:column;gap:10px}
+.home-section-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.home-section-title h2{font-size:16px;margin:0}
+.home-section-title span{font-size:12px;color:var(--sub)}
+.home-idea-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.home-idea{border:1px solid var(--line);padding:7px;min-width:0}
+.home-idea .placeholder{height:76px;background:var(--fill);display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:11px}
+.home-idea h3{font-size:12px;margin:8px 0 4px}
+.home-idea p{font-size:10px;line-height:1.4;color:var(--sub);margin:0;min-height:28px}
+.home-idea>span{display:inline-block;font-size:10px;border:1px solid var(--line);padding:3px 6px;margin-top:6px}
+.home-promo{border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:5px}
+.home-promo p{font-size:11px;color:var(--sub);margin:0}
+.home-promo h2{font-size:14px;margin:0}
+.input-screen{overflow-y:auto}
+@media(max-height:740px){.brand-home .brand-inner{gap:15px;padding-top:12px}.brand-home .hero{min-height:245px}.brand-home .idea-photo{height:78px}.brand-home .hero h1{font-size:26px}}
+
 </style>
 </head>
 <body>
@@ -105,12 +177,35 @@ main.home-main .primary{margin-top:auto}
   </header>
 
   <section class="screen show" id="homeScreen">
-    <main class="home-main">
+    <main class="home-skeleton">
+      <div class="home-brand"><h1>0차</h1><button id="homeBookmark" type="button" aria-label="관심공간으로 이동">관심공간</button></div>
+      <section class="home-intro">
+        <p>식사 전, 잠깐의 여유</p>
+        <h2>기다리는 시간도 하나의 코스로.</h2>
+        <p>웨이팅 시간에 딱 맞는 주변 공간을 추천해드려요.</p>
+      </section>
+      <button class="course-cta" id="startCourseInput" type="button">0차 코스 입력하기 <span aria-hidden="true">→</span></button>
+      <section class="home-ideas">
+        <div class="home-section-title"><h2>이런 시간을 보내보세요</h2><span>둘러보기</span></div>
+        <div class="home-idea-grid">
+          <article class="home-idea"><div class="placeholder">이미지</div><h3>커피 한 잔</h3><p>잠깐의 휴식이 필요할 때</p><span>카페</span></article>
+          <article class="home-idea"><div class="placeholder">이미지</div><h3>취향 발견</h3><p>소품숍 구경하기 좋은 곳</p><span>쇼핑</span></article>
+          <article class="home-idea"><div class="placeholder">이미지</div><h3>동네 산책</h3><p>주변을 둘러보고 싶을 때</p><span>산책</span></article>
+        </div>
+      </section>
+      <section class="home-promo"><p>지금 바로</p><h2>나만의 0차 코스를 만들어보세요!</h2><p>웨이팅 시간을 더 특별하게 만드는 방법</p></section>
+    </main>
+  </section>
+  <section class="screen" id="inputScreen">
+    <main class="home-main input-screen">
       <h1>본격적인 식사 전,<br>기다리는 동안의 첫 번째 코스</h1>
       <div class="sub">웨이팅 시간을 알차게 보내는 주변 공간 추천</div>
-      <div class="field">
-        <div class="label">식당 위치</div>
-        <div class="searchbox">📍 <input id="locationInput" class="location-input" placeholder="식당 주변 검색 (예: 성수역)" value="성수역"></div>
+      <div class="field location-field">
+        <div class="label">식당 검색</div>
+        <div class="searchbox location-search-row">📍 <input id="locationInput" class="location-input" placeholder="식당 이름 검색 (예: 성수동 식당)" autocomplete="off" aria-label="식당 이름 검색"><button id="searchRestaurant" class="location-search-button" type="button">검색</button></div>
+        <div class="location-help">검색 결과에서 정확한 식당명과 주소를 선택해 주세요.</div>
+        <div id="restaurantResults" class="restaurant-results" role="listbox" aria-label="식당 검색 결과" hidden></div>
+        <div id="selectedRestaurant" class="selected-restaurant" aria-live="polite" hidden></div>
       </div>
       <div class="field">
         <div class="label">남은 웨이팅 시간</div>
@@ -171,24 +266,34 @@ main.home-main .primary{margin-top:auto}
   </section>
 
   <section class="screen map-screen" id="mapScreen">
-    <main class="map-main">
-      <div class="map-canvas" id="mapCanvas" aria-label="식당과 추가한 공간의 이동 경로 지도">
-        <svg viewBox="0 0 375 500" preserveAspectRatio="none" aria-hidden="true">
-          <polyline id="routeLine" points="60,430 60,320 145,320 145,210 250,210 250,100 315,100" fill="none" stroke="var(--acc)" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-        </svg>
-        <div class="map-pin" style="left:5%;bottom:12%">식당</div>
-        <div class="map-pin dest" id="mapPinOne" style="left:30%;bottom:43%">1 카페 모리</div>
-        <div class="map-pin dest" id="mapPinTwo" style="left:57%;bottom:65%">2 소품샵 담</div>
-        <div class="map-pin" style="right:5%;top:10%">식당 복귀</div>
-      </div>
-      <div class="course-summary">
-        <div class="course-summary-title"><span>오늘의 0차 코스</span><span class="tag" id="courseCount">장소 2곳</span></div>
-        <div class="course-summary-info"><span id="courseDuration">총 2시간 20분</span><span id="courseReturn">복귀 마감까지 여유 18분</span></div>
-        <div class="course-actions"><button id="courseDetailButton">코스 상세</button><button class="primary" id="addMorePlaces">장소 더 추가</button></div>
+    <main class="map-main reference-map-main">
+      <div class="reference-map" id="mapCanvas" aria-label="주변 추천 공간 지도">
+        <div class="map-top-content">
+          <div class="map-greeting"><span class="map-live-dot"></span><span>지금, 여기서</span><strong>이번 웨이팅 동안 뭐 할까요?</strong></div>
+          <div class="map-search"><span>⌕</span><input id="mapPlaceSearch" placeholder="장소 이름을 검색해보세요" aria-label="지도에서 장소 검색"><button id="mapSearchClear" type="button" aria-label="검색어 지우기">×</button></div>
+          <div class="map-categories" id="mapCategories">
+            <button class="selected" data-map-category="전체">전체</button><button data-map-category="카페">카페</button><button data-map-category="맛집">맛집</button><button data-map-category="쇼핑">쇼핑</button><button data-map-category="서점">서점</button><button data-map-category="전시·팝업">전시</button><button data-map-category="편의시설">편의</button>
+          </div>
+        </div>
+        <div class="street-map" aria-hidden="true">
+          <div class="map-park park-one">서울숲</div><div class="map-park park-two"></div>
+          <div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-road road-c"></div><div class="map-road road-d"></div><div class="map-road road-e"></div><div class="map-road road-f"></div><div class="map-road road-g"></div><div class="map-road road-h"></div><div class="map-road road-i"></div><div class="map-road road-j"></div>
+          <span class="map-label label-one">성수이로</span><span class="map-label label-two">연무장길</span><span class="map-label label-three">카페거리</span>
+        </div>
+        <button class="map-location-dot" id="mapMyLocation" aria-label="현재 위치로 이동"><span></span></button>
+        <button class="map-place-pin pin-one" data-map-place="카페 모리"><span>☕</span></button><button class="map-place-pin pin-two" data-map-place="오로라 카페"><span>☕</span></button><button class="map-place-pin pin-three" data-map-place="소품샵 담"><span>⌂</span></button><button class="map-place-pin pin-four" data-map-place="연무장 서점"><span>▤</span></button><button class="map-place-pin pin-five" data-map-place="편집숍 성수"><span>◇</span></button>
+        <div class="map-current-label">현재 위치</div>
+        <div class="nearby-panel">
+          <div class="nearby-heading"><div><strong>지금 가기 좋은 공간</strong><span>웨이팅 시간에 맞춘 추천</span></div><button id="mapSeeAll" type="button">더보기 ›</button></div>
+          <div class="nearby-list" id="mapNearbyList">
+            <article class="nearby-card" data-category="카페" data-name="오로라 카페"><div class="nearby-photo photo-cafe">☕</div><div class="nearby-info"><strong>오로라 카페</strong><span>카페 · 도보 5분 · 550m</span><small>추천 체류시간 40분 · 여유 1시간 30분</small></div><button class="nearby-fav" aria-label="오로라 카페 관심공간 저장" data-map-fav="오로라 카페">♡</button></article>
+            <article class="nearby-card" data-category="쇼핑" data-name="편집숍 성수"><div class="nearby-photo photo-shop">◇</div><div class="nearby-info"><strong>편집숍 성수</strong><span>쇼핑 · 도보 8분 · 700m</span><small>추천 체류시간 30분 · 여유 1시간 10분</small></div><button class="nearby-fav" aria-label="편집숍 성수 관심공간 저장" data-map-fav="편집숍 성수">♡</button></article>
+            <article class="nearby-card" data-category="서점" data-name="연무장 서점"><div class="nearby-photo photo-book">▤</div><div class="nearby-info"><strong>연무장 서점</strong><span>서점 · 도보 6분 · 430m</span><small>추천 체류시간 25분 · 여유 1시간 20분</small></div><button class="nearby-fav" aria-label="연무장 서점 관심공간 저장" data-map-fav="연무장 서점">♡</button></article>
+          </div>
+        </div>
       </div>
     </main>
   </section>
-
 
   <section class="screen external-screen" id="favoritesScreen">
     <iframe title="6번 관심공간 화면" srcdoc="&lt;!DOCTYPE html&gt;
@@ -417,7 +522,7 @@ nav button.active .nav-icon:after{content:&quot;&quot;;position:absolute;left:5p
 
     &lt;section class=&quot;panel&quot; id=&quot;favoritesPanel&quot;&gt;
       &lt;div class=&quot;panel-row&quot;&gt;
-        &lt;div&gt;&lt;div class=&quot;panel-title&quot;&gt;관심공간&lt;/div&gt;&lt;div class=&quot;panel-sub&quot;&gt;마음에 드는 장소를 저장해두세요.&lt;/div&gt;&lt;/div&gt;
+        &lt;div&gt;&lt;div class=&quot;panel-title&quot;&gt;관심공간 관리&lt;/div&gt;&lt;div class=&quot;panel-sub&quot;&gt;마이페이지에서 저장한 장소를 확인하고 관리해요.&lt;/div&gt;&lt;/div&gt;
         &lt;div class=&quot;action-row&quot;&gt;&lt;span class=&quot;count&quot; id=&quot;favoriteCount&quot;&gt;3곳&lt;/span&gt;&lt;span class=&quot;arrow&quot;&gt;›&lt;/span&gt;&lt;/div&gt;
       &lt;/div&gt;
     &lt;/section&gt;
@@ -768,11 +873,9 @@ updateTimer();
 &lt;/html&gt;"></iframe>
   </section>
 
-  <nav class="nav">
+  <nav class="nav" aria-label="하단 메뉴">
     <button class="active" data-screen="home"><span class="symbol">⌂</span>홈</button>
-    <button data-screen="list"><span class="symbol">⌕</span>검색</button>
-    <button data-screen="map"><span class="symbol">⌖</span>지도</button>
-    <button data-screen="favorites"><span class="symbol">♡</span>관심공간</button>
+    <button data-screen="map"><span class="symbol">⌖</span>코스 지도</button>
     <button data-screen="mypage"><span class="symbol">☻</span>마이페이지</button>
   </nav>
 
@@ -818,8 +921,9 @@ const places = [
  {id:6,name:"아트 팝업 스튜디오",category:"전시·팝업",distance:15,stay:80,extra:25}
 ];
 let waitMinutes=180, sortMode="거리순", selectedCategories=new Set(["카페","소품샵"]), favorites=new Set(), secondsLeft=3*3600, currentDetailId=1, courseIds=new Set();
+let selectedRestaurant=null;
 const $=id=>document.getElementById(id);
-function toast(message){$("toast").textContent=message;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1900)}
+function toast(message){$("toast").textContent=message;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),3200)}
 function updateTime(){
  const h=Math.floor(waitMinutes/60),m=waitMinutes%60;
  $("timeValue").textContent=`${h? h+"시간 ":""}${String(m).padStart(2,"0")}분`;
@@ -828,10 +932,13 @@ function updateTime(){
  $("timerText").textContent=`${Math.floor(secondsLeft/3600)}:${String(Math.floor(secondsLeft%3600/60)).padStart(2,"0")}:${String(secondsLeft%60).padStart(2,"0")}`;
 }
 function showScreen(which){
- const ids={home:"homeScreen",list:"listScreen",detail:"detailScreen",map:"mapScreen",favorites:"favoritesScreen",mypage:"mypageScreen",course:"courseDetailScreen"};
+ const ids={home:"homeScreen",input:"inputScreen",list:"listScreen",detail:"detailScreen",map:"mapScreen",favorites:"favoritesScreen",mypage:"mypageScreen",course:"courseDetailScreen"};
  Object.entries(ids).forEach(([key,id])=>$(id).classList.toggle("show",key===which));
+ $(".app").classList.toggle("map-active",which==="map");
+ $(".app").classList.toggle("brand-home-active",which==="home");
  $(".app").classList.toggle("external-screen",["favorites","mypage","course"].includes(which));
- document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===(which==="detail"?"list":which==="course"?"map":which)));
+ const activeScreen = ({list:"home",detail:"home",favorites:"mypage",course:"map"})[which] || which;
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===activeScreen));
  if(which==="list")renderPlaces();
  if(which==="map")renderCourseMap();
 }
@@ -870,17 +977,90 @@ function renderPlaces(){
 $("minusTime").addEventListener("click",()=>{waitMinutes=Math.max(30,waitMinutes-30);updateTime()});
 $("plusTime").addEventListener("click",()=>{waitMinutes=Math.min(360,waitMinutes+30);updateTime()});
 document.querySelectorAll("#timeChips .chip").forEach(b=>b.addEventListener("click",()=>{waitMinutes=Number(b.dataset.minutes);updateTime()}));
+function showSelectedRestaurant(restaurant){
+ selectedRestaurant=restaurant;
+ $("locationInput").value=restaurant.name;
+ $("restaurantResults").hidden=true;
+ $("restaurantResults").innerHTML="";
+ $("selectedRestaurant").hidden=false;
+ $("selectedRestaurant").textContent=`선택한 식당: ${restaurant.name} · ${restaurant.address}`;
+}
+async function searchRestaurants(){
+ const query=$("locationInput").value.trim();
+ if(!query){toast("식당 이름을 입력해 주세요.");$("locationInput").focus();return}
+ selectedRestaurant=null;
+ $("selectedRestaurant").hidden=true;
+ const resultsBox=$("restaurantResults");
+ resultsBox.hidden=false;
+ resultsBox.innerHTML='<div class="empty">식당을 검색하고 있어요…</div>';
+ $("searchRestaurant").disabled=true;
+ try{
+  const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=8&countrycodes=kr&q=${encodeURIComponent(query)}`;
+  const response=await fetch(url,{headers:{"Accept-Language":"ko"}});
+  if(!response.ok)throw new Error("search failed");
+  const data=await response.json();
+  const restaurantTypes=new Set(["restaurant","cafe","fast_food","food_court","bar","pub","ice_cream"]);
+  const matches=data.filter(item=>item.class==="amenity"&&restaurantTypes.has(item.type));
+  const results=matches.length?matches:data;
+  if(!results.length){resultsBox.innerHTML='<div class="empty">검색 결과가 없어요. 식당명이나 지역명을 바꿔 검색해 주세요.</div>';return}
+  resultsBox.innerHTML=results.map((item,index)=>{
+   const name=item.name||item.display_name.split(",")[0];
+   const address=item.display_name||"주소 정보 없음";
+   return `<button class="restaurant-result" type="button" data-result-index="${index}"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(address)}</span></button>`;
+  }).join("");
+  resultsBox.querySelectorAll("[data-result-index]").forEach(button=>button.addEventListener("click",()=>{
+   const item=results[Number(button.dataset.resultIndex)];
+   showSelectedRestaurant({name:item.name||item.display_name.split(",")[0],address:item.display_name,lat:item.lat,lon:item.lon});
+   toast("식당을 선택했어요.");
+  }));
+ }catch(error){
+  resultsBox.innerHTML='<div class="empty">식당 검색에 실패했어요. 인터넷 연결을 확인하거나 잠시 후 다시 시도해 주세요.</div>';
+ }finally{$("searchRestaurant").disabled=false}
+}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]))}
+$("searchRestaurant").addEventListener("click",searchRestaurants);
+$("locationInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();searchRestaurants()}});
+$("locationInput").addEventListener("input",()=>{selectedRestaurant=null;$("selectedRestaurant").hidden=true});
 $("loadPrevious").addEventListener("click",()=>{
  const saved=localStorage.getItem("0cha-wait");
- if(saved){try{const d=JSON.parse(saved);waitMinutes=d.waitMinutes||180;$("locationInput").value=d.location||"";updateTime();toast("이전 웨이팅 정보를 불러왔어요.")}catch(e){toast("저장된 정보가 올바르지 않아요.")}}
- else{toast("저장된 웨이팅 정보가 없어 현재 정보를 저장했어요.");localStorage.setItem("0cha-wait",JSON.stringify({waitMinutes,location:$("locationInput").value}))}
+ if(!saved){toast("저장된 웨이팅 정보가 없어요. 먼저 식당 위치와 대기시간을 입력해 주세요.");return}
+ try{
+  const d=JSON.parse(saved);
+  if(!d||!d.locationName||!d.locationAddress||!Number.isFinite(Number(d.waitMinutes)))throw new Error("invalid saved data");
+  waitMinutes=Math.max(30,Math.min(360,Number(d.waitMinutes)));
+  showSelectedRestaurant({name:d.locationName,address:d.locationAddress,lat:d.lat||"",lon:d.lon||""});
+  updateTime();
+  toast("이전 웨이팅 정보를 불러왔어요.");
+ }catch(e){toast("저장된 웨이팅 정보가 올바르지 않아요. 식당을 다시 검색해 주세요.")}
 });
 $("findPlaces").addEventListener("click",()=>{
- if(!$("locationInput").value.trim()){toast("식당 위치를 입력해 주세요.");$("locationInput").focus();return}
- localStorage.setItem("0cha-wait",JSON.stringify({waitMinutes,location:$("locationInput").value.trim()}));
- $("placeSearch").value="";showScreen("list");
+ if(!selectedRestaurant){toast("식당을 검색한 뒤 결과에서 정확한 식당명을 선택해 주세요.");$("locationInput").focus();return}
+ localStorage.setItem("0cha-wait",JSON.stringify({waitMinutes,locationName:selectedRestaurant.name,locationAddress:selectedRestaurant.address,lat:selectedRestaurant.lat,lon:selectedRestaurant.lon}));
+ $("placeSearch").value="";showScreen("map");
 });
+
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.screen)));
+$("startCourseInput").addEventListener("click",()=>showScreen("input"));
+$("homeBookmark").addEventListener("click",()=>showScreen("mypage"));
+// 지도 화면의 검색·카테고리·관심공간 상호작용
+const mapSearchInput=document.getElementById("mapPlaceSearch");
+if(mapSearchInput){
+  const mapCards=[...document.querySelectorAll(".nearby-card")];
+  const mapCategoryButtons=[...document.querySelectorAll("#mapCategories button")];
+  let activeMapCategory="전체";
+  function filterMapCards(){
+    const q=mapSearchInput.value.trim().toLowerCase();
+    mapCards.forEach(card=>{const matchesCategory=activeMapCategory==="전체"||card.dataset.category===activeMapCategory;const matchesText=card.dataset.name.toLowerCase().includes(q);card.style.display=matchesCategory&&matchesText?"grid":"none";});
+  }
+  mapSearchInput.addEventListener("input",filterMapCards);
+  document.getElementById("mapSearchClear").addEventListener("click",()=>{mapSearchInput.value="";filterMapCards();mapSearchInput.focus();});
+  mapCategoryButtons.forEach(btn=>btn.addEventListener("click",()=>{activeMapCategory=btn.dataset.mapCategory;mapCategoryButtons.forEach(b=>b.classList.toggle("selected",b===btn));filterMapCards();}));
+  document.querySelectorAll("[data-map-fav]").forEach(btn=>btn.addEventListener("click",()=>{btn.classList.toggle("saved");btn.textContent=btn.classList.contains("saved")?"♥":"♡";const key="0cha-favorites";let saved=[];try{saved=JSON.parse(localStorage.getItem(key)||"[]")}catch(e){}const name=btn.dataset.mapFav;if(btn.classList.contains("saved")){if(!saved.includes(name))saved.push(name)}else{saved=saved.filter(x=>x!==name)}localStorage.setItem(key,JSON.stringify(saved));}));
+  document.querySelectorAll("[data-map-place]").forEach(pin=>pin.addEventListener("click",()=>{const card=mapCards.find(c=>c.dataset.name===pin.dataset.mapPlace);if(card){mapCards.forEach(c=>c.style.outline="none");card.style.outline="2px solid #416cf0";card.scrollIntoView({block:"nearest",behavior:"smooth"});}}));
+  document.getElementById("mapMyLocation").addEventListener("click",()=>{const dot=document.querySelector(".map-location-dot");dot.animate([{transform:"translate(-50%,-50%) scale(1)"},{transform:"translate(-50%,-50%) scale(1.18)"},{transform:"translate(-50%,-50%) scale(1)"}],{duration:350});});
+  document.getElementById("mapSeeAll").addEventListener("click",()=>showScreen("list"));
+}
+
 $("placeSearch").addEventListener("input",renderPlaces);
 $("filterButton").addEventListener("click",()=>$("filterModal").classList.add("open"));
 function renderSelectedCategories(){
@@ -934,7 +1114,7 @@ $("addToCourse").addEventListener("click",()=>{
  localStorage.setItem("0cha-course",JSON.stringify([...courseIds]));
  toast("이번 웨이팅 코스에 공간을 추가했어요.");
 });
-$("timer").addEventListener("click",()=>toast("남은 시간은 홈 화면에서 수정할 수 있어요."));
+$("timer").addEventListener("click",()=>{if(document.getElementById("homeScreen").classList.contains("show"))showScreen("input");else toast("남은 시간은 이 화면에서 수정할 수 있어요.")});
 $("courseDetailButton").addEventListener("click",()=>showScreen("course"));
 $("addMorePlaces").addEventListener("click",()=>showScreen("list"));
 window.addEventListener("message",e=>{if(e.data&&e.data.type==="0cha-navigation"&&["home","list","map","favorites","mypage"].includes(e.data.screen))showScreen(e.data.screen)});
