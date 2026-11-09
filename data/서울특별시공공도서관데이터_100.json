@@ -1,0 +1,3413 @@
+{
+  "dataset": "서울특별시 도서관 표준데이터",
+  "description": "서울시 24개 자치구별 최대 5개 이내로 선정한 도서관 데이터",
+  "sourceFile": "서울특별시도서관표준데이터.csv",
+  "selection": {
+    "totalLibraries": 100,
+    "districtCount": 24,
+    "maxPerDistrict": 5,
+    "method": "구별 4개씩 선정하고, 데이터가 풍부한 은평구·관악구·광진구·강서구는 1개씩 추가 선정"
+  },
+  "libraries": [
+    {
+      "id": "SEOUL-001",
+      "name": "도곡정보문화도서관",
+      "district": "강남구",
+      "type": "공공도서관",
+      "address": "서울특별시 강남구 도곡로18길 57, 3~6층",
+      "closedDays": "월요일+일요일을 제외한 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "1644-3227",
+      "website": "https://library.gangnam.go.kr/dogoklib/index.do",
+      "coordinates": {
+        "latitude": 37.4883103,
+        "longitude": 127.0388804
+      },
+      "seats": 597,
+      "bookCount": 118881,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-002",
+      "name": "못골도서관",
+      "district": "강남구",
+      "type": "공공도서관",
+      "address": "서울특별시 강남구 자곡로 116",
+      "closedDays": "화요일+일요일을 제외한 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-459-5522",
+      "website": "http://library.gangnam.go.kr/mglib",
+      "coordinates": {
+        "latitude": 37.47153792,
+        "longitude": 127.0965824
+      },
+      "seats": 196,
+      "bookCount": 73448,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-003",
+      "name": "대치도서관",
+      "district": "강남구",
+      "type": "공공도서관",
+      "address": "서울특별시 강남구 삼성로 212 (은마상가 C블럭 2층)",
+      "closedDays": "화요일+일요일을 제외한 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "21:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-565-6666",
+      "website": "https://library.gangnam.go.kr/dchlib",
+      "coordinates": {
+        "latitude": 37.49961577,
+        "longitude": 127.0659154
+      },
+      "seats": 140,
+      "bookCount": 58663,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-004",
+      "name": "논현도서관",
+      "district": "강남구",
+      "type": "공공도서관",
+      "address": "서울특별시 강남구 학동로43길 17 (논현2문화센터 6층)",
+      "closedDays": "화요일+일요일을 제외한 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-3443-7650",
+      "website": "https://library.gangnam.go.kr/nhlib",
+      "coordinates": {
+        "latitude": 37.51728313,
+        "longitude": 127.0372042
+      },
+      "seats": 122,
+      "bookCount": 50462,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-005",
+      "name": "강동중앙도서관",
+      "district": "강동구",
+      "type": "공공도서관",
+      "address": "서울특별시 강동구 양재대로84길 63",
+      "closedDays": "매주월요일+법정공휴일(일요일 제외)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-470-0423",
+      "website": "https://www.gdlibrary.or.kr/ja/main",
+      "coordinates": {
+        "latitude": 37.524344,
+        "longitude": 127.136957
+      },
+      "seats": 800,
+      "bookCount": 128124,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-006",
+      "name": "강동숲속도서관",
+      "district": "강동구",
+      "type": "공공도서관",
+      "address": "서울특별시 강동구 구천면로 587",
+      "closedDays": "매주화요일+법정공휴일(일요일 제외)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-428-1711",
+      "website": "https://www.gdlibrary.or.kr/ss/main",
+      "coordinates": {
+        "latitude": 37.551239,
+        "longitude": 127.163783
+      },
+      "seats": 500,
+      "bookCount": 72299,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-007",
+      "name": "암사도서관",
+      "district": "강동구",
+      "type": "공공도서관",
+      "address": "서울특별시 강동구 고덕로20길 42(암사동)",
+      "closedDays": "매주월요일+법정공휴일(일요일 제외)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-429-0476",
+      "website": "https://www.gdlibrary.or.kr/as/main",
+      "coordinates": {
+        "latitude": 37.5528007,
+        "longitude": 127.1333457
+      },
+      "seats": 362,
+      "bookCount": 93345,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-008",
+      "name": "해공도서관",
+      "district": "강동구",
+      "type": "공공도서관",
+      "address": "서울특별시 강동구 올림픽로 702",
+      "closedDays": "매주화요일+법정공휴일(일요일 제외)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-478-9656",
+      "website": "https://www.gdlibrary.or.kr/hg/main",
+      "coordinates": {
+        "latitude": 37.54394767,
+        "longitude": 127.1255384
+      },
+      "seats": 330,
+      "bookCount": 88606,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-009",
+      "name": "강북문화정보도서관",
+      "district": "강북구",
+      "type": "공공도서관",
+      "address": "서울특별시 강북구 오현로 145 (번동)",
+      "closedDays": "매월둘째넷째월요일+정부지정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-944-3100",
+      "website": "http://www.gblib.or.kr/gangbuk/index.do",
+      "coordinates": {
+        "latitude": 37.625174,
+        "longitude": 127.0360816
+      },
+      "seats": 466,
+      "bookCount": 227001,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-010",
+      "name": "솔샘문화정보도서관",
+      "district": "강북구",
+      "type": "공공도서관",
+      "address": "서울특별시 강북구 솔샘로 177 (미아동)",
+      "closedDays": "매월첫째셋째월요일+정부지정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-944-3150",
+      "website": "http://www.gblib.or.kr/solsem/index.do",
+      "coordinates": {
+        "latitude": 37.62047594,
+        "longitude": 127.012452
+      },
+      "seats": 194,
+      "bookCount": 52296,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-011",
+      "name": "미아문화정보도서관",
+      "district": "강북구",
+      "type": "공공도서관",
+      "address": "서울특별시 강북구 솔매로49길 14 (미아동)",
+      "closedDays": "매월둘째넷째월요일+정부지정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-944-3180",
+      "website": "http://www.gblib.or.kr/mia/index.do",
+      "coordinates": {
+        "latitude": 37.627063,
+        "longitude": 127.026981
+      },
+      "seats": 191,
+      "bookCount": 44199,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-012",
+      "name": "강북청소년문화정보도서관",
+      "district": "강북구",
+      "type": "공공도서관",
+      "address": "서울특별시 강북구 삼양로54길 68 (미아동)",
+      "closedDays": "매월둘째넷째월요일+정부지정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-944-3140",
+      "website": "http://www.gblib.or.kr/youth/index.do",
+      "coordinates": {
+        "latitude": 37.62308028,
+        "longitude": 127.0215541
+      },
+      "seats": 164,
+      "bookCount": 47528,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-013",
+      "name": "등빛도서관",
+      "district": "강서구",
+      "type": "공공도서관",
+      "address": "서울특별시 강서구 강서로62길 48",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-3664-6990",
+      "website": "http://lib.gangseo.seoul.kr",
+      "coordinates": {
+        "latitude": 37.5624556,
+        "longitude": 126.8423755
+      },
+      "seats": 464,
+      "bookCount": 94050,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-014",
+      "name": "가양도서관",
+      "district": "강서구",
+      "type": "공공도서관",
+      "address": "서울특별시 강서구 양천로61길 101",
+      "closedDays": "금+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "7:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-3665-8797",
+      "website": "http://lib.gangseo.seoul.kr",
+      "coordinates": {
+        "latitude": 37.55996148,
+        "longitude": 126.8655601
+      },
+      "seats": 474,
+      "bookCount": 72191,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-015",
+      "name": "곰달래도서관",
+      "district": "강서구",
+      "type": "공공도서관",
+      "address": "서울특별시 강서구 강서로5길 50",
+      "closedDays": "금+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-2065-3785",
+      "website": "http://lib.gangseo.seoul.kr",
+      "coordinates": {
+        "latitude": 37.52905871,
+        "longitude": 126.848899
+      },
+      "seats": 436,
+      "bookCount": 77767,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-016",
+      "name": "꿈꾸는어린이도서관",
+      "district": "강서구",
+      "type": "공공도서관",
+      "address": "서울특별시 강서구 공항대로 615",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-3663-4025",
+      "website": "http://lib.gangseo.seoul.kr",
+      "coordinates": {
+        "latitude": 37.54733808,
+        "longitude": 126.8733184
+      },
+      "seats": 244,
+      "bookCount": 67342,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-017",
+      "name": "우장산숲속도서관",
+      "district": "강서구",
+      "type": "공공도서관",
+      "address": "서울특별시 강서구 우현로 34",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2696-6690",
+      "website": "http://lib.gangseo.seoul.kr",
+      "coordinates": {
+        "latitude": 37.5482876,
+        "longitude": 126.841835
+      },
+      "seats": 156,
+      "bookCount": 59613,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-018",
+      "name": "관악중앙도서관",
+      "district": "관악구",
+      "type": "공공도서관",
+      "address": "서울특별시 관악구 신림로3길 35",
+      "closedDays": "월+일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "23:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-828-5700",
+      "website": "http://lib.gwanak.go.kr/",
+      "coordinates": {
+        "latitude": 37.46759765,
+        "longitude": 126.9448709
+      },
+      "seats": 378,
+      "bookCount": 177481,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-019",
+      "name": "조원작은도서관",
+      "district": "관악구",
+      "type": "공공도서관",
+      "address": "서울특별시 관악구 조원로 12길 25",
+      "closedDays": "월+일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-851-5571",
+      "website": "http://lib.gwanak.go.kr/",
+      "coordinates": {
+        "latitude": 37.48256328,
+        "longitude": 126.907773
+      },
+      "seats": 120,
+      "bookCount": 61840,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-020",
+      "name": "글빛정보도서관",
+      "district": "관악구",
+      "type": "공공도서관",
+      "address": "서울특별시 관악구 관악로 30길 23",
+      "closedDays": "월+일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "23:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-878-7460",
+      "website": "http://lib.gwanak.go.kr/",
+      "coordinates": {
+        "latitude": 37.486252,
+        "longitude": 126.959668
+      },
+      "seats": 94,
+      "bookCount": 69740,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-021",
+      "name": "은천동작은도서관",
+      "district": "관악구",
+      "type": "공공도서관",
+      "address": "서울특별시 관악구 봉천로 33나길 30",
+      "closedDays": "월+일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-877-1162",
+      "website": "http://lib.gwanak.go.kr/",
+      "coordinates": {
+        "latitude": 37.48530456,
+        "longitude": 126.942434
+      },
+      "seats": 89,
+      "bookCount": 50713,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-022",
+      "name": "성현동작은도서관",
+      "district": "관악구",
+      "type": "공공도서관",
+      "address": "서울특별시 관악구 관악로 37길 56",
+      "closedDays": "월+일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "19:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-877-7182",
+      "website": "http://lib.gwanak.go.kr/",
+      "coordinates": {
+        "latitude": 37.48731296,
+        "longitude": 126.9561835
+      },
+      "seats": 46,
+      "bookCount": 56201,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-023",
+      "name": "광진정보도서관",
+      "district": "광진구",
+      "type": "공공도서관",
+      "address": "서울특별시 광진구 아차산로78길 90(광장동)",
+      "closedDays": "둘째 주 화+넷째 주 화+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-3437-5092",
+      "website": "http://www.gwangjinlib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.55107355,
+        "longitude": 127.1106137
+      },
+      "seats": 1295,
+      "bookCount": 301007,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-024",
+      "name": "중곡문화체육센터도서관",
+      "district": "광진구",
+      "type": "공공도서관",
+      "address": "서울특별시 광진구 능동로 433(중곡동)",
+      "closedDays": "첫째 주 월+셋째 주 월+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-3408-4900",
+      "website": "http://www.gwangjinlib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.56777776,
+        "longitude": 127.0848034
+      },
+      "seats": 259,
+      "bookCount": 80389,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-025",
+      "name": "자양한강도서관",
+      "district": "광진구",
+      "type": "공공도서관",
+      "address": "서울특별시 광진구 뚝섬로52길 66(자양동)",
+      "closedDays": "둘째 주 월+넷째 주 월+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-456-0048",
+      "website": "http://www.gwangjinlib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.52921552,
+        "longitude": 127.077668
+      },
+      "seats": 370,
+      "bookCount": 43604,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-026",
+      "name": "자양제4동도서관",
+      "district": "광진구",
+      "type": "공공도서관",
+      "address": "서울특별시 광진구 뚝섬로26길 58(자양동)",
+      "closedDays": "첫째 주 화+셋째 주 화+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-465-0737",
+      "website": "http://www.gwangjinlib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.5340959,
+        "longitude": 127.0662599
+      },
+      "seats": 98,
+      "bookCount": 26717,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-027",
+      "name": "구의제3동도서관",
+      "district": "광진구",
+      "type": "공공도서관",
+      "address": "서울특별시 광진구 강변역로 17(구의동)",
+      "closedDays": "둘째 주 월+넷째 주 월+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-454-6294",
+      "website": "http://www.gwangjinlib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.53799261,
+        "longitude": 127.091984
+      },
+      "seats": 64,
+      "bookCount": 26514,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-028",
+      "name": "꿈나무도서관",
+      "district": "구로구",
+      "type": "공공도서관",
+      "address": "서울특별시 구로구 구로동로26길 54, 2층 (구로구시설관리공단)",
+      "closedDays": "화+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "10:00",
+          "close": "19:00"
+        },
+        "saturday": {
+          "open": "10:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-860-1623",
+      "website": "http://lib.guro.go.kr",
+      "coordinates": {
+        "latitude": 37.48987838,
+        "longitude": 126.8865593
+      },
+      "seats": 87,
+      "bookCount": 69681,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-029",
+      "name": "꿈마을도서관",
+      "district": "구로구",
+      "type": "공공도서관",
+      "address": "서울특별시 구로구 디지털로27다길 65 (2층)",
+      "closedDays": "월+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-830-5807",
+      "website": "http://lib.guro.go.kr",
+      "coordinates": {
+        "latitude": 37.487167,
+        "longitude": 126.890156
+      },
+      "seats": 113,
+      "bookCount": 43167,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-030",
+      "name": "고척열린도서관",
+      "district": "구로구",
+      "type": "공공도서관",
+      "address": "서울특별시 구로구 경인로43길 49",
+      "closedDays": "월+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-2615-2007",
+      "website": "http://lib.guro.go.kr",
+      "coordinates": {
+        "latitude": 37.49832677,
+        "longitude": 126.8595211
+      },
+      "seats": 222,
+      "bookCount": 21120,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-031",
+      "name": "하늘도서관",
+      "district": "구로구",
+      "type": "공공도서관",
+      "address": "서울특별시 구로구 구로동로13길 68",
+      "closedDays": "화+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-864-9585",
+      "website": "http://lib.guro.go.kr",
+      "coordinates": {
+        "latitude": 37.48737567,
+        "longitude": 126.8813483
+      },
+      "seats": 105,
+      "bookCount": 38769,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-032",
+      "name": "금천구립독산도서관",
+      "district": "금천구",
+      "type": "공공도서관",
+      "address": "서울특별시 금천구 독산로 54길 114",
+      "closedDays": "법정공휴일+매월 첫째주 월요일+매월 셋째주 월요일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "7:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-863-9544",
+      "website": "https://geumcheonlib.seoul.kr",
+      "coordinates": {
+        "latitude": 37.46758019,
+        "longitude": 126.9081059
+      },
+      "seats": 354,
+      "bookCount": 124057,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-033",
+      "name": "금천구립시흥도서관",
+      "district": "금천구",
+      "type": "공공도서관",
+      "address": "서울특별시 금천구 금하로 764",
+      "closedDays": "법정공휴일+매월 첫째주 금요일+매월 셋째주 금요일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "7:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-809-8242",
+      "website": "https://geumcheonlib.seoul.kr",
+      "coordinates": {
+        "latitude": 37.44963195,
+        "longitude": 126.9146349
+      },
+      "seats": 418,
+      "bookCount": 95131,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-034",
+      "name": "금천구립가산도서관",
+      "district": "금천구",
+      "type": "공공도서관",
+      "address": "서울특별시 금천구 가산로5길 43, 금천구립가산정보도서관",
+      "closedDays": "법정공휴일+매월 둘째주 월요일+매월 넷째주 월요일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "7:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-865-6817",
+      "website": "https://geumcheonlib.seoul.kr",
+      "coordinates": {
+        "latitude": 37.47349244,
+        "longitude": 126.892128
+      },
+      "seats": 224,
+      "bookCount": 78396,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-035",
+      "name": "금천구립금나래도서관",
+      "district": "금천구",
+      "type": "공공도서관",
+      "address": "서울특별시 금천구 시흥대로73길 70, 금천구의회",
+      "closedDays": "법정공휴일+매월 마지막주 일요일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-2627-2991",
+      "website": "https://geumcheonlib.seoul.kr",
+      "coordinates": {
+        "latitude": 37.45706565,
+        "longitude": 126.8960369
+      },
+      "seats": 235,
+      "bookCount": 72548,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-036",
+      "name": "노원중앙도서관",
+      "district": "노원구",
+      "type": "공공도서관",
+      "address": "서울특별시 노원구 노원로34길 43",
+      "closedDays": "법정공휴일+첫째 주 월+셋째 주 월",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-950-0050",
+      "website": "www.nowonlib.kr",
+      "coordinates": {
+        "latitude": 37.66109975,
+        "longitude": 127.0650081
+      },
+      "seats": 698,
+      "bookCount": 168157,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-037",
+      "name": "상계도서관",
+      "district": "노원구",
+      "type": "공공도서관",
+      "address": "서울특별시 노원구 동일로243길 57",
+      "closedDays": "법정공휴일+둘째 주 월+넷째 주 월",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-3391-7882",
+      "website": "www.nowonlib.kr",
+      "coordinates": {
+        "latitude": 37.67852812,
+        "longitude": 127.0519416
+      },
+      "seats": 472,
+      "bookCount": 73659,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-038",
+      "name": "불암도서관",
+      "district": "노원구",
+      "type": "공공도서관",
+      "address": "서울특별시 노원구 중계로 106",
+      "closedDays": "법정공휴일+월",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-935-0721",
+      "website": "www.nowonlib.kr",
+      "coordinates": {
+        "latitude": 37.64529213,
+        "longitude": 127.0825447
+      },
+      "seats": 259,
+      "bookCount": 66445,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-039",
+      "name": "월계도서관",
+      "district": "노원구",
+      "type": "공공도서관",
+      "address": "서울특별시 노원구 월계로 319",
+      "closedDays": "법정공휴일+월",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-991-0871",
+      "website": "www.nowonlib.kr",
+      "coordinates": {
+        "latitude": 37.628637,
+        "longitude": 127.056121
+      },
+      "seats": 225,
+      "bookCount": 61015,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-040",
+      "name": "서울특별시교육청도봉도서관(종합자료실)",
+      "district": "도봉구",
+      "type": "공공도서관",
+      "address": "서울특별시 도봉구 도봉구 삼양로 556(쌍문동)",
+      "closedDays": "매월둘째, 넷째 수요일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-6714-7400",
+      "website": "http://dblib.sen.go.kr/",
+      "coordinates": {
+        "latitude": 37.6525847,
+        "longitude": 127.0129824
+      },
+      "seats": 78,
+      "bookCount": 161247,
+      "loan": {
+        "maxBooks": 11,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-041",
+      "name": "도봉문화정보도서관(종합자료실)",
+      "district": "도봉구",
+      "type": "공공도서관",
+      "address": "서울특별시 도봉구 도봉구 덕릉로 315 (창동)",
+      "closedDays": "매주화요일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-900-1835",
+      "website": "http://www.unilib.dobong.kr/",
+      "coordinates": {
+        "latitude": 37.6445808,
+        "longitude": 127.0438827
+      },
+      "seats": 80,
+      "bookCount": 45000,
+      "loan": {
+        "maxBooks": 3,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-042",
+      "name": "서울특별시교육청도봉도서관(어린이자료실)",
+      "district": "도봉구",
+      "type": "공공도서관",
+      "address": "서울특별시 도봉구 도봉구 삼양로 556(쌍문동)",
+      "closedDays": "매월둘째, 넷째 수요일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-6714-7400",
+      "website": "http://dblib.sen.go.kr/",
+      "coordinates": {
+        "latitude": 37.65257,
+        "longitude": 127.0129
+      },
+      "seats": 61,
+      "bookCount": 56836,
+      "loan": {
+        "maxBooks": 11,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-043",
+      "name": "도봉어린이문화정보센터(자료열람실, 잉글리시 아일랜드)",
+      "district": "도봉구",
+      "type": "공공도서관",
+      "address": "서울특별시 도봉구 도봉구 노해로69길 151",
+      "closedDays": "매주화요일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-995-4171",
+      "website": "http://www.unilib.dobong.kr/",
+      "coordinates": {
+        "latitude": 37.6590072,
+        "longitude": 127.0494699
+      },
+      "seats": 67,
+      "bookCount": 44653,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-044",
+      "name": "김영삼도서관",
+      "district": "동작구",
+      "type": "공공도서관",
+      "address": "서울특별시 동작구 매봉로1",
+      "closedDays": "매주 월요일+매주 일요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-827-0557",
+      "website": "http://lib.dongjak.go.kr/",
+      "coordinates": {
+        "latitude": 37.50547361,
+        "longitude": 126.9499672
+      },
+      "seats": 256,
+      "bookCount": 60994,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-045",
+      "name": "사당솔밭도서관",
+      "district": "동작구",
+      "type": "공공도서관",
+      "address": "서울특별시 동작구 솔밭로 86",
+      "closedDays": "매주 월요일+매주 일요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-585-8411",
+      "website": "http://lib.dongjak.go.kr/",
+      "coordinates": {
+        "latitude": 37.484056,
+        "longitude": 126.967369
+      },
+      "seats": 139,
+      "bookCount": 71657,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-046",
+      "name": "까망돌도서관",
+      "district": "동작구",
+      "type": "공공도서관",
+      "address": "서울특별시 동작구 서달로129",
+      "closedDays": "매주 월요일+매주 일요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-815-3701",
+      "website": "http://lib.dongjak.go.kr/",
+      "coordinates": {
+        "latitude": 37.5051193,
+        "longitude": 126.9605064
+      },
+      "seats": 161,
+      "bookCount": 36157,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-047",
+      "name": "동작영어마루도서관",
+      "district": "동작구",
+      "type": "공공도서관",
+      "address": "서울특별시 동작구 장승배기로16길 98",
+      "closedDays": "매주 월요일+매주 일요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-823-6750",
+      "website": "http://lib.dongjak.go.kr/",
+      "coordinates": {
+        "latitude": 37.50920443,
+        "longitude": 126.943434
+      },
+      "seats": 104,
+      "bookCount": 40679,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-048",
+      "name": "마포중앙도서관",
+      "district": "마포구",
+      "type": "공공도서관",
+      "address": "서울특별시 마포구 성산로 128",
+      "closedDays": "매주월요일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-3153-5800",
+      "website": "https://mplib.mapo.go.kr/mcl",
+      "coordinates": {
+        "latitude": 37.56379544,
+        "longitude": 126.9082019
+      },
+      "seats": 620,
+      "bookCount": 241193,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-049",
+      "name": "서강도서관",
+      "district": "마포구",
+      "type": "공공도서관",
+      "address": "서울특별시 마포구 독막로 165, 3~5층",
+      "closedDays": "매주화요일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-3141-7053",
+      "website": "https://mplib.mapo.go.kr/sglib",
+      "coordinates": {
+        "latitude": 37.5477371,
+        "longitude": 126.9320591
+      },
+      "seats": 222,
+      "bookCount": 76670,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-050",
+      "name": "소금나루도서관",
+      "district": "마포구",
+      "type": "공공도서관",
+      "address": "서울특별시 마포구 숭문길 72",
+      "closedDays": "매주금요일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-3153-1600",
+      "website": "https://mplib.mapo.go.kr/naru",
+      "coordinates": {
+        "latitude": 37.54952958,
+        "longitude": 126.9462267
+      },
+      "seats": 189,
+      "bookCount": 45796,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-051",
+      "name": "푸르메어린이도서관",
+      "district": "마포구",
+      "type": "공공도서관",
+      "address": "서울특별시 마포구 월드컵북로 494, 1층",
+      "closedDays": "매주일요일+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "10:00",
+          "close": "16:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-6070-9286",
+      "website": "https://mplib.mapo.go.kr/purme",
+      "coordinates": {
+        "latitude": 37.5846441,
+        "longitude": 126.8805151
+      },
+      "seats": 70,
+      "bookCount": 24262,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-052",
+      "name": "이진아기념도서관",
+      "district": "서대문구",
+      "type": "공공도서관",
+      "address": "서울특별시 서대문구 독립문공원길 80",
+      "closedDays": "매주 월요일 및 법정공휴일(일요일제외)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-360-8600",
+      "website": "http://lib.sdm.or.kr",
+      "coordinates": {
+        "latitude": 37.57295354,
+        "longitude": 126.9555487
+      },
+      "seats": 238,
+      "bookCount": 167520,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-053",
+      "name": "남가좌새롬어린이도서관",
+      "district": "서대문구",
+      "type": "공공도서관",
+      "address": "서울특별시 서대문구 증가로10길 16-15",
+      "closedDays": "매주 월요일 및 법정공휴일(일요일제외)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-360-8639",
+      "website": "http://lib.sdm.or.kr",
+      "coordinates": {
+        "latitude": 37.57833984,
+        "longitude": 126.9240465
+      },
+      "seats": 75,
+      "bookCount": 51122,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-054",
+      "name": "홍은도담도서관",
+      "district": "서대문구",
+      "type": "공공도서관",
+      "address": "서울특별시 서대문구 홍은중앙로 129",
+      "closedDays": "매주 금요일 및 법정공휴일(일요일제외)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-360-8640",
+      "website": "http://lib.sdm.or.kr",
+      "coordinates": {
+        "latitude": 37.601701,
+        "longitude": 126.9489544
+      },
+      "seats": 65,
+      "bookCount": 51659,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-055",
+      "name": "논골작은도서관",
+      "district": "서대문구",
+      "type": "작은도서관",
+      "address": "서울특별시 서대문구 연희로41가길 33, 청년미래공동체주택",
+      "closedDays": "토·일요일, 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "0:00",
+          "close": "0:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-391-8789",
+      "website": "http://lib.sdm.or.kr",
+      "coordinates": {
+        "latitude": 37.59125623,
+        "longitude": 126.9336552
+      },
+      "seats": 80,
+      "bookCount": 10758,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-056",
+      "name": "반포도서관",
+      "district": "서초구",
+      "type": "공공도서관",
+      "address": "서울특별시 서초구 고무래로 34",
+      "closedDays": "월+ 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-520-8700",
+      "website": "http://www.seocholib.or.kr",
+      "coordinates": {
+        "latitude": 37.502477,
+        "longitude": 127.0125134
+      },
+      "seats": 450,
+      "bookCount": 158463,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-057",
+      "name": "양재도서관",
+      "district": "서초구",
+      "type": "공공도서관",
+      "address": "서울특별시 서초구 양재천로 33",
+      "closedDays": "금+ 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-3486-4050",
+      "website": "https://yangjae.seocholib.or.kr/",
+      "coordinates": {
+        "latitude": 37.473627,
+        "longitude": 127.0335724
+      },
+      "seats": 410,
+      "bookCount": 87828,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-058",
+      "name": "내곡도서관",
+      "district": "서초구",
+      "type": "공공도서관",
+      "address": "서울특별시 서초구 청계산로7길 9-20",
+      "closedDays": "월+ 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-3461-3007",
+      "website": "http://naegok.seocholib.or.kr",
+      "coordinates": {
+        "latitude": 37.45200325,
+        "longitude": 127.0544446
+      },
+      "seats": 250,
+      "bookCount": 85692,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-059",
+      "name": "서초청소년도서관",
+      "district": "서초구",
+      "type": "공공도서관",
+      "address": "서울특별시 서초구 효령로77길 37",
+      "closedDays": "금+ 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "10:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-3486-9543",
+      "website": "https://seocho.seocholib.or.kr/",
+      "coordinates": {
+        "latitude": 37.49090665,
+        "longitude": 127.0280952
+      },
+      "seats": 224,
+      "bookCount": 39595,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-060",
+      "name": "성동구립도서관",
+      "district": "성동구",
+      "type": "공공도서관",
+      "address": "서울특별시 성동구 행당동 고산자로10길 9 성동문화정보센터",
+      "closedDays": "매주 월요일, 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "23:00"
+        },
+        "saturday": {
+          "open": "7:00",
+          "close": "23:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2204-6420",
+      "website": "https://www.sdlib.or.kr/SD/main.do",
+      "coordinates": {
+        "latitude": 37.55917871,
+        "longitude": 127.0349587
+      },
+      "seats": 542,
+      "bookCount": 213919,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-061",
+      "name": "성동구립용답도서관",
+      "district": "성동구",
+      "type": "공공도서관",
+      "address": "서울특별시 성동구 용답동 용답중앙3길 10 성동구립용답도서관",
+      "closedDays": "매주 월요일, 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2204-6470",
+      "website": "https://www.sdlib.or.kr/YD/main.do",
+      "coordinates": {
+        "latitude": 37.56670146,
+        "longitude": 127.051314
+      },
+      "seats": 217,
+      "bookCount": 96515,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-062",
+      "name": "성동구립금호도서관",
+      "district": "성동구",
+      "type": "공공도서관",
+      "address": "서울특별시 성동구 금호동1가 난계로 20 금호작은도서관",
+      "closedDays": "매주 월요일, 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "7:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2204-6450",
+      "website": "https://www.sdlib.or.kr/KH/main.do",
+      "coordinates": {
+        "latitude": 37.55412846,
+        "longitude": 127.0248932
+      },
+      "seats": 204,
+      "bookCount": 93104,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-063",
+      "name": "성동구립성수도서관",
+      "district": "성동구",
+      "type": "공공도서관",
+      "address": "서울특별시 성동구 뚝섬로 1길 43 성수문화복지회관 7층",
+      "closedDays": "매주 월요일, 법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "8:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2204-7590",
+      "website": "https://www.sdlib.or.kr/SS/main.do",
+      "coordinates": {
+        "latitude": 37.54542892,
+        "longitude": 127.0469471
+      },
+      "seats": 212,
+      "bookCount": 63390,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-064",
+      "name": "성북정보도서관",
+      "district": "성북구",
+      "type": "공공도서관",
+      "address": "서울특별시 성북구 화랑로18자길 13",
+      "closedDays": "첫째주월요일+셋째주월요일+일요일을제외한법정공휴일(단,일요일이공휴일인경우휴관)+근로자의날+성북문화재단창립기념일(매년 9월 1일)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-962-1081",
+      "website": "https://www.sblib.seoul.kr/sblib/",
+      "coordinates": {
+        "latitude": 37.604951,
+        "longitude": 127.050586
+      },
+      "seats": 446,
+      "bookCount": 168587,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-065",
+      "name": "아리랑도서관",
+      "district": "성북구",
+      "type": "공공도서관",
+      "address": "서울특별시 성북구 아리랑로 82",
+      "closedDays": "둘째주월요일+넷째주월요일+일요일을제외한법정공휴일(단,일요일이공휴일인경우휴관)+근로자의날+성북문화재단창립기념일(매년 9월 1일)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-3291-4990",
+      "website": "https://www.sblib.seoul.kr/arlib/index.do",
+      "coordinates": {
+        "latitude": 37.600059,
+        "longitude": 127.013929
+      },
+      "seats": 188,
+      "bookCount": 91118,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-066",
+      "name": "성북길빛도서관",
+      "district": "성북구",
+      "type": "공공도서관",
+      "address": "서울특별시 성북구 숭인로8길 52",
+      "closedDays": "월요일+일요일을제외한법정공휴일(단,일요일이공휴일인경우휴관)+근로자의날+성북문화재단창립기념일(매년 9월 1일)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "21:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-6949-0031",
+      "website": "https://www.sblib.seoul.kr/sblib/",
+      "coordinates": {
+        "latitude": 37.60976,
+        "longitude": 127.02654
+      },
+      "seats": 250,
+      "bookCount": 34535,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-067",
+      "name": "달빛마루도서관",
+      "district": "성북구",
+      "type": "공공도서관",
+      "address": "서울특별시 성북구 종암로 167",
+      "closedDays": "월요일+일요일을제외한법정공휴일(단,일요일이공휴일인경우휴관)+근로자의날+성북문화재단창립기념일(매년 9월 1일)",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-911-0993",
+      "website": "https://www.sblib.seoul.kr/sblib/",
+      "coordinates": {
+        "latitude": 37.605058,
+        "longitude": 127.030989
+      },
+      "seats": 130,
+      "bookCount": 58477,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-068",
+      "name": "서울특별시교육청송파도서관",
+      "district": "송파구",
+      "type": "공공도서관",
+      "address": "서울특별시 송파구 동남로 263",
+      "closedDays": "둘째 화+넷째 화+공휴일",
+      "hours": {
+        "weekday": {
+          "open": "8:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "8:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-3434-3333",
+      "website": "https://splib.sen.go.kr",
+      "coordinates": {
+        "latitude": 37.49993098,
+        "longitude": 127.1348112
+      },
+      "seats": 894,
+      "bookCount": 254870,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-069",
+      "name": "송파글마루도서관",
+      "district": "송파구",
+      "type": "공공도서관",
+      "address": "서울특별시 송파구 충민로 120 (장지동)",
+      "closedDays": "매주 월+국가지정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-449-8855",
+      "website": "http://www.splib.or.kr",
+      "coordinates": {
+        "latitude": 37.48083269,
+        "longitude": 127.1304766
+      },
+      "seats": 389,
+      "bookCount": 104311,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-070",
+      "name": "송파어린이도서관",
+      "district": "송파구",
+      "type": "공공도서관",
+      "address": "서울특별시 송파구 올림픽로 105 (잠실동)",
+      "closedDays": "매주 월+국가지정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-418-0303",
+      "website": "http://www.splib.or.kr",
+      "coordinates": {
+        "latitude": 37.51210126,
+        "longitude": 127.0824285
+      },
+      "seats": 250,
+      "bookCount": 68823,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-071",
+      "name": "거마도서관",
+      "district": "송파구",
+      "type": "공공도서관",
+      "address": "서울특별시 송파구 거마로2길 19 (거여동)",
+      "closedDays": "매주 월+국가지정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "20:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "20:00"
+        }
+      },
+      "phone": "02-449-2332",
+      "website": "http://www.splib.or.kr",
+      "coordinates": {
+        "latitude": 37.493545,
+        "longitude": 127.1468274
+      },
+      "seats": 187,
+      "bookCount": 50257,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-072",
+      "name": "양천중앙도서관",
+      "district": "양천구",
+      "type": "공공도서관",
+      "address": "서울특별시 양천구 신정로7길 81(신정동)",
+      "closedDays": "금+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2699-5919",
+      "website": "http://lib.yangcheon.or.kr",
+      "coordinates": {
+        "latitude": 37.51372539,
+        "longitude": 126.8338175
+      },
+      "seats": 425,
+      "bookCount": 103583,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-073",
+      "name": "영어특성화도서관",
+      "district": "양천구",
+      "type": "공공도서관",
+      "address": "서울특별시 양천구 목동동로 81",
+      "closedDays": "일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-2642-5919",
+      "website": "http://lib.yangcheon.or.kr",
+      "coordinates": {
+        "latitude": 37.515936,
+        "longitude": 126.863865
+      },
+      "seats": 137,
+      "bookCount": 73540,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-074",
+      "name": "신월음악도서관",
+      "district": "양천구",
+      "type": "공공도서관",
+      "address": "서울특별시 양천구 오목로5길 34",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2691-5919",
+      "website": "http://lib.yangcheon.or.kr",
+      "coordinates": {
+        "latitude": 37.524697,
+        "longitude": 126.840067
+      },
+      "seats": 148,
+      "bookCount": 54950,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-075",
+      "name": "갈산도서관",
+      "district": "양천구",
+      "type": "공공도서관",
+      "address": "서울특별시 양천구 목동남로 4길 48-6",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2645-5919",
+      "website": "http://lib.yangcheon.or.kr",
+      "coordinates": {
+        "latitude": 37.508816,
+        "longitude": 126.867312
+      },
+      "seats": 105,
+      "bookCount": 55858,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-076",
+      "name": "선유도서관",
+      "district": "영등포구",
+      "type": "공공도서관",
+      "address": "서울특별시 영등포구 선유로 43가길 10-8",
+      "closedDays": "매주 월요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-2163-0800",
+      "website": "https://www.ydplib.or.kr",
+      "coordinates": {
+        "latitude": 37.53333074,
+        "longitude": 126.892938
+      },
+      "seats": 285,
+      "bookCount": 75499,
+      "loan": {
+        "maxBooks": 10,
+        "days": 21
+      }
+    },
+    {
+      "id": "SEOUL-077",
+      "name": "신길책마루문화센터",
+      "district": "영등포구",
+      "type": "공공도서관",
+      "address": "서울특별시 영등포구 신길로 131",
+      "closedDays": "매주 월요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-2165-7700",
+      "website": "https://www.ydplib.or.kr",
+      "coordinates": {
+        "latitude": 37.50409647,
+        "longitude": 126.9099182
+      },
+      "seats": 410,
+      "bookCount": 45618,
+      "loan": {
+        "maxBooks": 10,
+        "days": 21
+      }
+    },
+    {
+      "id": "SEOUL-078",
+      "name": "문래도서관",
+      "district": "영등포구",
+      "type": "공공도서관",
+      "address": "서울특별시 영등포구 문래로20길 49",
+      "closedDays": "매주 월요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-2629-8600",
+      "website": "https://www.ydplib.or.kr",
+      "coordinates": {
+        "latitude": 37.51675466,
+        "longitude": 126.8914728
+      },
+      "seats": 251,
+      "bookCount": 70121,
+      "loan": {
+        "maxBooks": 10,
+        "days": 21
+      }
+    },
+    {
+      "id": "SEOUL-079",
+      "name": "대림도서관",
+      "district": "영등포구",
+      "type": "공공도서관",
+      "address": "서울특별시 영등포구 도신로27",
+      "closedDays": "매주 월요일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-828-3700",
+      "website": "https://www.ydplib.or.kr",
+      "coordinates": {
+        "latitude": 37.50431765,
+        "longitude": 126.8960782
+      },
+      "seats": 168,
+      "bookCount": 69778,
+      "loan": {
+        "maxBooks": 10,
+        "days": 21
+      }
+    },
+    {
+      "id": "SEOUL-080",
+      "name": "용산 꿈나무도서관",
+      "district": "용산구",
+      "type": "공공도서관",
+      "address": "서울특별시 용산구 백범로 329",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "21:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-707-0138",
+      "website": "https://www.yslibrary.or.kr/dream/index.do",
+      "coordinates": {
+        "latitude": 37.5389038,
+        "longitude": 126.9650122
+      },
+      "seats": 150,
+      "bookCount": 57852,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-081",
+      "name": "구립 청파도서관",
+      "district": "용산구",
+      "type": "공공도서관",
+      "address": "서울특별시 용산구 청파로93길 27",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "21:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-714-3931",
+      "website": "https://www.yslibrary.or.kr/cheongpa/index.do",
+      "coordinates": {
+        "latitude": 37.55392482,
+        "longitude": 126.9676059
+      },
+      "seats": 75,
+      "bookCount": 43571,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-082",
+      "name": "용마루어린이도서관",
+      "district": "용산구",
+      "type": "작은도서관",
+      "address": "서울특별시 용산구 효창원로37길 1",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "10:00",
+          "close": "19:00"
+        },
+        "saturday": {
+          "open": "10:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-707-1030",
+      "website": "https://www.yslibrary.or.kr/yongmaru/index.do",
+      "coordinates": {
+        "latitude": 37.536928,
+        "longitude": 126.95823
+      },
+      "seats": 55,
+      "bookCount": 10150,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-083",
+      "name": "효창동 작은도서관",
+      "district": "용산구",
+      "type": "작은도서관",
+      "address": "서울특별시 용산구 효창원로161",
+      "closedDays": "토+일+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "13:00",
+          "close": "17:00"
+        },
+        "saturday": {
+          "open": "0:00",
+          "close": "0:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-2199-8753",
+      "website": "https://www.yslibrary.or.kr/small/index.do",
+      "coordinates": {
+        "latitude": 37.54250925,
+        "longitude": 126.9618379
+      },
+      "seats": 40,
+      "bookCount": 13777,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-084",
+      "name": "은평구립도서관",
+      "district": "은평구",
+      "type": "공공도서관",
+      "address": "서울특별시 은평구 통일로 79가길 13-84",
+      "closedDays": "월요일,법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-385-1671",
+      "website": "http://www.eplib.or.kr/",
+      "coordinates": {
+        "latitude": 37.60648786,
+        "longitude": 126.9166338
+      },
+      "seats": 1039,
+      "bookCount": 230986,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-085",
+      "name": "증산정보도서관",
+      "district": "은평구",
+      "type": "공공도서관",
+      "address": "서울특별시 은평구 증산로5길 6",
+      "closedDays": "금요일,법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-307-6030",
+      "website": "http://www.jsplib.or.kr/",
+      "coordinates": {
+        "latitude": 37.58280729,
+        "longitude": 126.9076699
+      },
+      "seats": 530,
+      "bookCount": 71131,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-086",
+      "name": "은평뉴타운 도서관",
+      "district": "은평구",
+      "type": "공공도서관",
+      "address": "서울특별시 은평구 진관2로 111-51",
+      "closedDays": "금요일,법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-6341-6400",
+      "website": "http://www.enlib.or.kr/",
+      "coordinates": {
+        "latitude": 37.6372278,
+        "longitude": 126.9331155
+      },
+      "seats": 420,
+      "bookCount": 70577,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-087",
+      "name": "구산동 도서관마을",
+      "district": "은평구",
+      "type": "공공도서관",
+      "address": "서울특별시 은평구 연서로 13길 29-23",
+      "closedDays": "월요일,법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-357-0100",
+      "website": "http://www.gsvlib.or.kr/",
+      "coordinates": {
+        "latitude": 37.60950981,
+        "longitude": 126.9130902
+      },
+      "seats": 350,
+      "bookCount": 75618,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-088",
+      "name": "내를건너서숲으로도서관",
+      "district": "은평구",
+      "type": "공공도서관",
+      "address": "서울특별시 은평구 증산로17길 51",
+      "closedDays": "월요일,법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-307-6701",
+      "website": "http://www.nslib.or.kr",
+      "coordinates": {
+        "latitude": 37.59070917,
+        "longitude": 126.9105779
+      },
+      "seats": 170,
+      "bookCount": 64105,
+      "loan": {
+        "maxBooks": 5,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-089",
+      "name": "청운문학도서관",
+      "district": "종로구",
+      "type": "공공도서관",
+      "address": "서울특별시 종로구 자하문로36길 40",
+      "closedDays": "월+1월1일+설+추석",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "21:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "21:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "070-4680-4032",
+      "website": "http://lib.jongno.go.kr/",
+      "coordinates": {
+        "latitude": 37.5903786,
+        "longitude": 126.9659189
+      },
+      "seats": 115,
+      "bookCount": 44784,
+      "loan": {
+        "maxBooks": 10,
+        "days": 15
+      }
+    },
+    {
+      "id": "SEOUL-090",
+      "name": "아름꿈도서관",
+      "district": "종로구",
+      "type": "공공도서관",
+      "address": "서울특별시 종로구 종로58가길 19",
+      "closedDays": "일+1월1일+설+추석",
+      "hours": {
+        "weekday": {
+          "open": "10:00",
+          "close": "19:00"
+        },
+        "saturday": {
+          "open": "10:00",
+          "close": "19:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-2237-6644",
+      "website": "http://lib.jongno.go.kr/",
+      "coordinates": {
+        "latitude": 37.5726975,
+        "longitude": 127.0171157
+      },
+      "seats": 97,
+      "bookCount": 34355,
+      "loan": {
+        "maxBooks": 10,
+        "days": 15
+      }
+    },
+    {
+      "id": "SEOUL-091",
+      "name": "어린이청소년국학도서관",
+      "district": "종로구",
+      "type": "공공도서관",
+      "address": "서울특별시 종로구 명륜길 26(명륜동 와룡문화센터 5층)",
+      "closedDays": "일+1월1일+설+추석+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "19:00"
+        },
+        "holiday": {
+          "open": "0:00",
+          "close": "0:00"
+        }
+      },
+      "phone": "02-747-8336",
+      "website": "http://lib.jongno.go.kr/",
+      "coordinates": {
+        "latitude": 37.5886859,
+        "longitude": 126.9955389
+      },
+      "seats": 80,
+      "bookCount": 30346,
+      "loan": {
+        "maxBooks": 10,
+        "days": 15
+      }
+    },
+    {
+      "id": "SEOUL-092",
+      "name": "통인 어린이 작은도서관",
+      "district": "종로구",
+      "type": "작은도서관",
+      "address": "서울특별시 종로구 자하문로13길 20",
+      "closedDays": "둘째 주 월+넷째 주 월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "10:00",
+          "close": "19:00"
+        },
+        "saturday": {
+          "open": "10:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "10:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-739-8444",
+      "website": "http://lib.jongno.go.kr/",
+      "coordinates": {
+        "latitude": 37.5804256,
+        "longitude": 126.9705288
+      },
+      "seats": 50,
+      "bookCount": 20332,
+      "loan": {
+        "maxBooks": 10,
+        "days": 15
+      }
+    },
+    {
+      "id": "SEOUL-093",
+      "name": "어울림도서관",
+      "district": "중구",
+      "type": "공공도서관",
+      "address": "서울특별시 중구 다산로38길 66-35",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-2230-2901",
+      "website": "https://www.junggulib.or.kr",
+      "coordinates": {
+        "latitude": 37.561723,
+        "longitude": 127.0189303
+      },
+      "seats": 190,
+      "bookCount": 86145,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-094",
+      "name": "가온도서관",
+      "district": "중구",
+      "type": "공공도서관",
+      "address": "서울특별시 중구 동호로14길 18",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-2230-2921",
+      "website": "https://www.junggulib.or.kr",
+      "coordinates": {
+        "latitude": 37.556385,
+        "longitude": 127.010838
+      },
+      "seats": 169,
+      "bookCount": 81391,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-095",
+      "name": "손기정문화도서관",
+      "district": "중구",
+      "type": "공공도서관",
+      "address": "서울특별시 중구 손기정로101-3",
+      "closedDays": "월+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "22:00"
+        }
+      },
+      "phone": "02-2230-2950",
+      "website": "https://www.junggulib.or.kr",
+      "coordinates": {
+        "latitude": 37.55592073,
+        "longitude": 126.9645377
+      },
+      "seats": 140,
+      "bookCount": 26463,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-096",
+      "name": "남산타운어린이도서관",
+      "district": "중구",
+      "type": "공공도서관",
+      "address": "서울특별시 중구 다산로 32",
+      "closedDays": "월(격주)+일(2·4주)+법정공휴일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "22:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "18:00"
+        }
+      },
+      "phone": "02-2230-2941",
+      "website": "https://www.junggulib.or.kr",
+      "coordinates": {
+        "latitude": 37.547167,
+        "longitude": 127.005677
+      },
+      "seats": 65,
+      "bookCount": 38717,
+      "loan": {
+        "maxBooks": 10,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-097",
+      "name": "중랑구립정보도서관",
+      "district": "중랑구",
+      "type": "공공도서관",
+      "address": "서울특별시 중랑구 신내로15길 197(묵동)",
+      "closedDays": "둘째 주 월+넷째 주 월+법정공휴일+근로자의날(5월1일)+창립기념일(8월12일)+임시휴관일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-3407-1111",
+      "website": "https://www.jungnanglib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.61517057,
+        "longitude": 127.0869064
+      },
+      "seats": 838,
+      "bookCount": 161631,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-098",
+      "name": "중랑상봉도서관",
+      "district": "중랑구",
+      "type": "공공도서관",
+      "address": "서울특별시 중랑구 동일로114길 10(상봉동)",
+      "closedDays": "월+법정공휴일+근로자의날(5월1일)+창립기념일(8월12일)+임시휴관일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-2209-0094",
+      "website": "https://www.jungnanglib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.59289195,
+        "longitude": 127.0808518
+      },
+      "seats": 322,
+      "bookCount": 71719,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-099",
+      "name": "중랑구립면목정보도서관",
+      "district": "중랑구",
+      "type": "공공도서관",
+      "address": "서울특별시 중랑구 면목로 397(면목동)",
+      "closedDays": "첫째 월+셋째 월+법정공휴일+근로자의날(5월1일)+창립기념일(8월12일)+임시휴관일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-432-4123",
+      "website": "https://www.jungnanglib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.58735561,
+        "longitude": 127.0875552
+      },
+      "seats": 202,
+      "bookCount": 100811,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    },
+    {
+      "id": "SEOUL-100",
+      "name": "중랑숲어린이도서관",
+      "district": "중랑구",
+      "type": "공공도서관",
+      "address": "서울특별시 중랑구 망우로73길 46-1(망우동)",
+      "closedDays": "월+법정공휴일+근로자의날(5월1일)+창립기념일(8월12일)+임시휴관일",
+      "hours": {
+        "weekday": {
+          "open": "9:00",
+          "close": "18:00"
+        },
+        "saturday": {
+          "open": "9:00",
+          "close": "17:00"
+        },
+        "holiday": {
+          "open": "9:00",
+          "close": "17:00"
+        }
+      },
+      "phone": "02-6235-1150",
+      "website": "https://www.jungnanglib.seoul.kr/",
+      "coordinates": {
+        "latitude": 37.60266819,
+        "longitude": 127.1039284
+      },
+      "seats": 303,
+      "bookCount": 54918,
+      "loan": {
+        "maxBooks": 7,
+        "days": 14
+      }
+    }
+  ]
+}
