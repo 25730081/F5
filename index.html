@@ -4,171 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>0차 | 와이어프레임 프로토타입</title>
-<style>
-:root {
-  --bg: #ffffff;
-  --ink: #111111;
-  --muted: #777777;
-  --line: #dddddd;
-  --card-bg: #fafafa;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: #f0f0f0;
-  color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.4;
-}
-button, input { font: inherit; }
-button { cursor: pointer; }
-
-/* 앱 프레임 컨테이너 */
-.app {
-  max-width: 430px;
-  min-height: 100vh;
-  margin: auto;
-  background: var(--bg);
-  position: relative;
-  box-shadow: 0 0 20px rgba(0,0,0,0.05);
-}
-
-/* 상단 헤더 */
-header {
-  height: 60px;
-  background: var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-.logo-area { font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
-.logo-circle { width: 16px; height: 16px; border: 2px solid var(--ink); border-radius: 50%; }
-.timer-pill { font-size: 12px; font-weight: 700; background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px; display: flex; align-items: center; gap: 4px; }
-
-/* 화면 공통 */
-.screen { display: none; min-height: calc(100vh - 60px); padding: 20px 20px 100px; }
-.screen.active { display: block; }
-h1 { font-size: 22px; margin: 0 0 6px; font-weight: 800; letter-spacing: -0.5px; }
-h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
-.sub { font-size: 12px; color: var(--muted); margin: 0; }
-
-/* 와이어프레임 박스 및 카드 */
-.panel { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 14px 0; background: var(--bg); }
-.hero-box { border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 10px 0 16px; background: var(--bg); }
-.action-box { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 14px 0; display: flex; justify-content: space-between; align-items: center; font-weight: 700; background: var(--bg); font-size: 14px; }
-
-/* 카테고리 3단 그리드 (레퍼런스 스타일) */
-.category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
-.category-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 10px; background: var(--bg); }
-.img-placeholder { width: 100%; height: 75px; background: #eaeaea; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #888; margin-bottom: 8px; }
-.category-card strong { font-size: 13px; display: block; margin-bottom: 2px; }
-.category-card p { font-size: 10px; color: var(--muted); line-height: 1.3; margin-bottom: 8px; }
-.badge { display: inline-block; font-size: 9px; border: 1px solid var(--line); padding: 2px 6px; border-radius: 4px; color: var(--muted); }
-
-/* 상단 행 및 뒤로가기 */
-.top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.back { border: 0; background: transparent; padding: 0; color: var(--muted); font-weight: 700; font-size: 12px; }
-
-/* 입력 폼 */
-.field-wrap { margin: 14px 0; }
-.field-label { font-size: 11px; font-weight: 700; display: block; margin-bottom: 6px; }
-.field { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; outline: none; background: #fff; }
-.choice-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.choice { padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font-size: 11px; font-weight: 700; }
-.choice.selected { border-color: var(--ink); background: #f5f5f5; }
-
-/* 버튼 공통 */
-.btn { border: 1px solid var(--ink); border-radius: 10px; padding: 13px; font-weight: 700; font-size: 13px; text-align: center; background: #fff; color: var(--ink); }
-.btn.primary { background: var(--ink); color: #fff; }
-.btn.ghost { border-color: var(--line); background: transparent; }
-.btn.added { background: #555; border-color: #555; color: #fff; }
-.full { width: 100%; display: block; }
-
-/* 리스트 및 서브 요소 */
-.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
-.metric { border: 1px solid var(--line); border-radius: 8px; padding: 10px; text-align: center; }
-.metric span { display: block; font-size: 9px; color: var(--muted); margin-bottom: 2px; }
-.metric strong { font-size: 14px; }
-
-.filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin: 12px 0; }
-.filter { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 6px 12px; font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
-.filter.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-
-.place-list { display: grid; gap: 10px; }
-.place-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 75px 1fr; gap: 10px; background: #fff; }
-.place-art { height: 75px; border-radius: 8px; background: #eaeaea; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-.place-title-row { display: flex; justify-content: space-between; align-items: center; }
-.save-btn { border: 0; background: transparent; font-size: 16px; cursor: pointer; color: #888; }
-.save-btn.saved { color: #e55; }
-.visit-info { font-size: 10px; color: var(--muted); background: #fafafa; padding: 6px 8px; border-radius: 6px; margin-top: 6px; line-height: 1.4; }
-
-/* 상세 및 지도 */
-.detail-art { height: 160px; border-radius: 12px; background: #eaeaea; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 12px 0; }
-.map-placeholder { height: 280px; border: 1px solid var(--line); border-radius: 12px; background: #eaeaea; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; margin-top: 10px; }
-.map-pin { position: absolute; background: #fff; border: 1px solid var(--ink); padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px; }
-
-/* 커뮤니티 카드 */
-.community-card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: #fff; }
-
-/* 하단 네비게이션 바 (레퍼런스 반영 5개 탭) */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(430px, 100%);
-  height: 64px;
-  background: var(--bg);
-  border-top: 1px solid var(--line);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 6;
-}
-.nav-btn {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  width: 60px;
-}
-.nav-btn span { font-size: 16px; }
-.nav-btn.active { color: var(--ink); font-weight: 800; }
-
-/* 토스트 메세지 */
-.toast {
-  position: fixed;
-  bottom: 78px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--ink);
-  color: #fff;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 12px;
-  font-weight: 700;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  z-index: 10;
-  white-space: nowrap;
-}
-.toast.show { opacity: 1; }
-
-.empty { padding: 24px; text-align: center; color: var(--muted); font-size: 12px; border: 1px dashed var(--line); border-radius: 8px; }
-.course-item { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
-.course-num { width: 22px; height: 22px; border: 1px solid var(--ink); border-radius: 50%; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app">
@@ -197,27 +33,27 @@ h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
 
  <div class="top-row" style="margin:20px 0 10px;">
    <h2>이런 시간을 보내보세요</h2>
-   <button class="back" onclick="go('results')">둘러보기</button>
+   <button class="back" onclick="openCategory('전체')">둘러보기</button>
  </div>
 
  <div class="category-grid">
-   <div class="category-card" onclick="go('results')">
+   <div class="category-card" onclick="openCategory('서점')">
      <div class="img-placeholder">이미지</div>
-     <strong>커피 한 잔</strong>
-     <p>잠깐의 휴식이 필요할 때</p>
-     <span class="badge">카페</span>
+     <strong>책 한 권</strong>
+     <p>책 구경하며 쉬고 싶을 때</p>
+     <span class="badge">서점</span>
    </div>
-   <div class="category-card" onclick="go('results')">
+   <div class="category-card" onclick="openCategory('도서관')">
      <div class="img-placeholder">이미지</div>
-     <strong>취향 발견</strong>
-     <p>소품숍 구경하기 좋은 곳</p>
-     <span class="badge">쇼핑</span>
+     <strong>조용한 쉼</strong>
+     <p>차분히 앉아 있고 싶을 때</p>
+     <span class="badge">도서관</span>
    </div>
-   <div class="category-card" onclick="go('results')">
+   <div class="category-card" onclick="openCategory('공원')">
      <div class="img-placeholder">이미지</div>
      <strong>동네 산책</strong>
      <p>주변을 둘러보고 싶을 때</p>
-     <span class="badge">산책</span>
+     <span class="badge">공원</span>
    </div>
  </div>
 
@@ -265,15 +101,11 @@ h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
  <div class="summary">
    <div class="metric"><span>예상 대기</span><strong id="waitMetric">2시간</strong></div>
    <div class="metric"><span>추천 기준</span><strong>복귀 여유</strong></div>
-   <div class="metric"><span>추천 장소</span><strong>4곳</strong></div>
+   <div class="metric"><span>추천 장소</span><strong id="placeCount">0곳</strong></div>
  </div>
- <div class="filter-row">
-   <button class="filter active" data-filter="전체">전체</button>
-   <button class="filter" data-filter="카페">카페</button>
-   <button class="filter" data-filter="쇼핑">쇼핑</button>
-   <button class="filter" data-filter="문화">문화</button>
- </div>
+ <div class="filter-row" id="filterRow"><button class="filter active" data-filter="전체">전체</button></div>
  <div class="place-list" id="placeList"></div>
+ <button class="btn ghost full" id="moreBtn" style="display:none; margin-top:12px;" onclick="showMore()">더보기</button>
 </section>
 
 <!-- 4. 상세 보기 화면 -->
@@ -281,7 +113,7 @@ h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
  <div class="top-row"><button class="back" onclick="go('results')">← 추천 목록</button><span class="sub">공간 상세</span></div>
  <div class="detail-art" id="detailArt">☕</div>
  <div class="top-row" style="margin-bottom:4px;"><span class="sub" id="detailCategory">CAFE</span></div>
- <h1 id="detailName">카페 모리</h1>
+ <h1 id="detailName"></h1>
  <p class="sub" id="detailDesc"></p>
  <div class="summary" style="margin-top:14px;">
    <div class="metric"><span>편도 이동</span><strong id="detailWalk">6분</strong></div>
@@ -292,6 +124,10 @@ h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
    <h3>이 장소를 추천하는 이유</h3>
    <ul class="sub" id="detailWhy" style="padding-left:16px; margin-top:6px; line-height:1.5;"></ul>
  </div>
+ <div class="panel">
+   <h3>기본 정보</h3>
+   <ul class="sub info-list" id="detailInfo"></ul>
+ </div>
  <button class="btn primary full" id="addToCourseBtn" onclick="addToCourse()">+ 이번 코스에 추가하기</button>
 </section>
 
@@ -301,9 +137,7 @@ h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
  <h1>내 주변 지도</h1>
  <p class="sub">현재 웨이팅 위치 주변의 공간들을 지도에서 확인하세요.</p>
  <div class="map-placeholder">
-  <div class="map-pin" style="top:40%; left:45%;">📍 식당</div>
-  <div class="map-pin" style="top:25%; left:25%;">☕ 카페 모리</div>
-  <div class="map-pin" style="top:60%; left:65%;">🛍️ 소품샵 담</div>
+  <div id="mapPins"></div>
   <span class="sub" style="margin-top:90px;">[지도 영역 와이어프레임]</span>
  </div>
  <div class="panel">
@@ -337,13 +171,13 @@ h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
  <div style="margin-top:14px;">
   <div class="community-card">
    <div class="top-row" style="margin-bottom:6px;"><strong style="font-size:13px;">성수러버 님</strong><span class="badge">대기 90분 코스</span></div>
-   <h3 style="font-size:14px; margin-bottom:4px;">카페 모리 → 연무장 서점</h3>
-   <p class="sub">웨이팅 시간 동안 조용히 책 구경하고 커피 한 잔 마시기 딱 좋았어요!</p>
+   <h3 style="font-size:14px; margin-bottom:4px;">낫저스트북스 → 서울숲</h3>
+   <p class="sub">웨이팅 시간 동안 조용히 책 구경하고 산책까지 딱 좋았어요!</p>
   </div>
   <div class="community-card">
    <div class="top-row" style="margin-bottom:6px;"><strong style="font-size:13px;">산책러 님</strong><span class="badge">대기 120분 코스</span></div>
-   <h3 style="font-size:14px; margin-bottom:4px;">서울숲 산책길 → 소품샵 담</h3>
-   <p class="sub">가볍게 걸으며 산책하고 아기자기한 소품 구경까지 완벽했습니다.</p>
+   <h3 style="font-size:14px; margin-bottom:4px;">성수근린공원 → 공씨책방(성수점)</h3>
+   <p class="sub">가볍게 걸으며 산책하고 헌책방 구경까지 완벽했습니다.</p>
   </div>
  </div>
  <button class="btn ghost full" onclick="toast('코스 공유 창이 열립니다.')">+ 나만의 코스 자랑하기</button>
@@ -377,137 +211,6 @@ h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; }
 <div class="toast" id="toast"></div>
 </div>
 
-<script>
-const places=[
- {id:1,name:"카페 모리",cat:"카페",emoji:"☕",walk:6,stay:40,desc:"조용한 분위기의 아늑한 카페",reason:"이동 부담이 적고 짧게 쉬기 좋아요."},
- {id:2,name:"소품샵 담",cat:"쇼핑",emoji:"🛍️",walk:8,stay:35,desc:"아기자기한 소품 편집숍",reason:"구경하는 시간이 짧아 웨이팅 중 방문하기 좋아요."},
- {id:3,name:"연무장 서점",cat:"문화",emoji:"📚",walk:10,stay:45,desc:"독립출판물 전문 서점",reason:"실내에서 여유롭게 시간을 보내기 좋아요."},
- {id:4,name:"서울숲 산책길",cat:"산책",emoji:"🌿",walk:12,stay:30,desc:"바깥 공기를 쐴 수 있는 산책로",reason:"가벼운 산책으로 기분 전환하기 좋아요."}
-];
-let waitMinutes=120, travel="도보", selected=null, course=[], favorites=[], recent=null, filter="전체";
-
-function go(id){
- document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
- document.getElementById(id).classList.add('active');
- document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));
- if(id==='results') renderPlaces();
- if(id==='mypage') renderFavorites();
- if(id==='course') renderCourse();
- window.scrollTo(0,0);
-}
-
-document.querySelectorAll('#timeChoices .choice').forEach(b=>b.onclick=()=>{
- document.querySelectorAll('#timeChoices .choice').forEach(x=>x.classList.remove('selected'));
- b.classList.add('selected'); waitMinutes=+b.dataset.time;
-});
-document.querySelectorAll('#travelChoices .choice').forEach(b=>b.onclick=()=>{
- document.querySelectorAll('#travelChoices .choice').forEach(x=>x.classList.remove('selected'));
- b.classList.add('selected'); travel=b.dataset.travel;
-});
-document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{
- document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
- b.classList.add('active'); filter=b.dataset.filter; renderPlaces();
-});
-
-function showRecommendations(){
- document.getElementById('waitMetric').textContent = `${waitMinutes>=60?Math.floor(waitMinutes/60)+'시간':''}${waitMinutes%60?waitMinutes%60+'분':''}`;
- document.getElementById('headerTimer').textContent = `⏱ ${Math.floor(waitMinutes/60)}:00:00`;
- go('results');
-}
-
-function travelTime(p){ return travel==='도보'? p.walk : Math.max(3, Math.round(p.walk*0.55)); }
-function buffer(p){ return waitMinutes - (travelTime(p)*2 + p.stay); }
-
-function renderPlaces(){
- const list = document.getElementById('placeList'); list.innerHTML='';
- places.filter(p=>(filter==='전체'||p.cat===filter)&&buffer(p)>=10).forEach(p=>{
-  const saved = favorites.includes(p.id), b = buffer(p);
-  const card = document.createElement('article'); card.className='place-card';
-  card.innerHTML=`
-    <div class="place-art">${p.emoji}</div>
-    <div>
-      <div class="place-title-row">
-        <h3 style="font-size:14px; margin:0;">${p.name}</h3>
-        <button class="save-btn ${saved?'saved':''}" onclick="toggleFavorite(${p.id})">${saved?'♥':'♡'}</button>
-      </div>
-      <div class="sub" style="margin:2px 0;">${p.cat} · ${travel} ${travelTime(p)}분</div>
-      <div class="visit-info">왕복 이동 <b>${travelTime(p)*2}분</b> · 복귀 여유 <b>${b}분</b></div>
-      <button class="btn ghost" style="padding:4px 8px; font-size:10px; margin-top:6px;" onclick="openDetail(${p.id})">상세 보기 →</button>
-    </div>`;
-  list.appendChild(card);
- });
-}
-
-function toggleFavorite(id){
- favorites = favorites.includes(id)? favorites.filter(x=>x!==id) : [...favorites, id];
- renderPlaces(); renderFavorites();
- toast(favorites.includes(id)?'관심공간에 저장했어요.':'관심공간에서 삭제했어요.');
-}
-
-function renderFavorites(){
- const list = document.getElementById('favoriteList'); list.innerHTML='';
- const saved = places.filter(p=>favorites.includes(p.id));
- if(!saved.length){ list.innerHTML='<div class="empty">저장된 관심 공간이 없어요.<br>추천 목록에서 ♡를 눌러보세요.</div>'; return; }
- saved.forEach(p=>{
-  const el = document.createElement('div'); el.className='place-card';
-  el.innerHTML=`<div class="place-art" style="height:60px; font-size:18px;">${p.emoji}</div><div><h3 style="font-size:13px; margin:0;">${p.name}</h3><button class="btn ghost" style="padding:2px 6px; font-size:10px; margin-top:6px;" onclick="openDetail(${p.id})">상세 보기</button></div>`;
-  list.appendChild(el);
- });
-}
-
-function openDetail(id){
- selected = places.find(p=>p.id===id); recent = selected.name;
- document.getElementById('detailArt').textContent = selected.emoji;
- document.getElementById('detailCategory').textContent = selected.cat.toUpperCase();
- document.getElementById('detailName').textContent = selected.name;
- document.getElementById('detailDesc').textContent = selected.desc;
- document.getElementById('detailWalk').textContent = travelTime(selected)+'분';
- document.getElementById('detailStay').textContent = selected.stay+'분';
- document.getElementById('detailBuffer').textContent = buffer(selected)+'분';
- document.getElementById('detailWhy').innerHTML = `<li>${selected.reason}</li>`;
- 
- const btn = document.getElementById('addToCourseBtn');
- if(course.includes(selected.id)){
-   btn.textContent = '✓ 이번 코스에 추가됨';
-   btn.classList.add('added');
- } else {
-   btn.textContent = '+ 이번 코스에 추가하기';
-   btn.classList.remove('added');
- }
- go('detail');
-}
-
-function addToCourse(){
- if(!course.includes(selected.id)){
-   course.push(selected.id);
-   const btn = document.getElementById('addToCourseBtn');
-   btn.textContent = '✓ 이번 코스에 추가됨';
-   btn.classList.add('added');
-   toast('내 코스에 저장되었습니다.');
- } else {
-   toast('이미 내 코스에 담긴 공간입니다.');
- }
-}
-
-function renderCourse(){
- const items = document.getElementById('courseItems'), chosen = places.filter(p=>course.includes(p.id));
- document.getElementById('courseCount').textContent = chosen.length+'곳';
- if(!chosen.length){ items.innerHTML='<div class="empty">아직 추가한 공간이 없어요.</div>'; return; }
- items.innerHTML = chosen.map((p,i)=>`
-   <div class="course-item">
-     <span class="course-num">${i+1}</span>
-     <div style="flex:1"><b>${p.name}</b> <span class="sub">(${p.stay}분 체류)</span></div>
-     <button class="back" onclick="removeCourse(${p.id})">삭제</button>
-   </div>`).join('');
- const total = chosen.reduce((s,p)=>s+travelTime(p)*2+p.stay, 0);
- document.getElementById('courseDuration').textContent = total+'분';
- document.getElementById('courseWait').textContent = waitMinutes+'분';
- document.getElementById('courseBuffer').textContent = (waitMinutes-total)+'분';
-}
-
-function removeCourse(id){ course=course.filter(x=>x!==id); renderCourse(); toast('코스에서 삭제했어요.'); }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(window.toastTimer); window.toastTimer=setTimeout(()=>t.classList.remove('show'),1800); }
-document.getElementById('recentPlace').textContent = '아직 확인한 공간이 없어요.';
-</script>
+<script src="js/app.js" defer></script>
 </body>
 </html>
