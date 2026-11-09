@@ -138,14 +138,9 @@ const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h,
 <p class="sub">같은 코스를 지금 대기시간에 맞춰 다시 쓸 수 있어요.</p>`,`<button class="btn" data-redo="${c.id}">이 코스로 다시 시작</button><button class="btn g" style="margin-top:6px" data-del="${c.id}">삭제</button>`)};
 
 const SC={home,reg,map,confirm,prog,done,my,mc};
-const FLOW=[['home','홈'],['reg','등록'],['map','지도 빌더'],['confirm','코스 확인'],['prog','진행 중'],['done','완료'],['my','마이페이지'],['mc','코스 상세']];
-const NOTE=`<h3>하단 탭 3개 구조</h3><ul><li><b>🏠 홈 (2상태):</b> 웨이팅 전 = 등록 CTA · 최근 웨이팅 · 카테고리 · 인기 코스 / 웨이팅 중 = 복귀 시각 + 실시간 카운트다운 · 오늘의 코스 · 코스 이어가기</li><li><b>⏱ 등록 (중앙 강조):</b> 웨이팅 시간 입력 → 지도 빌더 → 코스 확인. 앱의 핵심 행동이라 가운데 큰 버튼으로</li><li><b>👤 마이페이지:</b> 내 코스 보관(진행/완료/저장), 관심 공간, 코스 상세에서 '다시 시작'</li></ul>
-<h3 style="margin-top:14px">플로우</h3><ul><li><b>메인:</b> 등록 → 지도 빌더 → 코스 확인 → 진행 중 → 완료 → 자동 보관</li><li><b>저장만:</b> 코스 확인에서 시작 없이 마이페이지에 저장</li><li><b>재사용:</b> 보관된 코스 → 다시 시작 → 현재 대기시간으로 코스 확인 화면(초과 시 조정)</li><li><b>진행 중:</b> 단계를 수동으로 넘기지 않고, 시간 흐름에 따라 '지금' 단계가 자동 갱신. 종료 버튼 하나만 둠</li><li><b>이탈:</b> 탭을 옮겨도 상단 타이머와 홈 카드로 복귀 가능</li></ul>
-<h3 style="margin-top:14px">지도 빌더 개선</h3><ul><li>담은 장소와 식당을 잇는 경로선, 방문 순서 번호</li><li>핀 카드에서 ♡ 관심 저장</li><li>목록은 기본 접힘 → 지도 중심, 필요할 때만 펼침</li></ul>`;
 function draw(){
- document.getElementById('flow').innerHTML=FLOW.map(([k,n],j)=>`<button class="step ${S.i==k?'on':''}" data-go="${k}">${j+1}. ${n}</button>`).join('');
  document.getElementById('phone').innerHTML=SC[S.i]();
- document.getElementById('note').innerHTML=NOTE;}
+}
 document.addEventListener('click',e=>{const c=e.target.closest('[data-cid]'),t=c||e.target.closest('button');if(!t||t.disabled)return;const d=t.dataset;
  if(d.go){if(d.go=='reg')S.editId=null;S.i=d.go;if(d.go=='prog'&&!S.active){S.active=true;S.start=Date.now()}}
  else if(d.cid){S.cid=+d.cid;S.i='mc'}
