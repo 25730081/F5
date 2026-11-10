@@ -25,6 +25,12 @@
  * v5 변경 요약
  *  - STEP 1 분리: 1-1 내 현재 위치(지도) → 1-2 대기시간 입력. 복귀 목표 시각이 입력에 맞춰 바로 아래에 표시
  *  - 코스 시간 막대: 선택 순서대로 색 구분(1 빨강, 2 초록 …). 같은 색 번호를 핀 · 담은 장소 체류 시간 줄 왼쪽에 표시
+ *
+ * v6 변경 요약
+ *  - 홈: 히어로 영역을 화면 중앙까지 확장 · 등록 버튼 재디자인 · '최근 웨이팅' 삭제 · 추천 코스를 정사각형 2열로
+ *  - 웨이팅 장소(1-1): 지도 높이 2배 · 빨간 핀 · 안내 문구 삭제
+ *  - 대기시간(1-2): 앞 팀 수 삭제 · 시간 입력 영역 확대
+ *  - STEP 2/3: 검색창을 지도 위로 · 지도 확대 · 카테고리/담기만 남기고 나머지 삭제
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -86,7 +92,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}})();
-const S={i:'home',wait:120,tr:'도보',cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},teams:4,teamDone:false,ttab:'team',fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,favs:[],courses:[],toast:'',top:0};
+const S={i:'home',wait:120,tr:'도보',cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,favs:[],courses:[],toast:'',top:0};
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(TRS.includes(v.tr))S.tr=v.tr;
@@ -95,16 +101,14 @@ const S={i:'home',wait:120,tr:'도보',cats:[],sel:[],stay:{},focus:null,view:'l
  {const l=v.loc,ok=l&&Number.isFinite(l.lat)&&Number.isFinite(l.lng)&&l.lat>33&&l.lat<39&&l.lng>124&&l.lng<132;
   if(ok)S.loc={lat:l.lat,lng:l.lng};else if(AREAS.some(a=>a.n==v.area)){const a=aref(v.area);S.loc={lat:a.lat,lng:a.lng}}
   S.area=areaLabel(S.loc)}
- if(Number.isFinite(v.teams))S.teams=Math.min(99,Math.max(0,v.teams));
- if(v.teamDone)S.teamDone=true;
  if(['list','card'].includes(v.view))S.view=v.view;
- if(v.active&&Number.isFinite(v.start)){S.active=true;S.start=v.start;S.teamDone=true}
+ if(v.active&&Number.isFinite(v.start)){S.active=true;S.start=v.start}
  if(Number.isFinite(v.editId))S.editId=v.editId;
  if(Number.isFinite(v.curId))S.curId=v.curId;
 })();
 const nm=a=>a.map(k=>P[k].n);
 const nmap=m=>Object.fromEntries(Object.entries(m).filter(([k])=>P[k]).map(([k,v])=>[P[k].n,v]));
-function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,tr:S.tr,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,teams:S.teams,teamDone:S.teamDone,view:S.view,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay),favs:nm(S.favs),courses:S.courses.map(c=>({...c,sel:nm(c.sel),stay:nmap(c.stay)}))}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,tr:S.tr,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,view:S.view,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay),favs:nm(S.favs),courses:S.courses.map(c=>({...c,sel:nm(c.sel),stay:nmap(c.stay)}))}))}catch(e){}}
 // 저장된 장소 이름 → 현재 장소 ID (데이터 로드 후 복원)
 function restore(){
  const v=SAVED;if(!v||!Array.isArray(v.courses))return false;
@@ -141,7 +145,6 @@ const elapsed=()=>S.active&&S.start?Math.floor((Date.now()-S.start)/1000):0;
 const remSec=()=>Math.max(0,S.wait*60-elapsed());
 const hms=s=>Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
 const backAt=()=>f2(base()+S.wait);
-const RECENT=[{n:'성수동 맛집 (예시)',a:'성수동'},{n:'건대입구 예시 식당',a:'건대입구'},{n:'서울숲 예시 식당',a:'서울숲'}];
 
 // 안전한 링크/전화 (데이터에 이상한 값이 있어도 javascript: 같은 스킴은 막는다)
 const safeUrl=u=>{u=String(u||'').trim();if(/^https?:\/\//i.test(u))return u;if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(u))return 'https://'+u;return ''};
@@ -234,26 +237,26 @@ const home=()=>frame(S.active?
 <button class="btn" data-go="${S.sel.length?'prog':'map'}">${S.sel.length?'코스 이어가기 →':'지도에서 코스 만들기 →'}</button>
 <button class="btn g mt" data-go="reg">웨이팅 시간 다시 등록</button>`
 :
-`<h2>웨이팅, 이제 0차로.</h2><p class="sub">줄 서는 시간을 내 시간으로 바꿔요.</p>
-<div class="box"><h3>지금 웨이팅 중이세요?</h3><p class="sub gap">남은 시간(또는 앞 팀 수)을 입력하면 갈 수 있는 곳을 지도로 보여드려요.</p><button class="btn" data-go="reg">웨이팅 시간 등록하기 →</button></div>
-<h3 class="sec">최근 웨이팅</h3><div class="row">${RECENT.map((r,i)=>`<button class="chip" data-rest="${i}">↻ ${esc(r.n)}</button>`).join('')}</div>
+`<section class="hero"><div><p class="hero-k">줄 서는 시간을 내 시간으로</p><h2 class="hero-h">웨이팅,<br>이제 0차로.</h2><p class="hero-s">남은 시간을 입력하면 갈 수 있는 곳을 지도로 보여드려요.</p></div>
+<button class="cta" data-go="reg"><span>웨이팅 시간 등록하기</span><span class="cta-a" aria-hidden="true">→</span></button></section>
 <h3 class="sec">이런 곳은 어때요</h3><div class="row">${cats().map(c=>`<button class="chip" data-hcat="${c}">${CE[c]} ${c}</button>`).join('')}</div>
-<h3 class="sec">추천 코스 <span class="sub">(눌러서 바로 만들기)</span></h3>
-<button class="box btnbox" data-pop="서점,공원|90"><b>📚 서점 → 🌳 공원</b><p class="sub">90분 · 도보 · 가까운 곳으로 자동 구성</p></button>
-<button class="box btnbox" data-pop="공원,카페|60"><b>🌳 공원 → ☕ 카페</b><p class="sub">60분 · 도보 · 가까운 곳으로 자동 구성</p></button>`);
+<h3 class="sec">추천 코스</h3>
+<div class="sqs"><button class="sq" data-pop="서점,공원|90"><span class="ic" aria-hidden="true">📚 🌳</span><span><b>서점 → 공원</b><span class="sub">90분 · 도보</span></span></button>
+<button class="sq" data-pop="공원,카페|60"><span class="ic" aria-hidden="true">🌳 ☕</span><span><b>공원 → 카페</b><span class="sub">60분 · 도보</span></span></button></div>`);
 
 /* ---------- 등록 ---------- */
 // 위치 지정 지도(Leaflet). 화면이 다시 그려져도 지도 요소는 유지하고 새 자리에 다시 끼워 넣는다
 const LM={el:null,map:null,mk:null};
+const redPin=()=>L.divIcon({className:'rpin',iconSize:[30,42],iconAnchor:[15,41],html:'<svg viewBox="0 0 30 42" width="30" height="42" aria-hidden="true"><path d="M15 1C7.3 1 1 7.2 1 15c0 10.5 14 26 14 26s14-15.5 14-26C29 7.2 22.7 1 15 1z" fill="#d93025" stroke="#fff" stroke-width="2"/><circle cx="15" cy="15" r="5.5" fill="#fff"/></svg>'});
 function mountLocMap(){
  const ph=document.getElementById('locmap');if(!ph)return;
- if(!window.L){ph.innerHTML='<div class="hint">지도를 불러오지 못했어요.<br>인터넷 연결을 확인하거나 “📍 내 위치”를 눌러주세요.</div>';return}
+ if(!window.L){ph.innerHTML='<div class="hint">지도를 불러오지 못했어요.<br>인터넷 연결을 확인해주세요.</div>';return}
  if(!LM.el){LM.el=document.createElement('div');LM.el.className='lmap'}
  ph.appendChild(LM.el);
  if(!LM.map){
   LM.map=L.map(LM.el).setView([S.loc.lat,S.loc.lng],15);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(LM.map);
-  LM.mk=L.marker([S.loc.lat,S.loc.lng],{draggable:true,title:'내 현재 위치',alt:'내 현재 위치'}).addTo(LM.map);
+  LM.mk=L.marker([S.loc.lat,S.loc.lng],{icon:redPin(),draggable:true,title:'웨이팅 장소',alt:'웨이팅 장소'}).addTo(LM.map);
   LM.map.on('click',ev=>setLoc(ev.latlng.lat,ev.latlng.lng));
   LM.mk.on('dragend',()=>{const q=LM.mk.getLatLng();setLoc(q.lat,q.lng)});
  }
@@ -262,22 +265,13 @@ function mountLocMap(){
  if(recenter){LM.map.setView([S.loc.lat,S.loc.lng],16);recenter=false}
  if(S.active)LM.mk.dragging.disable();else LM.mk.dragging.enable();
 }
-// 대기시간 입력: ① 앞 팀 수 → ② 남은 시간 (탭). 팀 수와 시간은 서로 계산하지 않고 각각 저장
-const regWait=()=>{const open=S.teamDone||S.active,tab=open?S.ttab:'team',on=t=>tab==t;
- const tabs=`<div class="seg" role="tablist" aria-label="대기시간 입력 순서"><button role="tab" aria-selected="${on('team')}" class="${on('team')?'on':''}" data-ttab="team">① 내 앞 팀 수</button><button role="tab" aria-selected="${on('time')}" class="${on('time')?'on':''}" data-ttab="time" ${open?'':'disabled'}>② 남은 시간${open?'':' 🔒'}</button></div>`;
- const team=`<div class="box" role="tabpanel"><p class="sub c">줄 서 있는 내 앞 팀 수</p><div class="stp"><button data-teams="-1" ${S.teams<=0?'disabled':''} aria-label="한 팀 줄이기">−</button><div class="big2 w150" aria-live="polite">${S.teams}팀</div><button data-teams="1" ${S.teams>=99?'disabled':''} aria-label="한 팀 늘리기">+</button></div>
-<div class="row ctr">${[0,2,4,6,8,10].map(n=>`<button class="chip ${S.teams==n?'on':''}" data-teamset="${n}">${n}팀</button>`).join('')}</div>
-<button class="btn mt" data-tnext="1">${open?'남은 시간으로 →':'다음 · 남은 시간 입력 →'}</button></div>`;
- const time=`<div class="box" role="tabpanel"><p class="sub c">식당에서 안내받은 남은 시간</p><div class="stp"><button data-adj="-10" aria-label="10분 줄이기">−</button><div class="big2 w150" aria-live="polite">${fm(S.wait)}</div><button data-adj="10" aria-label="10분 늘리기">+</button></div>
-<div class="row ctr">${[30,60,90,120,180].map(m=>`<button class="chip ${S.wait==m?'on':''}" data-wait="${m}">${fm(m)}</button>`).join('')}</div>
-<p class="sub c">내 앞 ${S.teams}팀 · 팀 수와 남은 시간은 따로 저장돼요</p></div>`;
- return tabs+(on('team')?team:time)};
+// 대기시간 입력: 남은 시간만 입력
+const regWait=()=>`<div class="box timebox" role="group" aria-label="남은 시간 입력"><p class="sub c">식당에서 안내받은 남은 시간</p><div class="stp"><button data-adj="-10" aria-label="10분 줄이기">−</button><div class="big2" aria-live="polite">${fm(S.wait)}</div><button data-adj="10" aria-label="10분 늘리기">+</button></div>
+<div class="row ctr">${[30,60,90,120,180].map(m=>`<button class="chip ${S.wait==m?'on':''}" data-wait="${m}">${fm(m)}</button>`).join('')}</div></div>`;
 const nearSeoul=()=>dkm(S.loc,{lat:37.5665,lng:126.978})<35;
-const reg=()=>frame(`<p class="sub">${S.active?'웨이팅 수정':'STEP 1-1/3 · 위치'}</p><h2>내 현재 위치</h2>
+const reg=()=>frame(`<p class="sub">${S.active?'웨이팅 수정':'STEP 1-1/3 · 위치'}</p><h2>웨이팅 장소</h2>
 ${S.active?'<div class="alert warn">진행 중인 웨이팅이에요. 위치는 진행 중에 바꿀 수 없어요.</div>':''}
-<div class="locmap" id="locmap"></div>
-<div class="tools"><p class="sub">📍 <b class="ink">${esc(S.area)}</b> 기준</p><button class="btn g sm" data-geo="1" ${S.active?'disabled':''}>📍 내 위치</button></div>
-<p class="sub">${S.active?'진행 중에는 위치를 바꿀 수 없어요':'지도를 누르거나 핀을 끌어서 웨이팅 중인 곳을 지정하세요'}</p>
+<div class="locwrap"><div class="locmap" id="locmap"></div><button class="locbtn" data-geo="1" ${S.active?'disabled':''} aria-label="현재 위치로 이동">📍</button></div>
 ${!nearSeoul()?'<p class="sub err mt">서울 밖이에요. 지금은 서울 지역 장소만 있어요. 위치를 서울로 지정해주세요.</p>':''}`,
 `<button class="btn" data-go="wait">다음 · 대기시간 입력 →</button>`);
 
@@ -286,7 +280,7 @@ const waitScr=()=>frame(`<button class="back" data-go="reg">← 위치 다시 �
 ${S.active?'<div class="alert warn">진행 중인 웨이팅이에요. 시간을 바꾸면 남은 시간이 새로 계산돼요.</div>':''}
 ${regWait()}
 <div class="box cur res" aria-live="polite"><p class="sub c">복귀 목표 시각</p><div class="big2">${f2(base()+S.wait)}</div><p class="sub c">지금 ${f2(clock())} + 남은 시간 ${fm(S.wait)}</p><p class="sub c mt">갈 수 있는 곳 <b class="ink">${avail(true)}곳</b> · ${esc(S.area)} 기준</p>${avail(true)?'':'<p class="sub err c mt">대기시간이 짧아 다녀올 수 있는 곳이 없어요. 시간을 늘려보세요.</p>'}</div>`,
-`<button class="btn" data-go="${S.active?(S.sel.length?'prog':'map'):'map'}" ${!S.active&&!S.teamDone?'disabled':''}>${S.active?'적용하고 돌아가기 →':S.teamDone?'지도에서 코스 만들기 →':'앞 팀 수를 먼저 입력해주세요'}</button>`);
+`<button class="btn" data-go="${S.active?(S.sel.length?'prog':'map'):'map'}">${S.active?'적용하고 돌아가기 →':'지도에서 코스 만들기 →'}</button>`);
 
 /* ---------- 지도 ---------- */
 const pos=k=>{const d=46*Math.sqrt(Math.min(1,tt(k)/TMAX())),an=geo(k,S.loc).a*Math.PI/180;return [50+d*Math.cos(an),50+d*Math.sin(an)]};   // 가까운 핀이 겹치지 않게 √ 스케일, 타원으로 펼쳐 지도 전체 사용
@@ -309,13 +303,13 @@ const detail=()=>{const f=S.focus;
 ${!on&&!fit(f)?'<p class="sub err">시간이 부족해요. 담은 장소의 체류시간을 줄이거나 장소를 빼면 담을 수 있어요.</p>':''}
 ${p.addr?`<p class="sub">📍 ${esc(p.addr)}</p>`:''}${info?`<p class="sub">🕒 ${esc(info)}</p>`:''}
 <div class="acts"><a class="lk" href="${esc(kakao(f))}" target="_blank" rel="noopener noreferrer">길찾기</a>${tel?`<a class="lk" href="tel:${tel}">전화</a>`:''}${u?`<a class="lk" href="${esc(u)}" target="_blank" rel="noopener noreferrer">홈페이지</a>`:''}<button class="lk" data-fav="${f}" aria-pressed="${S.favs.includes(f)}">${S.favs.includes(f)?'♥ 저장됨':'♡ 저장'}</button></div></section>`};
-const row=k=>`<div class="lr"><button class="lrn" data-focus="${k}"><span class="e">${P[k].e}</span><span class="tx"><b>${esc(P[k].n)}</b><span class="sub">${P[k].c} · ${tt(k)}분 · ${S.sel.includes(k)?'체류':'기본 체류'} ${stay(k)}분</span></span></button>${addBtn(k)}</div>`;
+const row=k=>`<div class="lr${S.focus===k?' f':''}" data-row="${k}"><button class="lrn" data-focus="${k}"><span class="e">${P[k].e}</span><span class="tx"><b>${esc(P[k].n)}</b></span></button>${addBtn(k)}</div>`;
 const card=k=>`<div class="gc"><button class="lrn v" data-focus="${k}"><div class="ph">${P[k].e}</div><b>${esc(P[k].n)}</b><span class="sub">${P[k].c} · ${tt(k)}분 · ${S.sel.includes(k)?'체류':'기본 체류'} ${stay(k)}분</span></button>${addBtn(k)}</div>`;
 const sheetList=()=>{
  if(!P.length)return `<div class="hint">${loadError?'데이터를 불러오지 못했어요.<br>로컬 서버(또는 GitHub Pages)에서 열어주세요.':'장소를 불러오는 중이에요…'}</div>`;
- const l=list();return l.length?`<div class="${S.view=='card'?'grid':''}">${l.map(S.view=='card'?card:row).join('')}</div>`:'<div class="hint">조건에 맞는 장소가 없어요.<br>검색어나 카테고리를 바꿔보세요.</div>'};
+ const l=list();return l.length?`<div>${l.map(row).join('')}</div>`:'<div class="hint">조건에 맞는 장소가 없어요.<br>검색어나 카테고리를 바꿔보세요.</div>'};
 const cntTxt=()=>`${list().length}곳 표시 · 지금 담을 수 있는 곳 ${avail(false)}곳`;
-function refreshSearch(){const a=document.getElementById('pins');if(!a)return;a.innerHTML=pins();document.getElementById('sheetlist').innerHTML=sheetList();document.getElementById('cnt').textContent=cntTxt()}   // 검색 중엔 입력창을 다시 그리지 않아 한글 입력이 끊기지 않음
+function refreshSearch(){const a=document.getElementById('pins');if(!a)return;a.innerHTML=pins();document.getElementById('sheetlist').innerHTML=sheetList()}   // 검색 중엔 입력창을 다시 그리지 않아 한글 입력이 끊기지 않음
 // 담은 장소의 체류 시간: 숫자로 자유 입력 (5~240분). 입력 중에는 입력창을 다시 그리지 않고 나머지만 갱신
 const ringR=()=>Math.min(46,46*Math.sqrt(Math.min(1,reachMin(rem())/TMAX())));
 const ctTxt=k=>`이동 왕복 ${tt(k)*2}분 · 합계 ${cost(k)}분`;
@@ -331,13 +325,9 @@ function refreshStay(){
  const b=g('cfm'),c=cfm();b.textContent=c.t;b.disabled=c.d;save();
 }
 const map=()=>{const rm=ringR(),c=cfm();
- return frameM(`<p class="sub">STEP 2/3 · 지도에서 담기 · ${esc(S.area)} · ${fm(S.wait)} · ${S.tr}</p>
-<div class="mapx ph"><div class="ring" style="left:50%;top:50%;width:${rm*2}%;height:${rm*2}%"></div><svg class="rt" viewBox="0 0 100 100" preserveAspectRatio="none">${route()}</svg><div class="mp me" style="left:50%;top:50%" aria-label="웨이팅 중인 식당">🍽</div><div id="pins">${pins()}</div></div>
-<p class="sub lg">점선 원 = 다녀올 수 있는 범위 · 흐린 핀 = 시간 부족</p><div id="barw">${bar()}</div>`,
-`<div id="detail">${detail()}</div>${chosen()}
-<input class="in" id="q" type="search" placeholder="장소·지역 검색 (예: 서점, 광진구)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 또는 지역 검색">
-${catRow()}
-<div class="tools"><p class="sub" id="cnt">${cntTxt()}</p><div class="seg sm" role="group" aria-label="보기 방식"><button class="${S.view=='list'?'on':''}" data-view="list" aria-label="목록으로 보기">☰</button><button class="${S.view=='card'?'on':''}" data-view="card" aria-label="카드로 보기">▦</button></div></div>
+ return frameM(`<input class="in" id="q" type="search" placeholder="장소·지역 검색 (예: 서점, 광진구)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 또는 지역 검색">
+<div class="mapx ph"><div class="ring" style="left:50%;top:50%;width:${rm*2}%;height:${rm*2}%"></div><svg class="rt" viewBox="0 0 100 100" preserveAspectRatio="none">${route()}</svg><div class="mp me" style="left:50%;top:50%" aria-label="웨이팅 중인 식당">🍽</div><div id="pins">${pins()}</div></div>`,
+`${catRow()}
 <div id="sheetlist">${sheetList()}</div>`,
  `<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(c.t)}</button>`)};
 
@@ -384,29 +374,24 @@ const SC={home,reg,wait:waitScr,map,confirm:confirmScr,prog,done,my,mc};
 let lastScr=null;
 function draw(){
  const root=document.getElementById('phone'),sc=root.querySelector('.body,.sheet');
- const keep=S.i===lastScr&&sc&&!S.top?sc.scrollTop:0;          // 버튼을 눌러도 스크롤 위치 유지 (기존엔 맨 위로 튐)
+ const keep=S.i===lastScr&&sc&&!S.top?sc.scrollTop:0,jump=S.top;          // 버튼을 눌러도 스크롤 위치 유지 (기존엔 맨 위로 튐)
  root.innerHTML=SC[S.i]();if(S.i==='reg')mountLocMap();
  const n=root.querySelector('.body,.sheet');if(n)n.scrollTop=keep;
+ if(S.i==='map'&&jump&&S.focus!=null){const r=root.querySelector('[data-row="'+S.focus+'"]');if(r)r.scrollIntoView({block:'nearest'})}
  lastScr=S.i;S.top=0;save();
 }
 const clampWait=w=>Math.min(240,Math.max(30,w));
-const regTab=()=>{S.ttab=(S.teamDone||S.active)?'time':'team'};
 const trTotal=t=>S.sel.reduce((a,k)=>a+ttx(k,t,S.loc)*2+sx(k,S.stay),0);
 document.addEventListener('click',e=>{
  const c=e.target.closest('[data-cid]'),t=c||e.target.closest('button');
  if(!t||t.disabled)return;const d=t.dataset,has=k=>d[k]!==undefined;
- if(has('go')){if(d.go=='reg')S.editId=null;if(d.go=='reg'||d.go=='wait')regTab();S.i=(d.go=='prog'&&!S.active)?'home':d.go}
+ if(has('go')){if(d.go=='reg')S.editId=null;S.i=(d.go=='prog'&&!S.active)?'home':d.go}
  else if(has('cid')){S.cid=+d.cid;S.i='mc'}
  else if(has('tog')){const k=+d.tog;if(S.sel.includes(k)){S.sel=S.sel.filter(x=>x!=k);delete S.stay[k]}else S.sel=[...S.sel,k]}
- else if(has('rest')){const r=RECENT[+d.rest],a=aref(r.a);S.rest=r.n;moveTo(a.lat,a.lng,true);regTab();S.i='reg'}
  else if(has('hcat')){S.cats=[d.hcat];S.i='reg'}
- else if(has('pop')){const[cs,w]=d.pop.split('|');S.wait=+w;S.tr='도보';S.teamDone=true;resetBuild();
+ else if(has('pop')){const[cs,w]=d.pop.split('|');S.wait=+w;S.tr='도보';resetBuild();
   cs.split(',').forEach(cat=>{const k=P.map((p,i)=>i).filter(i=>P[i].c==cat&&!S.sel.includes(i)&&inRange(i)&&cost(i)<=rem()-BUF).sort(byDist)[0];if(k!=null)S.sel.push(k)});
   if(S.sel.length)S.i='confirm';else{S.i='map';toast('조건에 맞는 장소를 찾지 못했어요')}}
- else if(has('teams')){S.teams=Math.min(99,Math.max(0,S.teams+ +d.teams))}
- else if(has('teamset')){S.teams=+d.teamset}
- else if(has('tnext')){S.teamDone=true;S.ttab='time'}
- else if(has('ttab')){if(d.ttab=='time'&&!S.teamDone&&!S.active)return;S.ttab=d.ttab}
  else if(has('geo')){
   if(!navigator.geolocation){toast('이 브라우저에서는 위치를 지원하지 않아요');draw();return}
   navigator.geolocation.getCurrentPosition(p=>{moveTo(p.coords.latitude,p.coords.longitude,true);draw()},()=>{toast('위치를 가져오지 못했어요. 지도를 눌러 직접 지정해주세요');draw()},{enableHighAccuracy:true,timeout:8000});
@@ -422,9 +407,9 @@ document.addEventListener('click',e=>{
  else if(has('st')){const[k,m]=d.st.split(':').map(Number);S.stay[k]=Math.min(240,Math.max(5,stay(k)+m))}
  else if(has('mv')){const[j,m]=d.mv.split(':').map(Number),n=j+m;if(n>=0&&n<S.sel.length)[S.sel[j],S.sel[n]]=[S.sel[n],S.sel[j]]}
  else if(has('rm'))S.sel=S.sel.filter(x=>x!=+d.rm);
- else if(has('start')){S.curId=saveCourse();S.active=true;S.teamDone=true;S.start=Date.now();S.i='prog'}
+ else if(has('start')){S.curId=saveCourse();S.active=true;S.start=Date.now();S.i='prog'}
  else if(has('later')){saveCourse();resetBuild();S.seg='c';S.i='my';toast('내 코스에 저장했어요')}
- else if(has('finish')){S.fin={n:S.sel.length,use:Math.min(total(),S.wait),rest:Math.max(rem(),0),names:nm(S.sel),cid:S.curId,wait:S.wait,review:''};S.active=false;S.start=null;S.teamDone=false;S.ttab='team';resetBuild();S.i='done'}
+ else if(has('finish')){S.fin={n:S.sel.length,use:Math.min(total(),S.wait),rest:Math.max(rem(),0),names:nm(S.sel),cid:S.curId,wait:S.wait,review:''};S.active=false;S.start=null;resetBuild();S.i='done'}
  else if(has('review')){const v=(document.getElementById('rv').value||'').trim().slice(0,60),cr=S.courses.find(x=>x.id==(S.fin&&S.fin.cid));if(S.fin)S.fin.review=v;if(cr)cr.review=v;toast(v?'후기를 저장했어요':'후기를 비웠어요')}
  else if(has('share')){const txt=`0차 코스 · ${(S.fin&&S.fin.names||[]).join(' → ')} (대기 ${fm(S.fin?S.fin.wait:0)})`;
   if(navigator.share)navigator.share({text:txt}).catch(()=>{});
@@ -432,7 +417,7 @@ document.addEventListener('click',e=>{
   else toast('이 브라우저에서는 공유를 지원하지 않아요')}
  else if(has('seg'))S.seg=d.seg;
  else if(has('redo')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}
-  const c=S.courses.find(x=>x.id==+d.redo);S.sel=[...c.sel];S.stay={...c.stay};S.tr=c.tr;S.wait=c.wait;S.teamDone=true;{const l=locOf(c);S.loc={lat:l.lat,lng:l.lng};S.area=c.area||areaLabel(S.loc);GC.clear();recenter=true}S.editId=c.id;S.i='confirm'}
+  const c=S.courses.find(x=>x.id==+d.redo);S.sel=[...c.sel];S.stay={...c.stay};S.tr=c.tr;S.wait=c.wait;{const l=locOf(c);S.loc={lat:l.lat,lng:l.lng};S.area=c.area||areaLabel(S.loc);GC.clear();recenter=true}S.editId=c.id;S.i='confirm'}
  else if(has('del')){if(!confirm('이 코스를 삭제할까요?'))return;S.courses=S.courses.filter(x=>x.id!=+d.del);S.i='my'}
  else return;
  draw()});
