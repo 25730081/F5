@@ -155,3 +155,12 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .dual .stp{margin:6px 0 0;gap:12px}
 .tools .sub{flex:1;min-width:0}
 .stin{width:84px;flex:none;text-align:center;padding:0 6px;margin:0!important}
+
+/* ===== v4: 대기시간 탭 · 이동 수단 선택(STEP 3) ===== */
+.seg button[disabled]{background:var(--fill);color:var(--mut);cursor:not-allowed}
+.seg button[role=tab]{font-size:14px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mode{min-height:56px;border:1px solid var(--line);background:var(--card);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;font-weight:700}
+.mode b{font-size:15px}
+.mode.on{background:var(--acc);color:var(--acct);border-color:var(--acc)}
+.mode.x:not(.on){border-color:var(--err);color:var(--err)}   /* 이 수단이면 대기시간 초과 */
