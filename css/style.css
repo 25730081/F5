@@ -144,3 +144,14 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .rvr{display:flex;gap:8px;align-items:center}
 .rvr .in{flex:1}
 @media (prefers-reduced-motion:no-preference){.toast{animation:up .2s ease-out}@keyframes up{from{transform:translateY(-8px);opacity:0}}}
+
+/* ===== v3: 위치 지도 · 대기시간 동시 입력 · 체류 시간 입력 ===== */
+.locmap{position:relative;isolation:isolate;height:220px;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:6px 0 4px;background:var(--fill)}   /* isolate: 지도 레이어가 하단 메뉴/토스트 위로 올라오지 않게 */
+.locmap .hint{margin:0;height:100%;display:flex;align-items:center;justify-content:center;border:0}
+.lmap{width:100%;height:100%}
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+.dual .box{margin:0;padding:12px 8px;text-align:center}
+.dual .big2{font-size:26px;margin:4px 0}
+.dual .stp{margin:6px 0 0;gap:12px}
+.tools .sub{flex:1;min-width:0}
+.stin{width:84px;flex:none;text-align:center;padding:0 6px;margin:0!important}
