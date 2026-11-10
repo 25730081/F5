@@ -171,3 +171,33 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .dot.sm{width:22px;height:22px;font-size:12px;vertical-align:middle}
 .lr.cl{border-left:4px solid var(--line);padding-left:8px}   /* 막대와 같은 색 (인라인으로 지정) */
 .mp.on{text-shadow:none}
+
+/* ===== v6: 홈 히어로 · 정사각 추천 코스 · 위치 지도 확대 · 시간 입력 확대 · STEP 2 지도 ===== */
+.hero{min-height:calc(50dvh - 68px);display:flex;flex-direction:column;justify-content:space-between;gap:24px;background:var(--acc);color:var(--acct);border-radius:20px;padding:24px 20px 20px}
+.hero-k{font-size:13px;font-weight:700;margin:0 0 12px;opacity:.85}
+.hero-h{font-size:36px;line-height:1.2;letter-spacing:-1.2px;font-weight:900;margin:0 0 12px}
+.hero-s{font-size:14px;margin:0;opacity:.85}
+.cta{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:64px;border:0;border-radius:16px;background:var(--card);color:var(--ink);padding:0 14px 0 20px;font-size:18px;font-weight:900;letter-spacing:-.3px;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.cta-a{flex:none;width:40px;height:40px;border-radius:50%;background:var(--ok);color:var(--acct);display:grid;place-items:center;font-size:20px;font-weight:800}
+.sqs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sq{aspect-ratio:1;display:flex;flex-direction:column;justify-content:space-between;text-align:left;border:1px solid var(--line);border-radius:16px;background:var(--card);padding:14px}
+.sq .ic{font-size:30px;line-height:1.2}
+.sq b{display:block;font-size:16px;letter-spacing:-.3px}
+.sq .sub{display:block;margin-top:4px}
+
+.locwrap{position:relative}
+.locwrap .locmap{height:min(440px,60dvh);margin:8px 0 4px}
+.locbtn{position:absolute;top:18px;right:10px;z-index:5;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.locbtn[disabled]{background:var(--fill);color:var(--mut);cursor:not-allowed}
+.rpin{background:none;border:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+
+.timebox{padding:32px 16px 28px;margin:14px 0}
+.timebox .stp{margin:32px 0;gap:12px}
+.timebox .stp button{flex:none;width:56px;height:56px;font-size:28px}
+.timebox .big2{flex:1;min-width:0;font-size:36px}
+.timebox .row{gap:10px;margin:0}
+.timebox .chip{min-height:48px;padding:0 18px;font-size:15px}
+
+.mapx{aspect-ratio:auto;max-height:none;height:clamp(240px,42dvh,440px)}
+.mtop .in{margin:0}
+.lr.f{background:var(--fill)}
