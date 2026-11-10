@@ -1,7 +1,7 @@
 /* ★ 카카오지도 키: 카카오 개발자 콘솔 > 내 애플리케이션 > 앱 > 플랫폼 키 > JavaScript 키를 아래 따옴표 안에 붙여넣으세요.
  *   - 콘솔의 'JavaScript SDK 도메인'에 사용하는 주소를 등록해야 지도가 뜹니다. 예) http://localhost:8765 , https://25730081.github.io
  *   - 비워두거나 로드에 실패하면 기존 지도(1-1은 Leaflet, STEP 2는 개략도)로 자동 대체됩니다. */
-window.CONFIG={KAKAO_JS_KEY:''};
+window.CONFIG={KAKAO_JS_KEY:'e628f9c178c877a0c48f037ca8e880c9'};
 
 /* ===== 0차 app.js (v2 · UI/UX 피드백 반영판) =====
  * 장소 데이터는 data/*.json 에서 불러옵니다.
