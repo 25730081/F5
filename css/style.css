@@ -201,3 +201,12 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .mapx{aspect-ratio:auto;max-height:none;height:clamp(240px,42dvh,440px)}
 .mtop .in{margin:0}
 .lr.f{background:var(--fill)}
+
+/* ===== v7: 카카오지도 ===== */
+.mapx.real{display:block;isolation:isolate;background:var(--fill)}   /* isolate: 지도 레이어가 하단 메뉴/토스트 위로 올라오지 않게 */
+.kmap{width:100%;height:100%}
+.kmap .mp{position:static;transform:none;color:#111;background:#fff;border-color:#111}
+.kmap .mp.on{border-width:2px}
+.kmap .kpin{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));pointer-events:none;line-height:0}
+.kmap .mp.f::after{color:#fff;background:#111}
+.lmap{isolation:isolate}
