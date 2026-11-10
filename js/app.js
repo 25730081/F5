@@ -1,3 +1,8 @@
+/* ★ 카카오지도 키: 카카오 개발자 콘솔 > 내 애플리케이션 > 앱 > 플랫폼 키 > JavaScript 키를 아래 따옴표 안에 붙여넣으세요.
+ *   - 콘솔의 'JavaScript SDK 도메인'에 사용하는 주소를 등록해야 지도가 뜹니다. 예) http://localhost:8765 , https://25730081.github.io
+ *   - 비워두거나 로드에 실패하면 기존 지도(1-1은 Leaflet, STEP 2는 개략도)로 자동 대체됩니다. */
+window.CONFIG={KAKAO_JS_KEY:''};
+
 /* ===== 0차 app.js (v2 · UI/UX 피드백 반영판) =====
  * 장소 데이터는 data/*.json 에서 불러옵니다.
  *   - 서점/도서관/공원: 서울 열린데이터 기반 실제 데이터
@@ -16,6 +21,10 @@
  *  - 웨이팅 등록: 식당 입력·지역 선택 삭제 → 지도(Leaflet)에서 현재 위치 지정(클릭/핀 드래그/내 위치 버튼)
  *  - 웨이팅 등록: 남은 시간 + 내 앞 팀 수를 동시에 입력 (팀 수 변경 시 남은 시간 자동 계산, 시간은 직접 수정 가능)
  *  - STEP 2/3: 담은 장소의 체류 시간을 숫자로 자유 입력, '체류 짧은 순' 정렬 삭제
+ *
+ * v7 변경 요약
+ *  - 카카오지도 연동: 1-1 위치 지정 지도 + STEP 2 '장소·지역 검색' 가운데 지도 (js/config.js 에 JavaScript 키)
+ *  - 키가 없거나 로드 실패 시: 1-1은 Leaflet(OSM), STEP 2는 개략도로 자동 대체
  *
  * v4 변경 요약
  *  - STEP 1: 팀 수/남은 시간 자동 환산 제거 → 각각 따로 저장. 앞 팀 수를 먼저 입력(①)해야 남은 시간(②) 탭이 열림
@@ -149,7 +158,7 @@ const backAt=()=>f2(base()+S.wait);
 // 안전한 링크/전화 (데이터에 이상한 값이 있어도 javascript: 같은 스킴은 막는다)
 const safeUrl=u=>{u=String(u||'').trim();if(/^https?:\/\//i.test(u))return u;if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(u))return 'https://'+u;return ''};
 const safeTel=t=>String(t||'').replace(/[^\d+\-]/g,'').slice(0,20);
-const kakao=k=>`https://map.kakao.com/link/to/${encodeURIComponent(P[k].n)},${P[k].lat},${P[k].lng}`;
+const kakaoTo=k=>`https://map.kakao.com/link/to/${encodeURIComponent(P[k].n)},${P[k].lat},${P[k].lng}`;
 
 // 도서관 운영 정보: 실제 휴관일/운영시간 데이터 사용
 const DAYS=['일','월','화','수','목','금','토'];
@@ -250,6 +259,8 @@ const LM={el:null,map:null,mk:null};
 const redPin=()=>L.divIcon({className:'rpin',iconSize:[30,42],iconAnchor:[15,41],html:'<svg viewBox="0 0 30 42" width="30" height="42" aria-hidden="true"><path d="M15 1C7.3 1 1 7.2 1 15c0 10.5 14 26 14 26s14-15.5 14-26C29 7.2 22.7 1 15 1z" fill="#d93025" stroke="#fff" stroke-width="2"/><circle cx="15" cy="15" r="5.5" fill="#fff"/></svg>'});
 function mountLocMap(){
  const ph=document.getElementById('locmap');if(!ph)return;
+ if(kmState=='loading'){ph.innerHTML='<div class="hint">지도를 불러오는 중이에요…</div>';return}
+ if(mapOn()){mountLocKakao(ph);return}
  if(!window.L){ph.innerHTML='<div class="hint">지도를 불러오지 못했어요.<br>인터넷 연결을 확인해주세요.</div>';return}
  if(!LM.el){LM.el=document.createElement('div');LM.el.className='lmap'}
  ph.appendChild(LM.el);
@@ -302,14 +313,14 @@ const detail=()=>{const f=S.focus;
  return `<section class="box cur dt"><div class="dt1"><div class="ph">${p.e}</div><div class="grow"><h3>${esc(p.n)}${p.sample?' <span class="badge">샘플</span>':''}</h3><p class="sub">${p.c} · ${S.tr} ${tt(f)}분</p><p class="sub"><b class="ink">총 ${cost(f)}분</b> (왕복 ${tt(f)*2} + 체류 ${stay(f)})</p></div>${addBtn(f)}</div>
 ${!on&&!fit(f)?'<p class="sub err">시간이 부족해요. 담은 장소의 체류시간을 줄이거나 장소를 빼면 담을 수 있어요.</p>':''}
 ${p.addr?`<p class="sub">📍 ${esc(p.addr)}</p>`:''}${info?`<p class="sub">🕒 ${esc(info)}</p>`:''}
-<div class="acts"><a class="lk" href="${esc(kakao(f))}" target="_blank" rel="noopener noreferrer">길찾기</a>${tel?`<a class="lk" href="tel:${tel}">전화</a>`:''}${u?`<a class="lk" href="${esc(u)}" target="_blank" rel="noopener noreferrer">홈페이지</a>`:''}<button class="lk" data-fav="${f}" aria-pressed="${S.favs.includes(f)}">${S.favs.includes(f)?'♥ 저장됨':'♡ 저장'}</button></div></section>`};
+<div class="acts"><a class="lk" href="${esc(kakaoTo(f))}" target="_blank" rel="noopener noreferrer">길찾기</a>${tel?`<a class="lk" href="tel:${tel}">전화</a>`:''}${u?`<a class="lk" href="${esc(u)}" target="_blank" rel="noopener noreferrer">홈페이지</a>`:''}<button class="lk" data-fav="${f}" aria-pressed="${S.favs.includes(f)}">${S.favs.includes(f)?'♥ 저장됨':'♡ 저장'}</button></div></section>`};
 const row=k=>`<div class="lr${S.focus===k?' f':''}" data-row="${k}"><button class="lrn" data-focus="${k}"><span class="e">${P[k].e}</span><span class="tx"><b>${esc(P[k].n)}</b></span></button>${addBtn(k)}</div>`;
 const card=k=>`<div class="gc"><button class="lrn v" data-focus="${k}"><div class="ph">${P[k].e}</div><b>${esc(P[k].n)}</b><span class="sub">${P[k].c} · ${tt(k)}분 · ${S.sel.includes(k)?'체류':'기본 체류'} ${stay(k)}분</span></button>${addBtn(k)}</div>`;
 const sheetList=()=>{
  if(!P.length)return `<div class="hint">${loadError?'데이터를 불러오지 못했어요.<br>로컬 서버(또는 GitHub Pages)에서 열어주세요.':'장소를 불러오는 중이에요…'}</div>`;
  const l=list();return l.length?`<div>${l.map(row).join('')}</div>`:'<div class="hint">조건에 맞는 장소가 없어요.<br>검색어나 카테고리를 바꿔보세요.</div>'};
 const cntTxt=()=>`${list().length}곳 표시 · 지금 담을 수 있는 곳 ${avail(false)}곳`;
-function refreshSearch(){const a=document.getElementById('pins');if(!a)return;a.innerHTML=pins();document.getElementById('sheetlist').innerHTML=sheetList()}   // 검색 중엔 입력창을 다시 그리지 않아 한글 입력이 끊기지 않음
+function refreshSearch(){const sl=document.getElementById('sheetlist');if(!sl)return;const a=document.getElementById('pins');if(mapOn())kmRefresh();else if(a)a.innerHTML=pins();sl.innerHTML=sheetList()}   // 검색 중엔 입력창을 다시 그리지 않아 한글 입력이 끊기지 않음
 // 담은 장소의 체류 시간: 숫자로 자유 입력 (5~240분). 입력 중에는 입력창을 다시 그리지 않고 나머지만 갱신
 const ringR=()=>Math.min(46,46*Math.sqrt(Math.min(1,reachMin(rem())/TMAX())));
 const ctTxt=k=>`이동 왕복 ${tt(k)*2}분 · 합계 ${cost(k)}분`;
@@ -318,7 +329,7 @@ const cfm=()=>!S.sel.length?{t:'장소를 1곳 이상 담아주세요',d:true}:r
 const chosen=()=>!S.sel.length?'':`<section class="box dt" id="chosen"><h3>담은 장소 · 체류 시간</h3><p class="sub">머무를 시간을 직접 입력하세요 (5~240분)</p>${S.sel.map((k,j)=>`<div class="lr cl" style="border-left-color:${colr(j)}"><span class="dot" style="background:${colr(j)}" aria-label="${j+1}번">${j+1}</span><div class="lrn"><span class="e">${P[k].e}</span><span class="tx"><b>${esc(P[k].n)}</b><span class="sub" data-ct="${k}">${ctTxt(k)}</span></span></div><label class="st"><input class="in stin" type="number" inputmode="numeric" min="5" max="240" step="5" value="${stay(k)}" data-stin="${k}" aria-label="${esc(P[k].n)} 체류 시간(분)"><span>분</span></label></div>`).join('')}<p class="sub err mt" id="stwarn" ${rem()<0?'':'hidden'}>${rem()<0?overTxt():''}</p></section>`;
 function refreshStay(){
  const g=id=>document.getElementById(id);if(!g('barw'))return;
- g('barw').innerHTML=bar();g('pins').innerHTML=pins();g('sheetlist').innerHTML=sheetList();g('cnt').textContent=cntTxt();g('detail').innerHTML=detail();
+ g('barw').innerHTML=bar();if(mapOn())kmRefresh();else if(g('pins'))g('pins').innerHTML=pins();g('sheetlist').innerHTML=sheetList();g('cnt').textContent=cntTxt();g('detail').innerHTML=detail();
  const w=g('stwarn');if(w){w.hidden=rem()>=0;w.textContent=rem()<0?overTxt():''}
  document.querySelectorAll('[data-ct]').forEach(el=>el.textContent=ctTxt(+el.dataset.ct));
  const rg=document.querySelector('.ring');if(rg){const rm=ringR();rg.style.width=rg.style.height=rm*2+'%'}
@@ -326,7 +337,7 @@ function refreshStay(){
 }
 const map=()=>{const rm=ringR(),c=cfm();
  return frameM(`<input class="in" id="q" type="search" placeholder="장소·지역 검색 (예: 서점, 광진구)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 또는 지역 검색">
-<div class="mapx ph"><div class="ring" style="left:50%;top:50%;width:${rm*2}%;height:${rm*2}%"></div><svg class="rt" viewBox="0 0 100 100" preserveAspectRatio="none">${route()}</svg><div class="mp me" style="left:50%;top:50%" aria-label="웨이팅 중인 식당">🍽</div><div id="pins">${pins()}</div></div>`,
+${mapOn()?'<div class="mapx real" id="kslot"></div>':kmState=='loading'?'<div class="mapx ph"><div class="hint">지도를 불러오는 중이에요…</div></div>':`<div class="mapx ph"><div class="ring" style="left:50%;top:50%;width:${rm*2}%;height:${rm*2}%"></div><svg class="rt" viewBox="0 0 100 100" preserveAspectRatio="none">${route()}</svg><div class="mp me" style="left:50%;top:50%" aria-label="웨이팅 중인 식당">🍽</div><div id="pins">${pins()}</div></div>`}${kmState=='fail'?'<p class="sub err mt">카카오지도를 불러오지 못해 간단 지도로 표시해요</p>':''}`,
 `${catRow()}
 <div id="sheetlist">${sheetList()}</div>`,
  `<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(c.t)}</button>`)};
@@ -347,7 +358,7 @@ const prog=()=>{
  const [h]=tline(S.sel,S.stay,S.tr,S.loc),b=banner(),sp=stagePlace();
  return frame(`<p class="sub">진행 중 · ${esc(S.rest)} · ${S.area}</p><div class="big" data-cd="hms">${hms(remSec())}</div><p class="sub c">식당 복귀까지 · ${backAt()} 복귀</p>
 <div class="bn ${b.c}" data-cd="banner" role="status">${esc(b.t)}</div>
-<div class="box cur"><p class="sub">지금</p><h3 data-cd="stage">${stageTxt()}</h3><a class="lk" data-cd="stagelink" target="_blank" rel="noopener noreferrer" ${sp==null?'hidden':`href="${esc(kakao(sp))}"`}>길찾기</a></div>
+<div class="box cur"><p class="sub">지금</p><h3 data-cd="stage">${stageTxt()}</h3><a class="lk" data-cd="stagelink" target="_blank" rel="noopener noreferrer" ${sp==null?'hidden':`href="${esc(kakaoTo(sp))}"`}>길찾기</a></div>
 <div class="row ctr"><button class="chip" data-live="-10">대기 −10분</button><button class="chip" data-live="10">대기 +10분</button></div><p class="sub c">줄이 빨리 줄거나 늘어나면 눌러서 맞춰주세요</p>${h}`,
  `<button class="btn" data-finish="1">식당 도착 · 코스 종료</button><button class="btn g mt" data-go="home">홈에서 계속 보기</button>`)};
 const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0,review:''};
@@ -369,13 +380,80 @@ const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]
 <p class="sub">같은 코스를 지금 대기시간에 맞춰 다시 쓸 수 있어요.</p>`,
  `<button class="btn" data-redo="${c.id}">이 코스로 다시 시작</button><button class="btn g mt" data-del="${c.id}">삭제</button>`)};
 
+/* ---------- 카카오지도 (Kakao Maps JS SDK) ----------
+ * js/config.js 의 KAKAO_JS_KEY 로 SDK를 불러온다. 키가 없거나 로드에 실패하면(kmState off/fail) 기존 지도로 대체.
+ * draw()가 화면 전체를 다시 그리므로 지도 요소는 한 번만 만들고, 매번 새 자리(#locmap, #kslot)에 다시 끼워 넣는다. */
+const KAKAO_KEY=(window.CONFIG&&window.CONFIG.KAKAO_JS_KEY||'').trim();
+let kmState=KAKAO_KEY?'loading':'off';       // off | loading | ready | fail
+const mapOn=()=>kmState=='ready';
+const PIN_SVG='<svg viewBox="0 0 30 42" width="30" height="42" aria-hidden="true"><path d="M15 1C7.3 1 1 7.2 1 15c0 10.5 14 26 14 26s14-15.5 14-26C29 7.2 22.7 1 15 1z" fill="#d93025" stroke="#fff" stroke-width="2"/><circle cx="15" cy="15" r="5.5" fill="#fff"/></svg>';
+function loadKakao(){
+ if(!KAKAO_KEY)return;
+ const el=document.createElement('script');
+ el.src='https://dapi.kakao.com/v2/maps/sdk.js?appkey='+encodeURIComponent(KAKAO_KEY)+'&autoload=false';
+ el.onload=()=>{try{kakao.maps.load(()=>{kmState='ready';draw()})}catch(e){console.error(e);kmState='fail';draw()}};
+ el.onerror=()=>{console.error('Kakao SDK 로드 실패: JavaScript 키와 JavaScript SDK 도메인 등록을 확인하세요');kmState='fail';draw()};
+ document.head.appendChild(el);
+}
+// (1) 위치 지정 지도: 클릭 / 핀 드래그 / 📍버튼(moveTo)으로 웨이팅 장소 지정
+const KL={el:null,map:null,mk:null};
+function mountLocKakao(ph){
+ const K=kakao.maps,c=new K.LatLng(S.loc.lat,S.loc.lng);
+ if(!KL.el){KL.el=document.createElement('div');KL.el.className='lmap'}
+ ph.appendChild(KL.el);
+ if(!KL.map){
+  KL.map=new K.Map(KL.el,{center:c,level:4});
+  KL.mk=new K.Marker({position:c,draggable:true,title:'웨이팅 장소',image:new K.MarkerImage('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(PIN_SVG),new K.Size(30,42),{offset:new K.Point(15,41)})});
+  KL.mk.setMap(KL.map);
+  K.event.addListener(KL.map,'click',ev=>setLoc(ev.latLng.getLat(),ev.latLng.getLng()));
+  K.event.addListener(KL.mk,'dragend',()=>{const q=KL.mk.getPosition();setLoc(q.getLat(),q.getLng())});
+ }
+ KL.map.relayout();KL.mk.setPosition(c);
+ if(recenter){KL.map.setCenter(c);KL.map.setLevel(3);recenter=false}
+ KL.mk.setDraggable(!S.active);
+}
+// (2) STEP 2 장소 지도: 장소 핀 · 다녀올 수 있는 범위 원 · 코스 경로
+const KP={el:null,map:null,ov:[],circle:null,line:null,key:'',focus:null};
+const minToM=m=>m/(TRF[S.tr]||TRF.도보)[0]*61.5;   // 이동시간(분) → 직선거리(m): geo()의 환산(직선×1.3÷4.8km/h)과 이동수단 배율을 역산
+function kmAttach(){
+ const slot=document.getElementById('kslot');if(!slot||!mapOn())return;
+ if(!KP.el){KP.el=document.createElement('div');KP.el.className='kmap'}
+ slot.appendChild(KP.el);
+ if(!KP.map)KP.map=new kakao.maps.Map(KP.el,{center:new kakao.maps.LatLng(S.loc.lat,S.loc.lng),level:5});
+ KP.map.relayout();kmRefresh();
+}
+function kmRefresh(){
+ if(!KP.map)return;
+ const K=kakao.maps,ref=new K.LatLng(S.loc.lat,S.loc.lng);
+ KP.ov.forEach(o=>o.setMap(null));KP.ov=[];if(KP.circle)KP.circle.setMap(null);if(KP.line)KP.line.setMap(null);KP.line=null;
+ const add=(el,ll,z,ya)=>{const o=new K.CustomOverlay({position:ll,content:el,xAnchor:.5,yAnchor:ya??.5,zIndex:z});o.setMap(KP.map);KP.ov.push(o)};
+ const me=document.createElement('div');me.className='kpin';me.innerHTML=PIN_SVG;me.setAttribute('role','img');me.setAttribute('aria-label','웨이팅 장소');add(me,ref,1,1);
+ list().forEach(k=>{
+  const p=P[k],j=S.sel.indexOf(k),on=j>=0,off=!on&&!fit(k),b=document.createElement('button');
+  b.type='button';b.className='mp'+(on?' on':'')+(off?' off':'')+(S.focus===k?' f':'');b.dataset.n=p.n;
+  if(on){b.style.background=colr(j);b.style.borderColor=colr(j);b.style.color='#fff'}
+  b.setAttribute('aria-label',p.c+' '+p.n+' '+tt(k)+'분'+(on?' 담음':off?' 시간 부족':''));
+  b.textContent=(on?j+1+' ':'')+p.e;
+  b.addEventListener('click',ev=>{ev.stopPropagation();S.focus=k;S.top=1;draw()});
+  add(b,new K.LatLng(p.lat,p.lng),S.focus===k?4:on?3:2);
+ });
+ KP.circle=new K.Circle({center:ref,radius:Math.max(150,minToM(reachMin(rem()))),strokeWeight:2,strokeColor:'#111111',strokeOpacity:.8,strokeStyle:'dashed',fillColor:'#111111',fillOpacity:.04});
+ KP.circle.setMap(KP.map);
+ if(S.sel.length){KP.line=new K.Polyline({path:[ref,...S.sel.map(k=>new K.LatLng(P[k].lat,P[k].lng)),ref],strokeWeight:3,strokeColor:'#111111',strokeOpacity:.7,strokeStyle:'shortdash'});KP.line.setMap(KP.map)}
+ // 위치/대기시간/이동수단이 바뀔 때만 범위에 맞춰 화면 조정 (사용자가 옮겨둔 지도 위치는 유지)
+ const key=S.loc.lat.toFixed(4)+','+S.loc.lng.toFixed(4)+'|'+S.wait+'|'+S.tr;
+ if(key!=KP.key){KP.key=key;KP.map.setBounds(KP.circle.getBounds())}
+ else if(S.focus!=null&&S.focus!==KP.focus&&P[S.focus])KP.map.panTo(new K.LatLng(P[S.focus].lat,P[S.focus].lng));
+ KP.focus=S.focus;
+}
+
 /* ---------- 렌더 ---------- */
 const SC={home,reg,wait:waitScr,map,confirm:confirmScr,prog,done,my,mc};
 let lastScr=null;
 function draw(){
  const root=document.getElementById('phone'),sc=root.querySelector('.body,.sheet');
  const keep=S.i===lastScr&&sc&&!S.top?sc.scrollTop:0,jump=S.top;          // 버튼을 눌러도 스크롤 위치 유지 (기존엔 맨 위로 튐)
- root.innerHTML=SC[S.i]();if(S.i==='reg')mountLocMap();
+ root.innerHTML=SC[S.i]();if(S.i==='reg')mountLocMap();if(S.i==='map')kmAttach();
  const n=root.querySelector('.body,.sheet');if(n)n.scrollTop=keep;
  if(S.i==='map'&&jump&&S.focus!=null){const r=root.querySelector('[data-row="'+S.focus+'"]');if(r)r.scrollIntoView({block:'nearest'})}
  lastScr=S.i;S.top=0;save();
@@ -432,9 +510,10 @@ document.addEventListener('change',e=>{   // 입력을 마치면 범위(5~240)�
 });
 draw();
 loadPlaces();
+loadKakao();
 setInterval(()=>{if(!S.active)return;document.querySelectorAll('[data-cd]').forEach(el=>{const k=el.dataset.cd;
  if(k=='hms')el.textContent=hms(remSec());
  else if(k=='pill')el.textContent='⏱ '+hms(remSec());
  else if(k=='stage')el.textContent=stageTxt();
  else if(k=='banner'){const b=banner();el.className='bn '+b.c;el.textContent=b.t}
- else if(k=='stagelink'){const sp=stagePlace();if(sp==null)el.hidden=true;else{el.hidden=false;el.href=kakao(sp)}}})},1000);
+ else if(k=='stagelink'){const sp=stagePlace();if(sp==null)el.hidden=true;else{el.hidden=false;el.href=kakaoTo(sp)}}})},1000);
