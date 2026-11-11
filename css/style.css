@@ -252,3 +252,18 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .tl .tx2>b{font-size:15px}
 .tl>div::before{left:-23px}
 .tl .m .tx2>b{color:var(--mut)}
+
+/* v7: 필터 줄 · 홈(진행 중) 원형 · 마이페이지 코스 */
+.flt{display:flex;align-items:center;gap:6px;margin:0 0 8px}
+.flt .chip{min-height:34px;padding:0 12px;font-size:13px;flex:none;white-space:nowrap}
+.srt{margin-left:auto;min-height:34px;max-width:42%;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);font-size:13px;font-weight:700;padding:0 8px}
+.catp{margin:0 0 8px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--fill)}
+.catp .row{margin:0}
+.rb.flat{border:0;padding:0;margin:8px 0 0}
+.rbs>.rbn{flex-direction:column;align-items:flex-start;gap:2px}
+.rbs .rbn b{font-size:16px;line-height:1.35}
+.rbp{margin:0;word-break:keep-all}
+.cs{padding:14px 16px}
+.cs-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.cs-h b{font-size:17px}
+.cs-r{margin:0 0 6px;font-size:15px;font-weight:700;line-height:1.4;word-break:keep-all}
