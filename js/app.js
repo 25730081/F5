@@ -161,7 +161,7 @@ const backAt=()=>f2(base()+S.wait);
 // 안전한 링크/전화 (데이터에 이상한 값이 있어도 javascript: 같은 스킴은 막는다)
 const safeUrl=u=>{u=String(u||'').trim();if(/^https?:\/\//i.test(u))return u;if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(u))return 'https://'+u;return ''};
 const safeTel=t=>String(t||'').replace(/[^\d+\-]/g,'').slice(0,20);
-const kakao=k=>`https://map.kakao.com/link/to/${encodeURIComponent(P[k].n)},${P[k].lat},${P[k].lng}`;
+const kakaoLink=k=>`https://map.kakao.com/link/to/${encodeURIComponent(P[k].n)},${P[k].lat},${P[k].lng}`;
 
 // 도서관 운영 정보: 실제 휴관일/운영시간 데이터 사용
 const DAYS=['일','월','화','수','목','금','토'];
@@ -283,25 +283,33 @@ const home=()=>frame(S.active?
 <button class="sq" data-pop="공원,카페|60"><span class="ic" aria-hidden="true">🌳 ☕</span><span><b>공원 → 카페</b><span class="sub">60분 · 도보</span></span></button></div>`);
 
 /* ---------- 등록 ---------- */
-// 위치 지정 지도(Leaflet). 화면이 다시 그려져도 지도 요소는 유지하고 새 자리에 다시 끼워 넣는다
+/* ---------- 카카오지도 공통 ---------- */
+const kOK=()=>!!(window.kakao&&kakao.maps);
+let kLoaded=false;
+function kLoad(cb){if(!kOK())return false;if(kLoaded){cb();return true}kakao.maps.load(()=>{kLoaded=true;cb()});return true}   // autoload=false 라서 load() 안에서 지도를 만든다
+const kLL=(lat,lng)=>new kakao.maps.LatLng(lat,lng);
+const kFail=ph=>{ph.innerHTML='<div class="hint">지도를 불러오지 못했어요.<br>인터넷 연결과 카카오 앱키·도메인 등록을 확인해주세요.</div>'};
+
+// 위치 지정 지도(카카오). 화면이 다시 그려져도 지도 요소는 유지하고 새 자리에 다시 끼워 넣는다
 const LM={el:null,map:null,mk:null};
-const redPin=()=>L.divIcon({className:'rpin',iconSize:[30,42],iconAnchor:[15,41],html:'<svg viewBox="0 0 30 42" width="30" height="42" aria-hidden="true"><path d="M15 1C7.3 1 1 7.2 1 15c0 10.5 14 26 14 26s14-15.5 14-26C29 7.2 22.7 1 15 1z" fill="#d93025" stroke="#fff" stroke-width="2"/><circle cx="15" cy="15" r="5.5" fill="#fff"/></svg>'});
+const redPin=()=>new kakao.maps.MarkerImage('data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 42" width="30" height="42"><path d="M15 1C7.3 1 1 7.2 1 15c0 10.5 14 26 14 26s14-15.5 14-26C29 7.2 22.7 1 15 1z" fill="#d93025" stroke="#fff" stroke-width="2"/><circle cx="15" cy="15" r="5.5" fill="#fff"/></svg>'),new kakao.maps.Size(30,42),{offset:new kakao.maps.Point(15,41)});
 function mountLocMap(){
- const ph=document.getElementById('locmap');if(!ph)return;
- if(!window.L){ph.innerHTML='<div class="hint">지도를 불러오지 못했어요.<br>인터넷 연결을 확인해주세요.</div>';return}
- if(!LM.el){LM.el=document.createElement('div');LM.el.className='lmap'}
- ph.appendChild(LM.el);
- if(!LM.map){
-  LM.map=L.map(LM.el).setView([S.loc.lat,S.loc.lng],15);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(LM.map);
-  LM.mk=L.marker([S.loc.lat,S.loc.lng],{icon:redPin(),draggable:true,title:'웨이팅 장소',alt:'웨이팅 장소'}).addTo(LM.map);
-  LM.map.on('click',ev=>setLoc(ev.latlng.lat,ev.latlng.lng));
-  LM.mk.on('dragend',()=>{const q=LM.mk.getLatLng();setLoc(q.lat,q.lng)});
- }
- LM.map.invalidateSize();
- LM.mk.setLatLng([S.loc.lat,S.loc.lng]);
- if(recenter){LM.map.setView([S.loc.lat,S.loc.lng],16);recenter=false}
- if(S.active)LM.mk.dragging.disable();else LM.mk.dragging.enable();
+ const ph0=document.getElementById('locmap');if(!ph0)return;
+ if(!kLoad(()=>{
+  const ph=document.getElementById('locmap');if(!ph)return;          // 로딩 중 화면이 바뀌었으면 중단
+  if(!LM.el){LM.el=document.createElement('div');LM.el.className='lmap'}
+  ph.appendChild(LM.el);
+  const c=kLL(S.loc.lat,S.loc.lng);
+  if(!LM.map){
+   LM.map=new kakao.maps.Map(LM.el,{center:c,level:4});
+   LM.mk=new kakao.maps.Marker({position:c,image:redPin(),draggable:true,title:'웨이팅 장소'});LM.mk.setMap(LM.map);
+   kakao.maps.event.addListener(LM.map,'click',e=>setLoc(e.latLng.getLat(),e.latLng.getLng()));
+   kakao.maps.event.addListener(LM.mk,'dragend',()=>{const q=LM.mk.getPosition();setLoc(q.getLat(),q.getLng())});
+  }
+  const keep=LM.map.getCenter();LM.map.relayout();LM.map.setCenter(keep);   // 요소를 다시 끼운 뒤 크기 반영
+  LM.mk.setPosition(c);LM.mk.setDraggable(!S.active);
+  if(recenter){LM.map.setCenter(c);LM.map.setLevel(3);recenter=false}
+ }))kFail(ph0);
 }
 // 대기시간 입력: 남은 시간만 입력
 const regWait=()=>`<div class="box timebox" role="group" aria-label="남은 시간 입력"><p class="sub c">식당에서 안내받은 남은 시간</p><div class="stp"><button data-adj="-10" aria-label="10분 줄이기">−</button><div class="big2" aria-live="polite">${fm(S.wait)}</div><button data-adj="10" aria-label="10분 늘리기">+</button></div>
@@ -323,37 +331,66 @@ ${regWait()}
 `<button class="btn" data-go="${S.active?(S.sel.length?'prog':'map'):'map'}">${S.active?'적용하고 돌아가기 →':'지도에서 코스 만들기 →'}</button>`);
 
 /* ---------- 지도 ---------- */
-const pos=k=>{const d=46*Math.sqrt(Math.min(1,tt(k)/TMAX())),an=geo(k,S.loc).a*Math.PI/180;return [50+d*Math.cos(an),50+d*Math.sin(an)]};   // 가까운 핀이 겹치지 않게 √ 스케일, 타원으로 펼쳐 지도 전체 사용
-// 핀 겹침 완화: 가까운 핀끼리 서로 밀어내 터치할 수 있게 배치 (지도는 축척이 아닌 개략도)
-const layout=()=>{const ids=list(),L=new Map(ids.map(k=>[k,pos(k)])),mx=7.5,my=13;
- for(let it=0;it<40;it++){let moved=false;
-  for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const a=L.get(ids[i]),b=L.get(ids[j]),dx=b[0]-a[0],dy=b[1]-a[1];
-   if(Math.abs(dx)<mx&&Math.abs(dy)<my){const sx=(dx>=0?1:-1)*(mx-Math.abs(dx))/2+(dx==0?.3:0),sy=(dy>=0?1:-1)*(my-Math.abs(dy))/2+(dy==0?.3:0);
-    // 겹침이 더 작은 축 방향으로만 밀어낸다
-    if((mx-Math.abs(dx))/mx<(my-Math.abs(dy))/my){a[0]-=sx;b[0]+=sx}else{a[1]-=sy;b[1]+=sy}moved=true}}
-  if(!moved)break}
- L.forEach(q=>{q[0]=Math.min(94,Math.max(6,q[0]));q[1]=Math.min(90,Math.max(10,q[1]))});return L};
-const pins=()=>{const L=layout();return list().map(k=>{const p=P[k],[x,y]=L.get(k),on=S.sel.includes(k),o=!on&&!fit(k);
- return `<button class="mp ${on?'on':''} ${o?'off':''} ${S.focus===k?'f':''}" style="left:${x}%;top:${y}%${on?`;background:${colr(S.sel.indexOf(k))};border-color:${colr(S.sel.indexOf(k))};color:#fff`:''}" data-focus="${k}" data-n="${esc(p.n)}" aria-label="${esc(p.c+' '+p.n+' '+tt(k)+'분'+(on?' 담음':o?' 시간 부족':''))}">${on?S.sel.indexOf(k)+1+' ':''}${p.e}</button>`}).join('')};
-const route=()=>{if(!S.sel.length)return '';const L=layout(),pts=[[50,50],...S.sel.map(k=>L.get(k)||pos(k)),[50,50]];return `<polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>`};
+// 카카오 지도 화면: 핀·반경 원·경로를 실제 좌표로 그린다 (기존 모형용 pos/layout/pins/route 는 쓰지 않음)
+const KM={el:null,map:null,ov:[],ring:null,line:null,key:''};
+function kpin(k){
+ const p=P[k],i=S.sel.indexOf(k),on=i>=0,o=!on&&!fit(k),b=document.createElement('button');
+ b.className='mp kp'+(on?' on':'')+(o?' off':'')+(S.focus===k?' f':'');
+ if(on){const c=colr(i);b.style.cssText=`background:${c};border-color:${c};color:#fff`}
+ b.dataset.n=p.n;b.dataset.focus=k;
+ b.setAttribute('aria-label',p.c+' '+p.n+' '+tt(k)+'분'+(on?' 담음':o?' 시간 부족':''));
+ b.textContent=(on?i+1+' ':'')+p.e;
+ b.addEventListener('click',e=>{e.stopPropagation();S.focus=k;S.top=1;draw()});
+ return b}
+function kLayers(){
+ if(!KM.map)return;
+ KM.ov.forEach(o=>o.setMap(null));KM.ov=[];
+ if(KM.ring)KM.ring.setMap(null);if(KM.line)KM.line.setMap(null);
+ const c=kLL(S.loc.lat,S.loc.lng);
+ // 갈 수 있는 반경(원): 편도 가능 분 → 도보 환산 분 → m (geo()의 도보 계산식을 거꾸로)
+ const f=S.tr=='도보'||!TRF[S.tr]?1:TRF[S.tr][0];
+ const rM=Math.max(150,reachMin(rem())/f*4.8/60/1.3*1000);
+ KM.ring=new kakao.maps.Circle({center:c,radius:rM,strokeWeight:2,strokeColor:'#777',strokeOpacity:.9,strokeStyle:'dash',fillColor:'#777',fillOpacity:.06});
+ KM.ring.setMap(KM.map);
+ if(S.sel.length){
+  KM.line=new kakao.maps.Polyline({path:[c,...S.sel.map(k=>kLL(P[k].lat,P[k].lng)),c],strokeWeight:3,strokeColor:'#222',strokeOpacity:.8,strokeStyle:'shortdash'});
+  KM.line.setMap(KM.map)}
+ const add=(el,pos,z)=>{const o=new kakao.maps.CustomOverlay({position:pos,content:el,xAnchor:.5,yAnchor:.5,zIndex:z,clickable:true});o.setMap(KM.map);KM.ov.push(o)};
+ const me=document.createElement('div');me.className='mp me kp';me.textContent='🍽';me.setAttribute('aria-label','웨이팅 중인 식당');
+ add(me,c,2);
+ list().forEach(k=>add(kpin(k),kLL(P[k].lat,P[k].lng),S.focus===k?5:S.sel.includes(k)?4:3));
+}
+function mountKakaoMap(){
+ const ph0=document.getElementById('kmap');if(!ph0)return;
+ if(!kLoad(()=>{
+  const ph=document.getElementById('kmap');if(!ph)return;
+  if(!KM.el){KM.el=document.createElement('div');KM.el.className='lmap'}
+  ph.appendChild(KM.el);
+  if(!KM.map)KM.map=new kakao.maps.Map(KM.el,{center:kLL(S.loc.lat,S.loc.lng),level:5});
+  const keep=KM.map.getCenter();KM.map.relayout();KM.map.setCenter(keep);
+  kLayers();
+  const key=S.loc.lat+','+S.loc.lng+'|'+S.wait;                   // 위치·대기시간이 바뀐 때만 반경에 맞춰 다시 확대/축소
+  if(KM.key!==key){KM.key=key;KM.map.setBounds(KM.ring.getBounds())}
+ }))kFail(ph0);
+}
 const detail=()=>{const f=S.focus;
  if(f==null||!P[f])return '<div class="hint">지도의 핀이나 아래 목록을 누르면 장소 정보가 보여요</div>';
  const p=P[f],u=safeUrl(p.url),tel=safeTel(p.tel),on=S.sel.includes(f),info=p.c=='도서관'?libInfo(p):TIP[p.c];
  return `<section class="box cur dt"><div class="dt1"><div class="ph">${p.e}</div><div class="grow"><h3>${esc(p.n)}${p.sample?' <span class="badge">샘플</span>':''}</h3><p class="sub">${p.c} · ${S.tr} ${tt(f)}분</p><p class="sub"><b class="ink">총 ${cost(f)}분</b> (왕복 ${tt(f)*2} + 체류 ${stay(f)})</p></div>${addBtn(f)}</div>
 ${!on&&!fit(f)?'<p class="sub err">시간이 부족해요. 담은 장소의 체류시간을 줄이거나 장소를 빼면 담을 수 있어요.</p>':''}
 ${p.addr?`<p class="sub">📍 ${esc(p.addr)}</p>`:''}${info?`<p class="sub">🕒 ${esc(info)}</p>`:''}
-<div class="acts"><a class="lk" href="${esc(kakao(f))}" target="_blank" rel="noopener noreferrer">길찾기</a>${tel?`<a class="lk" href="tel:${tel}">전화</a>`:''}${u?`<a class="lk" href="${esc(u)}" target="_blank" rel="noopener noreferrer">홈페이지</a>`:''}<button class="lk" data-fav="${f}" aria-pressed="${S.favs.includes(f)}">${S.favs.includes(f)?'♥ 저장됨':'♡ 저장'}</button></div></section>`};
+<div class="acts"><a class="lk" href="${esc(kakaoLink(f))}" target="_blank" rel="noopener noreferrer">길찾기</a>${tel?`<a class="lk" href="tel:${tel}">전화</a>`:''}${u?`<a class="lk" href="${esc(u)}" target="_blank" rel="noopener noreferrer">홈페이지</a>`:''}<button class="lk" data-fav="${f}" aria-pressed="${S.favs.includes(f)}">${S.favs.includes(f)?'♥ 저장됨':'♡ 저장'}</button></div></section>`};
 // 장소 상세 (행을 누르면 아래로 펼침): 주소 · 전화 · 운영/휴무(공휴일 포함)
 const dtl=k=>{const p=P[k],tel=safeTel(p.tel),isL=p.c=='도서관',h=isL&&p.hours?p.hours.holiday:null,
  op=(isL?libInfo(p):'')||TIP[p.c]||'영업시간·휴무는 방문 전에 확인하세요';
- return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><p>📍 ${p.addr?esc(p.addr):'주소 정보 없음'}</p><p>📞 ${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'전화번호 정보 없음'}</p><p>🕒 ${esc(op)}</p>${h&&typeof h=='object'&&h.open?`<p>🗓 공휴일 ${esc(h.open)}–${esc(h.close)}</p>`:''}<div class="acts"><a class="lk" href="${esc(kakao(k))}" target="_blank" rel="noopener noreferrer">길찾기</a></div></div>`};
+ return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><p>📍 ${p.addr?esc(p.addr):'주소 정보 없음'}</p><p>📞 ${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'전화번호 정보 없음'}</p><p>🕒 ${esc(op)}</p>${h&&typeof h=='object'&&h.open?`<p>🗓 공휴일 ${esc(h.open)}–${esc(h.close)}</p>`:''}<div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a></div></div>`};
 const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}"><span class="e">${P[k].e}</span><span class="tx"><b>${esc(P[k].n)}</b></span></button>${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
 const card=k=>`<div class="gc"><button class="lrn v" data-focus="${k}"><div class="ph">${P[k].e}</div><b>${esc(P[k].n)}</b><span class="sub">${P[k].c} · ${tt(k)}분</span></button>${addBtn(k)}</div>`;
 const sheetList=()=>{
  if(!P.length)return `<div class="hint">${loadError?'데이터를 불러오지 못했어요.<br>로컬 서버(또는 GitHub Pages)에서 열어주세요.':'장소를 불러오는 중이에요…'}</div>`;
  const l=list();return l.length?`<div>${l.map(row).join('')}</div>`:`<div class="hint">${S.cats.length==1&&S.cats[0]=='카페'&&!P.some(p=>p.c=='카페')?'카페 정보를 준비 중이에요.':'조건에 맞는 장소가 없어요.<br>검색어나 필터를 바꿔보세요.'+(S.onow?'<br>영업 정보가 있는 장소만 표시돼요.':'')}</div>`};
 const cntTxt=()=>`${list().length}곳 표시 · 지금 담을 수 있는 곳 ${avail(false)}곳`;
-function refreshSearch(){const a=document.getElementById('pins');if(!a)return;a.innerHTML=pins();document.getElementById('sheetlist').innerHTML=sheetList()}   // 검색 중엔 입력창을 다시 그리지 않아 한글 입력이 끊기지 않음
+function refreshSearch(){if(!document.getElementById('kmap'))return;kLayers();document.getElementById('sheetlist').innerHTML=sheetList()}   // 검색 중엔 입력창을 다시 그리지 않아 한글 입력이 끊기지 않음
 // 담은 장소의 체류 시간: 숫자로 자유 입력 (5~240분). 입력 중에는 입력창을 다시 그리지 않고 나머지만 갱신
 const ringR=()=>Math.min(46,46*Math.sqrt(Math.min(1,reachMin(rem())/TMAX())));
 const ctTxt=k=>`이동 왕복 ${tt(k)*2}분 · 합계 ${cost(k)}분`;
@@ -362,15 +399,14 @@ const cfm=()=>!S.sel.length?{t:'장소를 1곳 이상 담아주세요',d:true}:r
 const chosen=()=>!S.sel.length?'':`<section class="box dt" id="chosen"><h3>담은 장소 · 체류 시간</h3><p class="sub">머무를 시간을 직접 입력하세요 (5~240분)</p>${S.sel.map((k,j)=>`<div class="lr cl" style="border-left-color:${colr(j)}"><span class="dot" style="background:${colr(j)}" aria-label="${j+1}번">${j+1}</span><div class="lrn"><span class="e">${P[k].e}</span><span class="tx"><b>${esc(P[k].n)}</b><span class="sub" data-ct="${k}">${ctTxt(k)}</span></span></div><label class="st"><input class="in stin" type="number" inputmode="numeric" min="5" max="240" step="5" value="${stay(k)}" data-stin="${k}" aria-label="${esc(P[k].n)} 체류 시간(분)"><span>분</span></label></div>`).join('')}<p class="sub err mt" id="stwarn" ${rem()<0?'':'hidden'}>${rem()<0?overTxt():''}</p></section>`;
 function refreshStay(){
  const g=id=>document.getElementById(id);if(!g('barw'))return;
- g('barw').innerHTML=bar();g('pins').innerHTML=pins();g('sheetlist').innerHTML=sheetList();g('cnt').textContent=cntTxt();g('detail').innerHTML=detail();
+ g('barw').innerHTML=bar();kLayers();g('sheetlist').innerHTML=sheetList();g('cnt').textContent=cntTxt();g('detail').innerHTML=detail();
  const w=g('stwarn');if(w){w.hidden=rem()>=0;w.textContent=rem()<0?overTxt():''}
  document.querySelectorAll('[data-ct]').forEach(el=>el.textContent=ctTxt(+el.dataset.ct));
- const rg=document.querySelector('.ring');if(rg){const rm=ringR();rg.style.width=rg.style.height=rm*2+'%'}
  const b=g('cfm'),c=cfm();b.textContent=c.t;b.disabled=c.d;save();
 }
-const map=()=>{const rm=ringR(),c=cfm();
+const map=()=>{const c=cfm();
  return frameM(`<input class="in" id="q" type="search" placeholder="장소 이름 검색 (예: 낫저스트북스)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색">
-<div class="mapx ph"><div class="ring" style="left:50%;top:50%;width:${rm*2}%;height:${rm*2}%"></div><svg class="rt" viewBox="0 0 100 100" preserveAspectRatio="none">${route()}</svg><div class="mp me" style="left:50%;top:50%" aria-label="웨이팅 중인 식당">🍽</div><div id="pins">${pins()}</div></div>`,
+<div class="mapx" id="kmap"></div>`,
 `${catRow()}
 <div id="sheetlist">${sheetList()}</div>`,
  `<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(c.t)}</button>`)};
@@ -395,7 +431,7 @@ const prog=()=>{
  const [h]=tline(S.sel,S.stay,S.tr,S.loc),b=banner(),sp=stagePlace();
  return frame(`<p class="sub">진행 중 · ${esc(S.rest)} · ${S.area}</p><div class="big" data-cd="hms">${hms(remSec())}</div><p class="sub c">식당 복귀까지 · ${backAt()} 복귀</p>
 <div class="bn ${b.c}" data-cd="banner" role="status">${esc(b.t)}</div>
-<div class="box cur"><p class="sub">지금</p><h3 data-cd="stage">${stageTxt()}</h3><a class="lk" data-cd="stagelink" target="_blank" rel="noopener noreferrer" ${sp==null?'hidden':`href="${esc(kakao(sp))}"`}>길찾기</a></div>
+<div class="box cur"><p class="sub">지금</p><h3 data-cd="stage">${stageTxt()}</h3><a class="lk" data-cd="stagelink" target="_blank" rel="noopener noreferrer" ${sp==null?'hidden':`href="${esc(kakaoLink(sp))}"`}>길찾기</a></div>
 <div class="row ctr"><button class="chip" data-live="-10">대기 −10분</button><button class="chip" data-live="10">대기 +10분</button></div><p class="sub c">줄이 빨리 줄거나 늘어나면 눌러서 맞춰주세요</p>${h}`,
  `<button class="btn" data-finish="1">식당 도착 · 코스 종료</button><button class="btn g mt" data-go="home">홈에서 계속 보기</button>`)};
 const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0,review:''};
@@ -423,7 +459,7 @@ let lastScr=null;
 function draw(){
  const root=document.getElementById('phone'),sc=root.querySelector('.body,.sheet');
  const keep=S.i===lastScr&&sc?sc.scrollTop:0,jump=S.top;          // 버튼을 눌러도 스크롤 위치 유지 (기존엔 맨 위로 튐)
- root.innerHTML=SC[S.i]();if(S.i==='reg')mountLocMap();
+ root.innerHTML=SC[S.i]();if(S.i==='reg')mountLocMap();else if(S.i==='map')mountKakaoMap();
  const n=root.querySelector('.body,.sheet');if(n)n.scrollTop=keep;
  if(S.i==='map'&&jump&&S.focus!=null){const r=root.querySelector('[data-row="'+S.focus+'"]');if(r)r.scrollIntoView({block:'nearest'})}
  lastScr=S.i;S.top=0;save();
@@ -519,4 +555,4 @@ setInterval(()=>{if(!S.active)return;document.querySelectorAll('[data-cd]').forE
  else if(k=='pill')el.textContent='⏱ '+hms(remSec());
  else if(k=='stage')el.textContent=stageTxt();
  else if(k=='banner'){const b=banner();el.className='bn '+b.c;el.textContent=b.t}
- else if(k=='stagelink'){const sp=stagePlace();if(sp==null)el.hidden=true;else{el.hidden=false;el.href=kakao(sp)}}})},1000);
+ else if(k=='stagelink'){const sp=stagePlace();if(sp==null)el.hidden=true;else{el.hidden=false;el.href=kakaoLink(sp)}}})},1000);
