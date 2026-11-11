@@ -36,6 +36,8 @@
  *  - 1-2 대기시간: 시간 칩 크기 축소
  *  - STEP 2: 카테고리 칩 축소 · 카페 카테고리 항상 표시(API 연결 전엔 빈 목록) · 장소를 누르면 주소/전화/운영·휴무 상세가 펼쳐짐
  *  - 담기 시 모든 장소 체류 시간을 10분(DSTAY)으로 가정해 시간 부족을 계산 (STEP 2 화면에는 표시 안 함)
+ *  - 검색: 장소 이름만 · 필터(장소 묶음/영업중/정렬) · 대기 60분 이하는 체류 0분 가정 · 진행 중 홈 원형 표시 · 마이페이지 코스 번호
+ *  - API 장소 선택 필드: pop(인기 점수, 클수록 인기) · openNow(true/false) · hours({open,close} 또는 {weekday,saturday,holiday})
  *  - STEP 3: 여유 시간 막대 → 원형 타이머 모양 · 이동 수단 한 줄 · 장소 순서는 ⋮⋮ 핸들 드래그(방향키도 가능) · 체류 시간 조절 한 줄 카드
  */
 const AREAS=[
@@ -99,7 +101,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}})();
-const S={i:'home',wait:120,tr:'도보',cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,favs:[],courses:[],toast:'',top:0};
+const S={i:'home',wait:120,tr:'도보',cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0};
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(TRS.includes(v.tr))S.tr=v.tr;
@@ -109,13 +111,15 @@ const S={i:'home',wait:120,tr:'도보',cats:[],sel:[],stay:{},focus:null,view:'l
   if(ok)S.loc={lat:l.lat,lng:l.lng};else if(AREAS.some(a=>a.n==v.area)){const a=aref(v.area);S.loc={lat:a.lat,lng:a.lng}}
   S.area=areaLabel(S.loc)}
  if(['list','card'].includes(v.view))S.view=v.view;
+ if(['def','near','pop'].includes(v.sort))S.sort=v.sort;
+ if(v.onow===true)S.onow=true;
  if(v.active&&Number.isFinite(v.start)){S.active=true;S.start=v.start}
  if(Number.isFinite(v.editId))S.editId=v.editId;
  if(Number.isFinite(v.curId))S.curId=v.curId;
 })();
 const nm=a=>a.map(k=>P[k].n);
 const nmap=m=>Object.fromEntries(Object.entries(m).filter(([k])=>P[k]).map(([k,v])=>[P[k].n,v]));
-function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,tr:S.tr,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,view:S.view,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay),favs:nm(S.favs),courses:S.courses.map(c=>({...c,sel:nm(c.sel),stay:nmap(c.stay)}))}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,tr:S.tr,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,view:S.view,sort:S.sort,onow:S.onow,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay),favs:nm(S.favs),courses:S.courses.map(c=>({...c,sel:nm(c.sel),stay:nmap(c.stay)}))}))}catch(e){}}
 // 저장된 장소 이름 → 현재 장소 ID (데이터 로드 후 복원)
 function restore(){
  const v=SAVED;if(!v||!Array.isArray(v.courses))return false;
@@ -138,10 +142,11 @@ async function loadPlaces(){
 
 /* ---------- 계산 ---------- */
 const ttx=(k,tr,ar)=>{const w=geo(k,ar||S.loc).w,f=TRF[tr]||TRF.도보;return tr=='도보'||!TRF[tr]?w:Math.max(f[1],Math.round(w*f[0]))};
-const sx=(k,m)=>m[k]??P[k].s;
+const dstay=w=>(w??S.wait)<=60?0:DSTAY;   // 대기 60분 이하(30분·1시간 등)는 체류 0분으로 가정, 그 외 10분
+const sx=(k,m,w)=>m[k]??dstay(w);
 const tt=k=>ttx(k,S.tr),stay=k=>sx(k,S.stay),cost=k=>tt(k)*2+stay(k);          // cost = 왕복 이동 + 체류
 const total=()=>S.sel.reduce((s,k)=>s+cost(k),0),rem=()=>S.wait-total(),fit=k=>cost(k)<=rem()-BUF;
-const ctot=c=>c.sel.reduce((s,k)=>s+ttx(k,c.tr,locOf(c))*2+sx(k,c.stay),0);
+const ctot=c=>c.sel.reduce((s,k)=>s+ttx(k,c.tr,locOf(c))*2+sx(k,c.stay,c.wait),0);
 const fm=m=>m>=60?Math.floor(m/60)+'시간'+(m%60?' '+m%60+'분':''):m+'분';
 const f2=m=>String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const ro=n=>{const c=String(n).trim().slice(-1).charCodeAt(0)-0xAC00,b=c>=0&&c<11172?c%28:-1;return n+((b==0||b==8)?'로':'으로')};   // 받침에 따라 로/으로
@@ -160,18 +165,33 @@ const kakao=k=>`https://map.kakao.com/link/to/${encodeURIComponent(P[k].n)},${P[
 
 // 도서관 운영 정보: 실제 휴관일/운영시간 데이터 사용
 const DAYS=['일','월','화','수','목','금','토'];
-function libInfo(p){
- if(!p.hours)return '';
- const now=new Date(),d=now.getDay(),wk=Math.ceil(now.getDate()/7),h=d==0?p.hours.holiday:d==6?p.hours.saturday:p.hours.weekday;
- const ORD={첫째:1,둘째:2,셋째:3,넷째:4,다섯째:5};
+const ORD={첫째:1,둘째:2,셋째:3,넷째:4,다섯째:5};
+function libClosed(p){   // 오늘이 휴관일인지 (요일 + 몇째 주)
+ if(!p.closed)return false;
+ const now=new Date(),d=now.getDay(),wk=Math.ceil(now.getDate()/7);
  const cl=String(p.closed||'').replace(/[가-힣]*공휴일/g,'').replace(/\(일요일 제외\)|일요일을 제외한/g,'');
- // 구간별로 요일 + (있다면) 몇째 주인지 확인: "매주 월요일", "첫째 주 화", "매월둘째넷째월요일" 등
- const closedToday=cl.split(/[+,]/).some(seg=>{
+ return cl.split(/[+,]/).some(seg=>{
   const ords=[...seg.matchAll(/첫째|둘째|셋째|넷째|다섯째/g)].map(m=>ORD[m[0]]);
   const w=seg.replace(/\s/g,'').replace(/첫째|둘째|셋째|넷째|다섯째/g,'').replace(/매[주월]?/g,'').replace(/^주/,'').replace(/주(?=[월화수목금토일])/g,'')[0];
   return w==DAYS[d]&&(!ords.length||ords.includes(wk))});
- return (closedToday?'⚠ 오늘은 휴관일일 수 있어요 · ':'')+(h?`오늘 ${h.open}–${h.close} · `:'')+'휴관 '+(p.closed||'정보 없음');
 }
+function libInfo(p){
+ if(!p.hours)return '';
+ const d=new Date().getDay(),h=d==0?p.hours.holiday:d==6?p.hours.saturday:p.hours.weekday;
+ return (libClosed(p)?'⚠ 오늘은 휴관일일 수 있어요 · ':'')+(h?`오늘 ${h.open}–${h.close} · `:'')+'휴관 '+(p.closed||'정보 없음');
+}
+// 영업 여부: true 영업중 / false 영업 아님 / null 정보 없음 (공원은 상시 개방으로 간주)
+const mins=t=>{const m=/(\d{1,2}):?(\d{2})/.exec(String(t||''));return m?+m[1]*60+ +m[2]:null};
+function openState(p){
+ if(p.c=='공원')return true;
+ if(typeof p.openNow=='boolean')return p.openNow;
+ const h=p.hours;if(!h)return null;
+ if(libClosed(p))return false;
+ const d=new Date().getDay(),t=h.open!=null?h:(d==0?h.holiday:d==6?h.saturday:h.weekday);
+ const o=t&&mins(t.open),c=t&&mins(t.close);if(o==null||c==null)return null;
+ const n=clock();return n>=o&&n<c;
+}
+const isOpen=k=>openState(P[k]);
 const TIP={서점:'영업시간·휴무는 방문 전에 확인하세요',공원:'대부분 상시 개방이에요 (시설별 운영시간은 다를 수 있어요)',카페:'영업시간은 방문 전에 확인하세요',쇼핑:'영업시간은 방문 전에 확인하세요'};
 
 /* ---------- 토스트 ---------- */
@@ -190,7 +210,7 @@ function moveTo(lat,lng,center){
 const setLoc=(lat,lng)=>{if(moveTo(lat,lng))draw()};
 
 /* ---------- 진행 단계 ---------- */
-const stages=()=>S.sel.flatMap(k=>[{t:`${P[k].e} ${ro(P[k].n)} 이동`,m:tt(k)},{t:`${P[k].n}에서 머무르기`,m:stay(k)},{t:'식당 방향으로 복귀 이동',m:tt(k)}]);
+const stages=()=>S.sel.flatMap(k=>[{t:`${ro(P[k].n)} 이동`,m:tt(k)},{t:`${P[k].n}에서 머무르기`,m:stay(k)},{t:'식당 방향으로 복귀 이동',m:tt(k)}]);
 const curStage=()=>{const e=elapsed()/60,st=stages();let c=0;for(let j=0;j<st.length;j++){c+=st[j].m;if(e<c)return j}return st.length};
 const stageTxt=()=>{const st=stages(),j=curStage();return !st.length?'등록한 코스가 없어요':j>=st.length?'코스를 모두 마쳤어요 · 식당으로 돌아가요':st[j].t+' · 약 '+st[j].m+'분'};
 const stagePlace=()=>{const j=curStage();if(j>=S.sel.length*3||j%3==2)return null;return S.sel[Math.floor(j/3)]};   // 길찾기 대상(이동/체류 단계의 장소)
@@ -216,20 +236,27 @@ const frameM=(top,sheet,f)=>`${hd()}<main class="mapbody"><div class="mtop">${to
 const bar=()=>{let h='';S.sel.forEach((k,j)=>h+=`<i style="width:${cost(k)/S.wait*100}%;background:${colr(j)};color:#fff">${j+1} ${P[k].e} ${cost(k)}′</i>`);const r=rem();
  return `<div class="bar" role="img" aria-label="${r<0?'대기시간 '+fm(-r)+' 초과':'복귀 여유 '+fm(r)}">${h}<i class="${r<0?'x':'m'}" style="flex:1">${r<0?'⚠ '+fm(-r)+' 초과':'여유 '+fm(r)}</i></div>`};
 // STEP 3 여유 시간: 원형 타이머 모양 (선택 순서별 색 호 + 가운데 복귀 여유)
-const ringBar=()=>{const R=48,C=2*Math.PI*R,r=rem(),over=r<0;let acc=0;
+const ringSvg=()=>{const R=48,C=2*Math.PI*R,r=rem(),over=r<0;let acc=0;
  const segs=over?`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--err)" stroke-width="12"/>`:S.sel.map((k,j)=>{const len=Math.min(cost(k)/S.wait*C,C-acc),g=len>4?1.5:0,o=-acc;acc+=len;return `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${colr(j)}" stroke-width="12" stroke-dasharray="${Math.max(len-g,0)} ${C}" stroke-dashoffset="${o}"/>`}).join('');
- return `<div class="rb" role="img" aria-label="${over?'대기시간 '+fm(-r)+' 초과':'대기시간 '+fm(S.wait)+' 중 복귀 여유 '+fm(r)}"><div class="rbc"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/><g transform="rotate(-90 60 60)">${segs}</g></svg><div class="rbt"><span class="sub">${over?'초과':'복귀 여유'}</span><b class="${over?'ov':''}">${fm(Math.abs(r))}</b></div></div><div class="rbs"><div><span class="sub">대기시간</span><b>${fm(S.wait)}</b></div><div><span class="sub">코스 사용</span><b>${fm(total())}</b></div>${S.sel.length?`<div class="rbl">${S.sel.map((k,j)=>`<span class="dot sm" style="background:${colr(j)}">${j+1}</span>`).join('')}</div>`:''}</div></div>`};
+ return `<div class="rbc" role="img" aria-label="${over?'대기시간 '+fm(-r)+' 초과':'대기시간 '+fm(S.wait)+' 중 복귀 여유 '+fm(r)}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/><g transform="rotate(-90 60 60)">${segs}</g></svg><div class="rbt"><span class="sub">${over?'초과':'복귀 여유'}</span><b class="${over?'ov':''}">${fm(Math.abs(r))}</b></div></div>`};
+// STEP 3 여유 시간: 원형 타이머 모양 (선택 순서별 색 호 + 가운데 복귀 여유)
+const ringBar=()=>`<div class="rb">${ringSvg()}<div class="rbs"><div><span class="sub">대기시간</span><b>${fm(S.wait)}</b></div><div><span class="sub">코스 사용</span><b>${fm(total())}</b></div>${S.sel.length?`<div class="rbl">${S.sel.map((k,j)=>`<span class="dot sm" style="background:${colr(j)}">${j+1}</span>`).join('')}</div>`:''}</div></div>`;
 const cats=()=>CAT_ORDER.filter(c=>c=='카페'||P.some(p=>p.c==c));   // 카페는 API 연결 전이라도 항상 표시
-const catRow=()=>`<div class="row cats" role="group" aria-label="카테고리 (여러 개 선택 가능)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${cats().map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div>`;
+const CATS4=['서점','도서관','공원','카페'];
+const catLbl=()=>!S.cats.length?'장소':'장소 · '+S.cats[0]+(S.cats.length>1?' 외 '+(S.cats.length-1):'');
+const catRow=()=>`<div class="flt" role="group" aria-label="필터"><button class="chip ${S.cats.length||S.catOpen?'on':''}" data-catmenu="1" aria-expanded="${S.catOpen}">${esc(catLbl())} ${S.catOpen?'▴':'▾'}</button><button class="chip ${S.onow?'on':''}" data-onow="1" aria-pressed="${S.onow}">영업중</button><select class="srt" id="sort" aria-label="정렬"><option value="def" ${S.sort=='def'?'selected':''}>기본순</option><option value="near" ${S.sort=='near'?'selected':''}>거리 가까운 순</option><option value="pop" ${S.sort=='pop'?'selected':''}>인기순</option></select></div>
+${S.catOpen?`<div class="catp"><div class="row cats" role="group" aria-label="장소 카테고리 (여러 개 선택 가능)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div></div>`:''}`;
 
 /* ---------- 지도/목록 계산 ---------- */
-const reachMin=w=>Math.max(0,(w-BUF-30)/2);                       // 체류 30분 기준으로 편도 몇 분까지 가능한지
+const reachMin=w=>Math.max(0,(w-BUF-(S.wait<=60?0:30))/2);                       // 체류 30분 기준으로 편도 몇 분까지 가능한지
 const TMAX=()=>Math.max(15,reachMin(S.wait)*1.25);                // 지도에 보여줄 최대 이동시간(분)
 const inRange=k=>tt(k)<=TMAX();
-const matchQ=k=>{const q=S.q.trim().toLowerCase();if(!q)return true;const p=P[k];return (p.n+' '+(p.addr||'')+' '+p.c).toLowerCase().includes(q)};
+const matchQ=k=>{const q=S.q.trim().toLowerCase();if(!q)return true;const p=P[k];return p.n.toLowerCase().includes(q)};   // 장소 이름만 검색
 const byDist=(a,b)=>tt(a)-tt(b);
-const list=()=>{const ids=P.map((p,k)=>k).filter(k=>(!S.cats.length||S.cats.includes(P[k].c))&&matchQ(k)&&inRange(k));
+const list=()=>{const ids=P.map((p,k)=>k).filter(k=>(!S.cats.length||S.cats.includes(P[k].c))&&matchQ(k)&&inRange(k)&&(!S.onow||isOpen(k)===true));
  ids.sort(byDist);const b=ids.slice(0,MAXPIN);
+ if(S.sort=='def')b.sort((x,y)=>CAT_ORDER.indexOf(P[x].c)-CAT_ORDER.indexOf(P[y].c)||byDist(x,y));      // 기본순: 카테고리 순 → 가까운 순
+ else if(S.sort=='pop')b.sort((x,y)=>(P[y].pop||0)-(P[x].pop||0)||byDist(x,y));                         // 인기순: pop 값(API) 큰 순, 없으면 가까운 순
  return [...b,...S.sel.filter(k=>!b.includes(k))]};
 // 등록 화면 "갈 수 있는 곳"과 지도 화면 "담을 수 있는 곳"이 같은 기준을 쓰도록 한 함수로 계산
 const avail=fresh=>P.map((p,k)=>k).filter(inRange).sort(byDist).slice(0,MAXPIN).filter(k=>fresh?cost(k)<=S.wait-BUF:(!S.sel.includes(k)&&fit(k))).length;
@@ -244,7 +271,7 @@ const resetBuild=()=>{S.sel=[];S.stay={};S.editId=null;S.focus=null};
 const home=()=>frame(S.active?
 `<p class="sub">웨이팅 진행 중 · ${S.area}</p><h2>${esc(S.rest)}</h2>
 <div class="box cur"><p class="sub c">식당 복귀까지</p><div class="big2" data-cd="hms">${hms(remSec())}</div><p class="sub c"><b class="ink">${backAt()}</b>까지 돌아가야 해요</p></div>
-<div class="box"><h3>오늘의 0차 코스</h3>${S.sel.length?`<b>${S.sel.map(k=>P[k].e+' '+esc(P[k].n)).join(' → ')}</b><div class="gap">${bar()}</div><p class="sub">지금</p><h3 data-cd="stage">${stageTxt()}</h3>`:'<p class="sub">아직 코스가 없어요. 지도에서 갈 곳을 담아보세요.</p>'}</div>
+<div class="box"><h3>오늘의 0차 코스</h3>${S.sel.length?`<div class="rb flat">${ringSvg()}<div class="rbs"><div class="rbn"><span class="sub">지금</span><b data-cd="stage">${stageTxt()}</b></div><p class="sub rbp">${S.sel.map(k=>esc(P[k].n)).join(' → ')}</p></div></div>`:'<p class="sub">아직 코스가 없어요. 지도에서 갈 곳을 담아보세요.</p>'}</div>
 <button class="btn" data-go="${S.sel.length?'prog':'map'}">${S.sel.length?'코스 이어가기 →':'지도에서 코스 만들기 →'}</button>
 <button class="btn g mt" data-go="reg">웨이팅 시간 다시 등록</button>`
 :
@@ -324,7 +351,7 @@ const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button
 const card=k=>`<div class="gc"><button class="lrn v" data-focus="${k}"><div class="ph">${P[k].e}</div><b>${esc(P[k].n)}</b><span class="sub">${P[k].c} · ${tt(k)}분</span></button>${addBtn(k)}</div>`;
 const sheetList=()=>{
  if(!P.length)return `<div class="hint">${loadError?'데이터를 불러오지 못했어요.<br>로컬 서버(또는 GitHub Pages)에서 열어주세요.':'장소를 불러오는 중이에요…'}</div>`;
- const l=list();return l.length?`<div>${l.map(row).join('')}</div>`:`<div class="hint">${S.cats.length==1&&S.cats[0]=='카페'&&!P.some(p=>p.c=='카페')?'카페 정보를 준비 중이에요.':'조건에 맞는 장소가 없어요.<br>검색어나 카테고리를 바꿔보세요.'}</div>`};
+ const l=list();return l.length?`<div>${l.map(row).join('')}</div>`:`<div class="hint">${S.cats.length==1&&S.cats[0]=='카페'&&!P.some(p=>p.c=='카페')?'카페 정보를 준비 중이에요.':'조건에 맞는 장소가 없어요.<br>검색어나 필터를 바꿔보세요.'+(S.onow?'<br>영업 정보가 있는 장소만 표시돼요.':'')}</div>`};
 const cntTxt=()=>`${list().length}곳 표시 · 지금 담을 수 있는 곳 ${avail(false)}곳`;
 function refreshSearch(){const a=document.getElementById('pins');if(!a)return;a.innerHTML=pins();document.getElementById('sheetlist').innerHTML=sheetList()}   // 검색 중엔 입력창을 다시 그리지 않아 한글 입력이 끊기지 않음
 // 담은 장소의 체류 시간: 숫자로 자유 입력 (5~240분). 입력 중에는 입력창을 다시 그리지 않고 나머지만 갱신
@@ -342,23 +369,23 @@ function refreshStay(){
  const b=g('cfm'),c=cfm();b.textContent=c.t;b.disabled=c.d;save();
 }
 const map=()=>{const rm=ringR(),c=cfm();
- return frameM(`<input class="in" id="q" type="search" placeholder="장소·지역 검색 (예: 서점, 광진구)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 또는 지역 검색">
+ return frameM(`<input class="in" id="q" type="search" placeholder="장소 이름 검색 (예: 낫저스트북스)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색">
 <div class="mapx ph"><div class="ring" style="left:50%;top:50%;width:${rm*2}%;height:${rm*2}%"></div><svg class="rt" viewBox="0 0 100 100" preserveAspectRatio="none">${route()}</svg><div class="mp me" style="left:50%;top:50%" aria-label="웨이팅 중인 식당">🍽</div><div id="pins">${pins()}</div></div>`,
 `${catRow()}
 <div id="sheetlist">${sheetList()}</div>`,
  `<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(c.t)}</button>`)};
 
 /* ---------- 코스 확인 ---------- */
-const tline=(sel,stm,tr,ar)=>{let t=base();
+const tline=(sel,stm,tr,ar,w)=>{let t=base();
  const r=(tm,name,sub,cls)=>`<div${cls?` class="${cls}"`:''}><b class="tm">${f2(tm)}</b><span class="tx2"><b>${name}</b>${sub?`<span class="sub">${sub}</span>`:''}</span></div>`;
  let h='<div class="tl">'+r(t,'식당에서 출발','');
- sel.forEach(k=>{const a=ttx(k,tr,ar),st=sx(k,stm);t+=a;h+=r(t,esc(P[k].n),`도착 · 체류 ${st}분 · ${tr||'이동'} ${a}분`);t+=st+a});
+ sel.forEach(k=>{const a=ttx(k,tr,ar),st=sx(k,stm,w);t+=a;h+=r(t,esc(P[k].n),`도착 · 체류 ${st}분 · ${tr||'이동'} ${a}분`);t+=st+a});
  return [h+r(t,'식당 복귀','','m')+'</div>',t]};
 const confirmScr=()=>{const [h]=tline(S.sel,S.stay,S.tr,S.loc),r=rem();
  return frame(`<p class="sub">STEP 3/3 · 코스 확인</p><h2>오늘의 0차 코스</h2>${ringBar()}
 <span class="lb">이동 수단</span><div class="modes" role="group" aria-label="이동 수단 선택">${TRS.map(t=>`<button class="mode ${S.tr==t?'on':''} ${trTotal(t)>S.wait?'x':''}" aria-pressed="${S.tr==t}" data-tr="${t}"><span>${TRI[t]} ${t}</span><b>${fm(trTotal(t))}</b></button>`).join('')}</div>
 
-<div id="order">${S.sel.map((k,j)=>`<div class="pc2"><button class="ib sm dh" data-drag="${j}" aria-label="${esc(P[k].n)} 순서 변경 (끌어서 이동, 위·아래 방향키도 가능)">⋮⋮</button><span class="dot sm" style="background:${colr(j)}">${j+1}</span><h3 class="nm">${P[k].e} ${esc(P[k].n)}</h3><div class="st"><button class="ib sm" data-st="${k}:-10" ${stay(k)<=10?'disabled':''} aria-label="체류 10분 줄이기">−</button><b>${stay(k)}분</b><button class="ib sm" data-st="${k}:10" ${stay(k)>=240?'disabled':''} aria-label="체류 10분 늘리기">+</button></div><button class="ib sm" data-rm="${k}" aria-label="${esc(P[k].n)} 빼기">✕</button></div>`).join('')||'<div class="box sub">담은 장소가 없어요</div>'}</div>
+<div id="order">${S.sel.map((k,j)=>`<div class="pc2"><button class="ib sm dh" data-drag="${j}" aria-label="${esc(P[k].n)} 순서 변경 (끌어서 이동, 위·아래 방향키도 가능)">⋮⋮</button><span class="dot sm" style="background:${colr(j)}">${j+1}</span><h3 class="nm">${P[k].e} ${esc(P[k].n)}</h3><div class="st"><button class="ib sm" data-st="${k}:-10" ${stay(k)<=dstay()?'disabled':''} aria-label="체류 10분 줄이기">−</button><b>${stay(k)}분</b><button class="ib sm" data-st="${k}:10" ${stay(k)>=240?'disabled':''} aria-label="체류 10분 늘리기">+</button></div><button class="ib sm" data-rm="${k}" aria-label="${esc(P[k].n)} 빼기">✕</button></div>`).join('')||'<div class="box sub">담은 장소가 없어요</div>'}</div>
 ${h}<div class="box ${r<0?'errbox':''}"><span class="sub">복귀 여유</span> <b>${r<0?'⚠ '+fm(-r)+' 초과 — 체류를 줄이거나 장소를 빼주세요':fm(r)}</b></div><button class="btn g" data-go="map">← 지도에서 더 담기</button>`,
  `<button class="btn" data-start="1" ${r<0||!S.sel.length?'disabled':''}>코스 시작하기</button><button class="btn g mt" data-later="1" ${S.sel.length?'':'disabled'}>시작 없이 마이페이지에 저장</button>`)};
 
@@ -382,10 +409,10 @@ const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0,review
 
 /* ---------- 마이페이지 ---------- */
 const my=()=>frame(`<h2>마이페이지</h2><p class="sub">내가 만든 코스와 저장한 공간</p><div class="seg"><button class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
-(S.seg=='c'?(S.courses.length?S.courses.slice().reverse().map(c=>`<button class="box btnbox" data-cid="${c.id}"><b>${title(c)}</b><p class="sub">${esc(c.date)} · ${esc(c.area||'성수동')} · 대기 ${fm(c.wait)} · 코스 ${fm(ctot(c))} · ${esc(c.tr)}</p>${c.review?`<p class="sub">“${esc(c.review)}”</p>`:''}</button>`).join(''):'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
+(S.seg=='c'?(S.courses.length?S.courses.map((c,i)=>`<button class="box btnbox cs" data-cid="${c.id}"><div class="cs-h"><b>코스 ${i+1}</b><span class="sub">${esc(c.date)}</span></div><p class="cs-r">${title(c)}</p><p class="sub">${esc(c.area||'성수동')} · 대기 ${fm(c.wait)} · 코스 ${fm(ctot(c))} · ${esc(c.tr)}</p>${c.review?`<p class="sub">“${esc(c.review)}”</p>`:''}</button>`).join(''):'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
 :(S.favs.length?S.favs.map(k=>`<div class="pc"><div class="ph">${P[k].e}</div><div><h3>${esc(P[k].n)}</h3><p class="sub">${P[k].c}</p></div><button class="add" data-fav="${k}">♥ 해제</button></div>`).join(''):'<div class="box sub c">장소 상세의 ♡를 눌러 저장해보세요.</div>')));
-const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,c.tr,locOf(c));
- return frame(`<button class="back" data-go="my">← 내 코스</button><h2 class="mt">${title(c)}</h2><p class="sub">${esc(c.date)} · ${esc(c.area||'성수동')} · ${chain(c)}</p>
+const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,c.tr,locOf(c),c.wait);
+ return frame(`<button class="back" data-go="my">← 내 코스</button><h2 class="mt">코스 ${S.courses.indexOf(c)+1}</h2><p class="cs-r">${title(c)}</p><p class="sub">${esc(c.date)} · ${esc(c.area||'성수동')}</p>
 <div class="row nowrap"><div class="box mini"><span class="sub">대기</span><br><b>${fm(c.wait)}</b></div><div class="box mini"><span class="sub">코스</span><br><b>${fm(ctot(c))}</b></div><div class="box mini"><span class="sub">이동</span><br><b>${esc(c.tr)}</b></div></div>${c.review?`<div class="box"><span class="sub">내 후기</span><p>“${esc(c.review)}”</p></div>`:''}${h}
 <p class="sub">같은 코스를 지금 대기시간에 맞춰 다시 쓸 수 있어요.</p>`,
  `<button class="btn" data-redo="${c.id}">이 코스로 다시 시작</button><button class="btn g mt" data-del="${c.id}">삭제</button>`)};
@@ -418,6 +445,8 @@ document.addEventListener('click',e=>{
   navigator.geolocation.getCurrentPosition(p=>{moveTo(p.coords.latitude,p.coords.longitude,true);draw()},()=>{toast('위치를 가져오지 못했어요. 지도를 눌러 직접 지정해주세요');draw()},{enableHighAccuracy:true,timeout:8000});
   return}
  else if(has('cat')){if(!d.cat)S.cats=[];else S.cats=S.cats.includes(d.cat)?S.cats.filter(x=>x!=d.cat):[...S.cats,d.cat]}
+ else if(has('catmenu'))S.catOpen=!S.catOpen;
+ else if(has('onow'))S.onow=!S.onow;
  else if(has('view'))S.view=d.view;
  else if(has('wait')){S.wait=+d.wait;if(!S.active)prune()}
  else if(has('adj')){S.wait=clampWait(S.wait+ +d.adj);if(!S.active)prune()}
@@ -425,7 +454,7 @@ document.addEventListener('click',e=>{
  else if(has('live')){S.wait=Math.min(300,Math.max(10,S.wait+ +d.live));toast(`대기시간을 ${d.live>0?'+':'−'}10분 조정했어요 · 복귀 ${backAt()}`)}
  else if(has('focus')){if(S.focus===+d.focus&&t.closest('.lr'))S.focus=null;else{S.focus=+d.focus;S.top=1}}   // 행을 다시 누르면 상세 접기
  else if(has('fav')){const k=+d.fav;S.favs=S.favs.includes(k)?S.favs.filter(x=>x!=k):[...S.favs,k]}
- else if(has('st')){const[k,m]=d.st.split(':').map(Number);S.stay[k]=Math.min(240,Math.max(10,stay(k)+m))}
+ else if(has('st')){const[k,m]=d.st.split(':').map(Number);S.stay[k]=Math.min(240,Math.max(dstay(),stay(k)+m))}
  else if(has('rm'))S.sel=S.sel.filter(x=>x!=+d.rm);
  else if(has('start')){S.curId=saveCourse();S.active=true;S.start=Date.now();S.i='prog'}
  else if(has('later')){saveCourse();resetBuild();S.seg='c';S.i='my';toast('내 코스에 저장했어요')}
@@ -448,6 +477,7 @@ document.addEventListener('input',e=>{
   if(Number.isFinite(v)&&S.sel.includes(k)){S.stay[k]=Math.min(240,Math.max(5,v));refreshStay()}}
 });
 document.addEventListener('change',e=>{   // 입력을 마치면 범위(5~240)에 맞춰 표시값 정리
+ if(e.target.id=='sort'){S.sort=e.target.value;draw();return}
  if(e.target.dataset&&e.target.dataset.stin!==undefined){const k=+e.target.dataset.stin;if(P[k]&&S.sel.includes(k))e.target.value=stay(k)}
 });
 /* ---------- 코스 확인: 드래그로 순서 변경 ---------- */
