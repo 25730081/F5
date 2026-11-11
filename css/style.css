@@ -195,18 +195,46 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .timebox .stp{margin:32px 0;gap:12px}
 .timebox .stp button{flex:none;width:56px;height:56px;font-size:28px}
 .timebox .big2{flex:1;min-width:0;font-size:36px}
-.timebox .row{gap:10px;margin:0}
-.timebox .chip{min-height:48px;padding:0 18px;font-size:15px}
+.timebox .row{gap:6px;margin:0}
+.timebox .chip{min-height:36px;padding:0 12px;font-size:13px}
 
 .mapx{aspect-ratio:auto;max-height:none;height:clamp(240px,42dvh,440px)}
 .mtop .in{margin:0}
 .lr.f{background:var(--fill)}
 
-/* ===== v7: 카카오지도 ===== */
-.mapx.real{display:block;isolation:isolate;background:var(--fill)}   /* isolate: 지도 레이어가 하단 메뉴/토스트 위로 올라오지 않게 */
-.kmap{width:100%;height:100%}
-.kmap .mp{position:static;transform:none;color:#111;background:#fff;border-color:#111}
-.kmap .mp.on{border-width:2px}
-.kmap .kpin{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));pointer-events:none;line-height:0}
-.kmap .mp.f::after{color:#fff;background:#111}
-.lmap{isolation:isolate}
+/* ===== v7: 카테고리 칩 축소 · 장소 상세 펼침 · 이동 수단 한 줄 · 드래그 순서 · 한 줄 장소 카드 ===== */
+.cats{gap:6px}
+.cats .chip{min-height:34px;padding:0 10px;font-size:13px}
+.dti{background:var(--fill);border-radius:10px;padding:10px 12px;margin:2px 0 8px;font-size:13px}
+.dti p{margin:0 0 6px;word-break:keep-all;overflow-wrap:anywhere}
+.dti a:not(.lk){color:var(--ink);font-weight:700}
+.dti .acts{margin-top:8px}
+.lr.f{background:var(--fill)}
+
+.modes{grid-template-columns:repeat(4,1fr);gap:4px}
+.mode{min-height:44px;border-radius:10px;font-size:11px;gap:1px;padding:0 2px;white-space:nowrap}
+.mode b{font-size:12px}
+
+.pc2{display:flex;align-items:center;gap:6px;padding:6px;position:relative;background:var(--card);touch-action:pan-y}
+.pc2 .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc2 .st{flex:none;gap:2px}
+.pc2 .st b{min-width:36px;text-align:center;font-size:13px}
+.pc2 .dot{flex:none}
+.ib.sm{min-width:32px;width:32px;min-height:32px;height:32px;padding:0;font-size:15px;border-radius:8px;flex:none}
+.pc2 .ib.sm[data-rm]{border:0}
+.dh{border:0!important;color:var(--mut);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;letter-spacing:-2px;font-size:16px}
+.pc2.sh{transition:transform .15s ease}
+.pc2.drag{z-index:5;transition:none;box-shadow:0 6px 16px rgba(0,0,0,.25);border-color:var(--ok)}
+.pc2.drag .dh{cursor:grabbing}
+
+/* v7: STEP 3 원형 여유 시간 */
+.rb{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:16px;padding:12px 16px;margin:10px 0}
+.rbc{position:relative;flex:none;width:132px;height:132px}
+.rbc svg{width:100%;height:100%;display:block}
+.rbt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.2}
+.rbt b{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.rbt b.ov{color:var(--err)}
+.rbs{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.rbs>div{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rbs b{font-size:15px}
+.rbl{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start}
