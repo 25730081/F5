@@ -283,7 +283,9 @@ const nearSeoul=()=>dkm(S.loc,{lat:37.5665,lng:126.978})<35;
 const reg=()=>frame(`<p class="sub">${S.active?'웨이팅 수정':'STEP 1-1/3 · 위치'}</p><h2>웨이팅 장소</h2>
 ${S.active?'<div class="alert warn">진행 중인 웨이팅이에요. 위치는 진행 중에 바꿀 수 없어요.</div>':''}
 <div class="locwrap"><div class="locmap" id="locmap"></div><button class="locbtn" data-geo="1" ${S.active?'disabled':''} aria-label="현재 위치로 이동">📍</button></div>
-${!nearSeoul()?'<p class="sub err mt">서울 밖이에요. 지금은 서울 지역 장소만 있어요. 위치를 서울로 지정해주세요.</p>':''}`,
+${!nearSeoul()?'<p class="sub err mt">서울 밖이에요. 지금은 서울 지역 장소만 있어요. 위치를 서울로 지정해주세요.</p>':''}
+<div class="box how"><div class="how-h"><span class="sub">선택한 위치</span><b>${esc(S.area)}${S.area=='선택한 위치'?'':' 부근'}</b></div>
+<ul><li>지도를 누르거나 빨간 핀을 끌어 식당 위치를 지정해요</li><li>오른쪽 위 위치 버튼으로 내 위치를 불러올 수 있어요</li><li>이 위치를 기준으로 이동 시간을 계산해요</li></ul></div>`,
 `<button class="btn" data-go="wait">다음 · 대기시간 입력 →</button>`);
 
 const waitScr=()=>frame(`<button class="back" data-go="reg">← 위치 다시 지정 (${esc(S.area)})</button>
@@ -347,12 +349,15 @@ const map=()=>{const rm=ringR(),c=cfm();
  `<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(c.t)}</button>`)};
 
 /* ---------- 코스 확인 ---------- */
-const tline=(sel,stm,tr,ar)=>{let t=base(),h='<div class="tl"><div><b>'+f2(t)+'</b> 식당에서 출발</div>';sel.forEach(k=>{const a=ttx(k,tr,ar),s=sx(k,stm);t+=a;h+=`<div><b>${f2(t)}</b> ${P[k].e} ${esc(P[k].n)} 도착 · 체류 ${s}분 <span class="sub">(${TRI[tr]||''} 이동 ${a}분)</span></div>`;t+=s+a});return [h+`<div class="m"><b>${f2(t)}</b> 식당 복귀</div></div>`,t]};
+const tline=(sel,stm,tr,ar)=>{let t=base();
+ const r=(tm,name,sub,cls)=>`<div${cls?` class="${cls}"`:''}><b class="tm">${f2(tm)}</b><span class="tx2"><b>${name}</b>${sub?`<span class="sub">${sub}</span>`:''}</span></div>`;
+ let h='<div class="tl">'+r(t,'식당에서 출발','');
+ sel.forEach(k=>{const a=ttx(k,tr,ar),st=sx(k,stm);t+=a;h+=r(t,esc(P[k].n),`도착 · 체류 ${st}분 · ${tr||'이동'} ${a}분`);t+=st+a});
+ return [h+r(t,'식당 복귀','','m')+'</div>',t]};
 const confirmScr=()=>{const [h]=tline(S.sel,S.stay,S.tr,S.loc),r=rem();
  return frame(`<p class="sub">STEP 3/3 · 코스 확인</p><h2>오늘의 0차 코스</h2>${ringBar()}
 <span class="lb">이동 수단</span><div class="modes" role="group" aria-label="이동 수단 선택">${TRS.map(t=>`<button class="mode ${S.tr==t?'on':''} ${trTotal(t)>S.wait?'x':''}" aria-pressed="${S.tr==t}" data-tr="${t}"><span>${TRI[t]} ${t}</span><b>${fm(trTotal(t))}</b></button>`).join('')}</div>
-<p class="sub mt">${TRI[S.tr]} ${S.tr} 기준 코스예요. ${TRTIP[S.tr]}${S.sel.length?' 수단별 숫자는 코스 전체 소요시간이에요.':''}</p>
-${S.sel.length?'<p class="sub mt">⋮⋮ 를 끌어 순서를 바꾸고, − + 로 체류 시간을 조절해요</p>':''}
+
 <div id="order">${S.sel.map((k,j)=>`<div class="pc2"><button class="ib sm dh" data-drag="${j}" aria-label="${esc(P[k].n)} 순서 변경 (끌어서 이동, 위·아래 방향키도 가능)">⋮⋮</button><span class="dot sm" style="background:${colr(j)}">${j+1}</span><h3 class="nm">${P[k].e} ${esc(P[k].n)}</h3><div class="st"><button class="ib sm" data-st="${k}:-10" ${stay(k)<=10?'disabled':''} aria-label="체류 10분 줄이기">−</button><b>${stay(k)}분</b><button class="ib sm" data-st="${k}:10" ${stay(k)>=240?'disabled':''} aria-label="체류 10분 늘리기">+</button></div><button class="ib sm" data-rm="${k}" aria-label="${esc(P[k].n)} 빼기">✕</button></div>`).join('')||'<div class="box sub">담은 장소가 없어요</div>'}</div>
 ${h}<div class="box ${r<0?'errbox':''}"><span class="sub">복귀 여유</span> <b>${r<0?'⚠ '+fm(-r)+' 초과 — 체류를 줄이거나 장소를 빼주세요':fm(r)}</b></div><button class="btn g" data-go="map">← 지도에서 더 담기</button>`,
  `<button class="btn" data-start="1" ${r<0||!S.sel.length?'disabled':''}>코스 시작하기</button><button class="btn g mt" data-later="1" ${S.sel.length?'':'disabled'}>시작 없이 마이페이지에 저장</button>`)};
