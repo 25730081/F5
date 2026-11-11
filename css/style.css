@@ -267,3 +267,8 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .cs-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
 .cs-h b{font-size:17px}
 .cs-r{margin:0 0 6px;font-size:15px;font-weight:700;line-height:1.4;word-break:keep-all}
+
+/* 카카오 지도 화면 */
+.mapx{isolation:isolate;background:var(--fill)}   /* isolate: 지도 레이어가 하단 메뉴/토스트 위로 올라오지 않게 */
+.mapx .hint{margin:0;height:100%;display:flex;align-items:center;justify-content:center;border:0}
+.mp.kp{position:relative;transform:none}          /* CustomOverlay 가 위치를 잡아주므로 % 배치용 absolute 해제 */
