@@ -238,3 +238,17 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .rbs>div{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .rbs b{font-size:15px}
 .rbl{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start}
+
+/* v7: 위치 안내 · 가독성 있는 코스 타임라인 */
+.how{margin:10px 0}
+.how-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.how-h b{font-size:15px}
+.how ul{margin:0;padding-left:18px;font-size:13px;color:var(--mut)}
+.how li{margin:0 0 4px}
+.tl{margin-left:56px;padding-left:16px}
+.tl>div{display:block}
+.tl .tm{position:absolute;right:calc(100% + 28px);top:0;width:48px;text-align:right;font-size:14px;font-variant-numeric:tabular-nums}
+.tl .tx2{display:flex;flex-direction:column;gap:1px}
+.tl .tx2>b{font-size:15px}
+.tl>div::before{left:-23px}
+.tl .m .tx2>b{color:var(--mut)}
