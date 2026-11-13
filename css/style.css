@@ -13,7 +13,9 @@ a{color:inherit}
 
 .app{position:relative;width:100%;max-width:430px;height:100vh;height:100dvh;background:var(--card);display:flex;flex-direction:column;overflow:hidden;margin:0 auto;box-shadow:0 0 20px rgba(0,0,0,.08)}
 .hd{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex:none}
-.logo{font-weight:900;font-size:16px}
+.logo{display:flex;align-items:center;gap:1px;min-height:44px;padding:0;border:0;background:none;color:var(--ink);font-weight:900}
+.lgz{width:20px;height:30px;flex:none;display:block;color:var(--ink)}
+.lgt{font-size:22px;letter-spacing:-1.5px;line-height:1}
 .pill{min-height:36px;font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:0 12px;font-weight:700}
 .body{flex:1;overflow-y:auto;padding:16px}
 .nav{height:64px;border-top:1px solid var(--line);display:flex;flex:none;align-items:center;background:var(--card)}
@@ -53,6 +55,7 @@ h3.sec{margin:20px 0 8px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .row.ctr{justify-content:center}
 .row.nowrap{flex-wrap:nowrap}
+.row.nowrap>.btn{flex:1;width:auto;margin:0;min-width:0}
 .chip{min-height:40px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:0 14px;font-size:14px;font-weight:700}
 .chip.on{background:var(--acc);color:var(--acct);border-color:var(--acc)}
 .chip[disabled]{background:var(--fill);color:var(--mut);cursor:not-allowed}
@@ -115,15 +118,6 @@ h3.sec{margin:20px 0 8px}
 .sheet{flex:1;overflow-y:auto;padding:12px 16px 16px}
 .mapx{position:relative;overflow:hidden;aspect-ratio:2/1;margin:8px 0 0;border-radius:12px;max-height:26dvh;width:100%}
 .mapx .ph,.mapx.ph{display:block}
-#pins{display:contents}
-.ring{position:absolute;border:1.5px dashed var(--mut);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
-svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;color:var(--ink)}
-.mp{position:absolute;transform:translate(-50%,-50%);min-width:34px;height:34px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:2px;border:1.5px solid var(--ink);background:var(--card);border-radius:99px;font-size:16px;font-weight:800;line-height:1}
-.mp.on{background:var(--acc);color:var(--acct);z-index:2}
-.mp.off{opacity:.55;border-style:dashed}
-.mp.me{background:var(--ink);color:var(--bg);pointer-events:none;z-index:1}
-.mp.f{outline:3px solid var(--ok);z-index:4}
-.mp.f::after{content:attr(data-n);position:absolute;bottom:100%;left:50%;transform:translate(-50%,-6px);white-space:nowrap;max-width:60vw;overflow:hidden;text-overflow:ellipsis;background:var(--ink);color:var(--bg);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px}
 
 .hint{border:1px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--mut);font-size:13px;margin:0 0 10px}
 .dt{margin:0 0 12px}
@@ -159,18 +153,12 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 /* ===== v4: 대기시간 탭 · 이동 수단 선택(STEP 3) ===== */
 .seg button[disabled]{background:var(--fill);color:var(--mut);cursor:not-allowed}
 .seg button[role=tab]{font-size:14px}
-.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mode{min-height:56px;border:1px solid var(--line);background:var(--card);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;font-weight:700}
-.mode b{font-size:15px}
-.mode.on{background:var(--acc);color:var(--acct);border-color:var(--acc)}
-.mode.x:not(.on){border-color:var(--err);color:var(--err)}   /* 이 수단이면 대기시간 초과 */
 
 /* ===== v5: 위치/대기시간 페이지 분리 · 선택 순서별 색 ===== */
 .res .big2{font-size:40px}
 .dot{flex:none;width:26px;height:26px;border-radius:50%;color:#fff;font-size:13px;font-weight:800;display:inline-grid;place-items:center;line-height:1}
 .dot.sm{width:22px;height:22px;font-size:12px;vertical-align:middle}
 .lr.cl{border-left:4px solid var(--line);padding-left:8px}   /* 막대와 같은 색 (인라인으로 지정) */
-.mp.on{text-shadow:none}
 
 /* ===== v6: 홈 히어로 · 정사각 추천 코스 · 위치 지도 확대 · 시간 입력 확대 · STEP 2 지도 ===== */
 .hero{min-height:calc(50dvh - 68px);display:flex;flex-direction:column;justify-content:space-between;gap:24px;background:var(--acc);color:var(--acct);border-radius:20px;padding:24px 20px 20px}
@@ -198,7 +186,7 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .timebox .row{gap:6px;margin:0}
 .timebox .chip{min-height:36px;padding:0 12px;font-size:13px}
 
-.mapx{aspect-ratio:auto;max-height:none;height:clamp(240px,42dvh,440px)}
+.mapx{aspect-ratio:auto;max-height:none;height:clamp(220px,38dvh,440px)}
 .mtop .in{margin:0}
 .lr.f{background:var(--fill)}
 
@@ -211,9 +199,6 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 .dti .acts{margin-top:8px}
 .lr.f{background:var(--fill)}
 
-.modes{grid-template-columns:repeat(4,1fr);gap:4px}
-.mode{min-height:44px;border-radius:10px;font-size:11px;gap:1px;padding:0 2px;white-space:nowrap}
-.mode b{font-size:12px}
 
 .pc2{display:flex;align-items:center;gap:6px;padding:6px;position:relative;background:var(--card);touch-action:pan-y}
 .pc2 .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -271,4 +256,43 @@ svg.rt{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;colo
 /* 카카오 지도 화면 */
 .mapx{isolation:isolate;background:var(--fill)}   /* isolate: 지도 레이어가 하단 메뉴/토스트 위로 올라오지 않게 */
 .mapx .hint{margin:0;height:100%;display:flex;align-items:center;justify-content:center;border:0}
-.mp.kp{position:relative;transform:none}          /* CustomOverlay 가 위치를 잡아주므로 % 배치용 absolute 해제 */
+
+/* ===== v8: 페이지 설명 · 지도 핀 · 관심(♡) 버튼 · 코스 수정 ===== */
+.pgd{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--fill);font-size:13px;line-height:1.45;word-break:keep-all}
+.pgd b{flex:none;margin-top:1px;padding:2px 8px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:11px;font-weight:800;line-height:1.5}
+.pgd.w{background:var(--warnbg);color:var(--warn)}
+.pgd.w b{background:var(--warn);color:var(--card)}
+.mtop .pgd{margin:0 0 8px;padding:8px 10px;font-size:12px}
+.how .how-h:last-child{margin-bottom:0}
+.srow{display:flex;gap:8px;align-items:center}
+.srow .in{flex:1;min-width:0;margin:0}
+.bk2{flex:none;width:44px;height:44px;border:1px solid var(--line);background:var(--card);border-radius:10px;font-size:18px;font-weight:800}
+
+/* 지도 핀: 웨이팅 장소 선택 핀과 같은 물방울 모양. 반경 안 = 진하게(hi) · 밖 = 작고 옅게(far) · 담음(on) · 웨이팅 장소(me) */
+.pin{position:relative;display:block;width:34px;height:48px;padding:0;border:0;background:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));transform-origin:50% 100%}
+.pin svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pin .pi{position:absolute;left:50%;top:35.7%;transform:translate(-50%,-50%);font-size:15px;line-height:1;pointer-events:none}
+.pin.far{width:22px;height:31px;opacity:.85;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.pin.far .pi{font-size:10px}
+.pin.off{opacity:.6}
+.pin.on{width:38px;height:54px}
+.pin.on .pi{font-size:17px}
+.pin .bd{position:absolute;top:-4px;right:-9px;min-width:20px;height:20px;padding:0 3px;border:2px solid #fff;border-radius:10px;color:#fff;font-size:12px;font-weight:900;line-height:1;display:grid;place-items:center}
+.pin.f{transform:scale(1.25)}
+.pin.f::after{content:attr(data-n);position:absolute;bottom:100%;left:50%;transform:translate(-50%,-4px);white-space:nowrap;max-width:60vw;overflow:hidden;text-overflow:ellipsis;background:var(--ink);color:var(--bg);font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px}
+.pin.me{width:46px;height:64px;pointer-events:none;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.pin.me .pi{font-size:20px}
+.pin.me::after{content:"웨이팅 장소";position:absolute;bottom:100%;left:50%;transform:translate(-50%,-3px);white-space:nowrap;background:#d93025;color:#fff;border:2px solid #fff;font-size:12px;font-weight:800;padding:2px 8px;border-radius:99px}
+.pin.me::before{content:"";position:absolute;left:50%;bottom:-4px;width:30px;height:11px;margin-left:-15px;border-radius:50%;background:rgba(217,48,37,.4)}
+@media (prefers-reduced-motion:no-preference){.pin.me::before{animation:pulse 1.8s ease-out infinite}@keyframes pulse{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.8);opacity:0}}}
+
+/* 관심 공간 ♡ */
+.hrt{flex:none;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:none;color:var(--mut);display:grid;place-items:center}
+.hs{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hrt.on{color:#d6336c}
+.hrt.on .hs,.lk.fv .hs{fill:currentColor}
+.lk .hs{width:16px;height:16px;margin-right:4px}
+.lk.fv{color:#d6336c;border-color:#d6336c}
+.lr.far .lrn{opacity:.6}
+.gc .row.nowrap{margin:0;align-items:center}
+.gc .row.nowrap .add{flex:1}
