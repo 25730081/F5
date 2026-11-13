@@ -135,6 +135,8 @@ h3.sec{margin:20px 0 8px}
 .lrn.v{flex-direction:column;align-items:stretch;gap:4px;min-height:0}
 .lrn.v .ph{height:56px;font-size:24px}
 .lrn.v b{white-space:normal}
+.rvr{display:flex;gap:8px;align-items:center}
+.rvr .in{flex:1}
 @media (prefers-reduced-motion:no-preference){.toast{animation:up .2s ease-out}@keyframes up{from{transform:translateY(-8px);opacity:0}}}
 
 /* ===== v3: 위치 지도 · 대기시간 동시 입력 · 체류 시간 입력 ===== */
@@ -256,6 +258,8 @@ h3.sec{margin:20px 0 8px}
 .mapx .hint{margin:0;height:100%;display:flex;align-items:center;justify-content:center;border:0}
 
 /* ===== v8: 페이지 설명 · 지도 핀 · 관심(♡) 버튼 · 코스 수정 ===== */
+.pgd{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--fill);font-size:13px;line-height:1.45;word-break:keep-all}
+.pgd b{flex:none;margin-top:1px;padding:2px 8px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:11px;font-weight:800;line-height:1.5}
 .pgd.w{background:var(--warnbg);color:var(--warn)}
 .pgd.w b{background:var(--warn);color:var(--card)}
 .mtop .pgd{margin:0 0 8px;padding:8px 10px;font-size:12px}
@@ -286,23 +290,9 @@ h3.sec{margin:20px 0 8px}
 .hrt{flex:none;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:none;color:var(--mut);display:grid;place-items:center}
 .hs{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .hrt.on{color:#d6336c}
-.hrt.on .hs{fill:currentColor}
+.hrt.on .hs,.lk.fv .hs{fill:currentColor}
+.lk .hs{width:16px;height:16px;margin-right:4px}
+.lk.fv{color:#d6336c;border-color:#d6336c}
 .lr.far .lrn{opacity:.6}
 .gc .row.nowrap{margin:0;align-items:center}
 .gc .row.nowrap .add{flex:1}
-
-/* v8.1: 안내 줄바꿈 · 길찾기 옆배치 · 대기 ±10 소형 · 더 담기 상단 */
-.pgd{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--fill);font-size:13px;line-height:1.5;word-break:keep-all}
-.pgd b{margin:0 0 3px;padding:2px 8px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:11px;font-weight:800;line-height:1.5}
-.pgd.w b{background:var(--warn);color:var(--card)}
-.pgd span{display:block}
-.lk.sm{min-height:32px;padding:0 10px;font-size:12px;flex:none;white-space:nowrap;border-radius:8px}
-.adr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin:0 0 6px}
-.adr p{flex:1;min-width:0;margin:0!important}
-.stg{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.stg-t{flex:1;min-width:0}
-.stg-t h3{margin:0}
-.tmr{display:flex;align-items:center;justify-content:center;gap:10px}
-.adj{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:800;letter-spacing:-.5px}
-.hrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
-.hrow h2{margin:0}
