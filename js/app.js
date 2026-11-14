@@ -48,6 +48,11 @@
  *  - 코스 수정 흐름: 코스 확인 ↔ 지도 / 진행 중 코스 수정 / 마이페이지 코스 수정 (돌아갈 곳이 항상 보임)
  *  - 관심 공간 하트(♡/♥) 버튼 복구 (장소 목록 · 상세)
  *  - 각 페이지 상단 STEP 표기 대신 안내·참고·주의 한두 문장
+ *
+ * v9 변경 요약
+ *  - 로고: 숫자 0을 '코스가 채워지는 원형 타이머' 링으로 교체 (선택 순서 색 호 + 남은 여유 구간)
+ *  - 길찾기: 누르면 앱 선택 시트가 열림. 구글지도(웹·앱 어디서나, 전체 경로 자동 입력) / 네이버지도 앱(휴대폰)
+ *  - 마이페이지: 코스를 원형 타이머 카드 2열 격자로 표시 (자세한 정보는 눌러서 확인)
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -116,7 +121,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}})();
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false};
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -244,11 +249,13 @@ const IC={home:svg('<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 
 const tabOf=()=>{const i=S.i;if(i=='prog')return S.active?'reg':'home';return {home:'home',done:'home',reg:'reg',wait:'reg',map:'reg',confirm:'reg',my:'my',mc:'my'}[i]};
 const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg';
  return `<nav class="nav" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home">${IC.home}<span>홈</span></button><button class="reg ${a=='reg'?'on':''}" data-go="${go}">${S.active?IC.route:IC.clock}<span>${S.active?'코스':'등록'}</span></button><button class="${a=='my'?'on':''}" data-go="my">${IC.user}<span>마이페이지</span></button></nav>`};
-const LOGO='<svg class="lg0" viewBox="0 0 24 32" aria-hidden="true"><path fill-rule="evenodd" d="M12 1.5C6.2 1.5 1.8 6 1.8 11.6c0 7.4 10.2 18.9 10.2 18.9s10.2-11.5 10.2-18.9C22.2 6 17.8 1.5 12 1.5zM12 6.2c-2.3 0-4.1 2.4-4.1 5.4s1.8 5.4 4.1 5.4 4.1-2.4 4.1-5.4-1.8-5.4-4.1-5.4z"/><circle cx="12" cy="11.6" r="1.9" fill="#d93025"/></svg>';   // 숫자 0 = 핀 모양
+const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫자 0 = 코스가 채워지는 원형 타이머 (색은 코스 선택 순서 색, 남은 구간은 복귀 여유)
+ const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
+ return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
 const note=(k,t)=>`<p class="note ${k=='주의'?'warn':k=='참고'?'ref':''}"><b>${k}</b><span>${t.split(/(?<=\.)\s+/).join('<br>')}</span></p>`;   // 페이지 상단 안내(안내·참고·주의)
 const hd=()=>`<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><button class="pill" data-cd="pill" data-go="${S.active&&S.sel.length?'prog':S.active?'home':'reg'}">${S.active?'⏱ '+hms(remSec()):'⏱ 웨이팅 등록'}</button></header>`;
 const toastH=()=>S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'';
-const frame=(b,f)=>`${hd()}<main class="body">${b}</main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}`;
+const frame=(b,f)=>`${hd()}<main class="body">${b}</main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}${routeSheet()}`;
 const frameM=(top,sheet,f)=>`${hd()}<main class="mapbody"><div class="mtop">${top}</div><div class="sheet" id="sheet">${sheet}</div></main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}`;
 const bar=()=>{let h='';S.sel.forEach((k,j)=>h+=`<i style="width:${cost(k)/S.wait*100}%;background:${colr(j)};color:#fff">${j+1} ${P[k].e} ${cost(k)}′</i>`);const r=rem();
  return `<div class="bar" role="img" aria-label="${r<0?'대기시간 '+fm(-r)+' 초과':'복귀 여유 '+fm(r)}">${h}<i class="${r<0?'x':'m'}" style="flex:1">${r<0?'⚠ '+fm(-r)+' 초과':'여유 '+fm(r)}</i></div>`};
@@ -431,18 +438,27 @@ const map=()=>{const c=cfm(),ed=editing();
  sec?`<div class="duo">${main}${sec}</div>`:main)};
 
 /* ---------- 코스 확인 ---------- */
-// 코스 전체 길찾기: 네이버지도 앱 도보 길찾기 (웨이팅 장소 출발 → 담은 장소 경유 → 웨이팅 장소 복귀). 경유지는 최대 5곳
-function openRoute(){
+// 코스 전체 길찾기 (웨이팅 장소 출발 → 담은 장소 경유 → 웨이팅 장소 복귀, 도보). 경로는 자동 입력됨
+// 1) 구글지도: 웹 주소라 PC·휴대폰 어디서나 바로 경로가 보임 (경유지 최대 9곳)
+// 2) 네이버지도: 휴대폰 앱 전용 (경유지 최대 5곳)
+const gUrl=()=>{const l=S.loc,o=l.lat+','+l.lng,w=S.sel.slice(0,9).map(k=>P[k].lat+','+P[k].lng).join('|');
+ return `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${o}${w?'&waypoints='+encodeURIComponent(w):''}&travelmode=walking`};
+function openNaver(){
  const l=S.loc,v=S.sel.slice(0,5),q=encodeURIComponent,nm_=q(S.rest||'웨이팅 장소'),app=q(location.origin&&location.origin!='null'?location.origin:'zerocha');
  let u=`route/walk?slat=${l.lat}&slng=${l.lng}&sname=${nm_}&dlat=${l.lat}&dlng=${l.lng}&dname=${nm_}`;
  v.forEach((k,i)=>{u+=`&v${i+1}lat=${P[k].lat}&v${i+1}lng=${P[k].lng}&v${i+1}name=${q(P[k].n)}`});
  u+=`&appname=${app}`;
  const ua=navigator.userAgent||'';
  if(S.sel.length>5)toast('네이버지도는 경유지가 5곳까지라 앞의 5곳만 열려요');
- if(/Android/i.test(ua))location.href=`intent://${u}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
- else if(/iPhone|iPad|iPod/i.test(ua)){const t=Date.now();location.href='nmap://'+u;setTimeout(()=>{if(Date.now()-t<2000)location.href='http://itunes.apple.com/app/id311867728?mt=8'},1500)}
- else{toast('경로는 네이버지도 앱에서 열려요. 휴대폰에서 눌러주세요');draw()}
+ if(/Android/i.test(ua))location.href=`intent://${u}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;S.browser_fallback_url=${q(gUrl())};end`;   // 앱이 없으면 구글지도로
+ else if(/iPhone|iPad|iPod/i.test(ua)){const t=Date.now();location.href='nmap://'+u;setTimeout(()=>{if(Date.now()-t<2000)location.href=gUrl()},1500)}
+ else{toast('네이버지도는 휴대폰 앱에서 열려요. PC에서는 구글지도를 이용해주세요');draw()}
 }
+// 길찾기 앱 선택 시트 (진행 화면)
+const routeSheet=()=>!S.rsheet||S.i!='prog'||!S.sel.length?'':`<div class="rs" role="dialog" aria-modal="true" aria-label="길찾기 앱 선택"><button class="rs-bg" data-rclose="1" aria-label="닫기"></button><div class="rs-p"><h3>길찾기 열기</h3><p class="sub">${esc(S.rest)} → ${S.sel.map(k=>esc(P[k].n)).join(' → ')} → 복귀<br>경로가 자동으로 입력돼요 (도보)</p>
+<a class="rs-o" href="${esc(gUrl())}" target="_blank" rel="noopener noreferrer"><b>구글지도</b><span class="sub">PC·휴대폰 모두 가능 · 경유지 ${Math.min(S.sel.length,9)}곳 전체 입력</span></a>
+<button class="rs-o" data-nav="1"><b>네이버지도 앱</b><span class="sub">휴대폰에서 열려요 · 경유지 최대 5곳</span></button>
+<button class="btn g mt" data-rclose="1">닫기</button></div></div>`;
 const tline=(sel,stm,ar,w,nav)=>{let t=base();
  const r=(tm,name,sub,cls,go)=>`<div class="${cls||''}${go?' hasgo':''}"><b class="tm">${f2(tm)}</b><span class="tx2"><b>${name}</b>${sub?`<span class="sub">${sub}</span>`:''}</span>${go?`<a class="lk go" href="${esc(go)}" target="_blank" rel="noopener noreferrer">길찾기</a>`:''}</div>`;
  const mv=m=>`<div class="mv">도보 ${m}분 이동</div>`;
@@ -483,8 +499,13 @@ const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0};
  `<button class="btn" data-go="my">내 코스 보러가기</button><button class="btn g mt" data-go="home">홈으로</button>`)};
 
 /* ---------- 마이페이지 ---------- */
+// 마이페이지: 코스를 원형 타이머로 표시 (선택 순서별 색 호 + 가운데 코스 소요 시간, 남은 구간은 복귀 여유)
+const cring=c=>{const R=48,C=2*Math.PI*R,w=c.wait,lc=locOf(c),cs=c.sel.map(k=>ttx(k,lc)*2+sx(k,c.stay,w)),tot=cs.reduce((a,b)=>a+b,0),over=tot>w;let acc=0;
+ const segs=over?`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--err)" stroke-width="12"/>`:cs.map((m,j)=>{const len=Math.min(m/w*C,C-acc),g=len>4?1.5:0,o=-acc;acc+=len;return `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${colr(j)}" stroke-width="12" stroke-dasharray="${Math.max(len-g,0)} ${C}" stroke-dashoffset="${o}"/>`}).join('');
+ return `<div class="rbc cr" role="img" aria-label="대기 ${fm(w)} 중 코스 ${fm(tot)}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/><g transform="rotate(-90 60 60)">${segs}</g></svg><div class="rbt"><span class="sub">소요</span><b class="${over?'ov':''}">${tot}<small>분</small></b></div></div>`};
+const ccard=(c,i)=>`<button class="cc" data-cid="${c.id}" aria-label="코스 ${i+1} 상세 보기">${cring(c)}<b class="cc-t">코스 ${i+1}</b><span class="sub">${esc(c.area||'성수동')} · ${esc(c.date)}</span><span class="cc-d">${c.sel.map((k,j)=>`<i class="dot sm" style="background:${colr(j)}">${j+1}</i>`).join('')}</span></button>`;
 const my=()=>frame(`${note('안내','만든 코스와 하트(♡)로 저장한 공간을 모아봐요. 코스를 눌러 수정하거나 다시 시작할 수 있어요.')}<h2>마이페이지</h2><p class="sub">내가 만든 코스와 저장한 공간</p><div class="seg"><button class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
-(S.seg=='c'?(S.courses.length?S.courses.map((c,i)=>`<button class="box btnbox cs" data-cid="${c.id}"><div class="cs-h"><b>코스 ${i+1}</b><span class="sub">${esc(c.date)}</span></div><p class="cs-r">${title(c)}</p><p class="sub">${esc(c.area||'성수동')} · 대기 ${fm(c.wait)} · 코스 ${fm(ctot(c))}</p></button>`).join(''):'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
+(S.seg=='c'?(S.courses.length?`<div class="cgrid">${S.courses.map(ccard).join('')}<button class="cc new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><b class="cc-t">새 코스</b><span class="sub">웨이팅 등록하기</span></button></div>`:'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
 :(S.favs.length?S.favs.map(k=>`<div class="pc">${cb(P[k].c)}<div><h3>${esc(P[k].n)}</h3><p class="sub">${P[k].c}</p></div><button class="add" data-fav="${k}">♥ 해제</button></div>`).join(''):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>')));
 const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,locOf(c),c.wait);
  return frame(`<button class="back" data-go="my">← 내 코스</button>${note('참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.')}<h2 class="mt">코스 ${S.courses.indexOf(c)+1}</h2><p class="cs-r">${title(c)}</p><p class="sub">${esc(c.date)} · ${esc(c.area||'성수동')}</p>
@@ -508,7 +529,7 @@ function loadCourse(c){S.sel=[...c.sel];S.stay={...c.stay};S.wait=c.wait;{const 
 document.addEventListener('click',e=>{
  const c=e.target.closest('[data-cid]'),t=c||e.target.closest('button');
  if(!t||t.disabled)return;const d=t.dataset,has=k=>d[k]!==undefined;
- if(has('go')){if(d.go=='reg')S.editId=null;if(d.go=='confirm')S.from=S.i;S.i=(d.go=='prog'&&!S.active)?'home':d.go}
+ if(has('go')){S.rsheet=false;if(d.go=='reg')S.editId=null;if(d.go=='confirm')S.from=S.i;S.i=(d.go=='prog'&&!S.active)?'home':d.go}
  else if(has('cid')){S.cid=+d.cid;S.i='mc'}
  else if(has('tog')){const k=+d.tog;if(S.sel.includes(k)){S.sel=S.sel.filter(x=>x!=k);delete S.stay[k]}else S.sel=[...S.sel,k]}
  else if(has('hcat')){S.cats=[d.hcat];S.i='reg'}
@@ -531,10 +552,12 @@ document.addEventListener('click',e=>{
  else if(has('st')){const[k,m]=d.st.split(':').map(Number);S.stay[k]=Math.min(240,Math.max(dstay(),stay(k)+m))}
  else if(has('rm'))S.sel=S.sel.filter(x=>x!=+d.rm);
  else if(has('start')){S.curId=saveCourse();S.active=true;S.start=Date.now();S.i='prog'}
- else if(has('route')){openRoute();return}
+ else if(has('route'))S.rsheet=true;
+ else if(has('rclose'))S.rsheet=false;
+ else if(has('nav')){openNaver();return}
  else if(has('apply')){S.curId=saveCourse();S.i='prog';toast('코스를 수정했어요')}   // 진행 중 코스 수정 완료 → 진행 화면으로
  else if(has('later')){const ed=editing(),id=saveCourse();resetBuild();if(ed){S.cid=id;S.i='mc';toast('수정한 코스를 저장했어요')}else{S.seg='c';S.i='my';toast('내 코스에 저장했어요')}}
- else if(has('finish')){if(S.editId!=null)saveCourse();S.fin={n:S.sel.length,use:Math.min(total(),S.wait),rest:Math.max(rem(),0),names:nm(S.sel),cid:S.curId,wait:S.wait};S.active=false;S.start=null;resetBuild();S.i='done'}
+ else if(has('finish')){S.rsheet=false;if(S.editId!=null)saveCourse();S.fin={n:S.sel.length,use:Math.min(total(),S.wait),rest:Math.max(rem(),0),names:nm(S.sel),cid:S.curId,wait:S.wait};S.active=false;S.start=null;resetBuild();S.i='done'}
  else if(has('share')){const txt=`0차 코스 · ${(S.fin&&S.fin.names||[]).join(' → ')} (대기 ${fm(S.fin?S.fin.wait:0)})`;
   if(navigator.share)navigator.share({text:txt}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{toast('코스를 복사했어요');draw()},()=>{});
