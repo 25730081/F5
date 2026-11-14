@@ -55,10 +55,12 @@
  *  - 마이페이지: 코스를 원형 타이머 카드 2열 격자로 표시 (자세한 정보는 눌러서 확인)
  *
  * v10 변경 요약
- *  - 헤더 알약: 진행 중엔 본문과 중복되는 남은 시간 대신 '코스 어디까지 왔는지'(번호·장소·이동/체류/복귀)를 표시
+ *  - 헤더: 우측 버튼을 하트(♥ 관심 공간 N) 바로가기로 변경 → 누르면 마이페이지 '관심 공간' 탭
  *  - 진행 화면: 대기시간 ±10분 조절을 작게·가운데 정렬 / 코스 타임라인은 '도보 · 체류'를 한 줄로, 장소 간격 확대
- *  - 마이페이지: 코스 카드에 장소 이름(순서·분류)을 바로 보여주는 세로 목록으로 변경
- *  - 코스 상세: 하단 버튼을 '다시 시작 + 장소 바꾸기' 한 줄로 정리(하단 메뉴 중앙 버튼과 겹침 해소), 삭제는 본문 맨 아래로 이동
+ *  - 코스 종료 화면: '오늘의 코스' 가운데 정렬
+ *  - 마이페이지 코스 카드: [원형 타이머 | 코스 제목·날짜·대기 | 장소 목록]을 한 행에 배치
+ *  - 관심 공간: 간략 주소 표시 · 지도 아래와 같은 형태의 필터(장소/영업중/정렬)
+ *  - 코스 상세: 하단 버튼을 '다시 시작 + 장소 바꾸기' 한 줄로 정리(하단 메뉴 중앙 버튼과 겹침 해소), 삭제는 본문 맨 아래로
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -127,7 +129,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}})();
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def'};
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -259,15 +261,8 @@ const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫�
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
 const note=(k,t)=>`<p class="note ${k=='주의'?'warn':k=='참고'?'ref':''}"><b>${k}</b><span>${t.split(/(?<=\.)\s+/).join('<br>')}</span></p>`;   // 페이지 상단 안내(안내·참고·주의)
-// 헤더 알약: 진행 중엔 본문에 이미 큰 카운트다운이 있으므로 남은 시간 대신 '코스 진행 위치'(번호·장소·이동/체류/복귀)를 보여준다
-const pillSt=()=>{
- if(!S.active)return{k:'idle',h:'⏱ 웨이팅 등록'};
- if(!S.sel.length)return{k:'empty',h:'＋ 코스 만들기'};
- const n=S.sel.length,j=curStage();
- if(j>=n*3)return{k:'end',h:'🏁 식당으로 복귀'};
- const i=Math.floor(j/3),p=j%3;
- return{k:i+'|'+p,h:`<i class="dot sm" style="background:${colr(i)}">${i+1}</i><span class="pn">${esc(P[S.sel[i]].n)}</span><em>${['이동','체류','복귀'][p]}</em>`}};
-const hd=()=>{const s=pillSt();return `<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><button class="pill${S.active?' act':''}" data-cd="pill" data-k="${s.k}" data-go="${S.active?(S.sel.length?'prog':'map'):'reg'}">${s.h}</button></header>`};
+// 헤더 우측: 관심 공간(하트) 바로가기. 어느 화면에서든 저장한 장소로 이동
+const hd=()=>{const n=S.favs.length,on=S.i=='my'&&S.seg=='f';return `<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><button class="fvb${on?' on':''}" data-favgo="1" aria-label="관심 공간 ${n}곳 보기"><span class="fh" aria-hidden="true">${n?'♥':'♡'}</span><b>${n}</b></button></header>`};
 const toastH=()=>S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'';
 const frame=(b,f)=>`${hd()}<main class="body">${b}</main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}${routeSheet()}`;
 const frameM=(top,sheet,f)=>`${hd()}<main class="mapbody"><div class="mtop">${top}</div><div class="sheet" id="sheet">${sheet}</div></main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}`;
@@ -507,7 +502,7 @@ ${h}
 const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0};
  return frame(`${note('안내','코스가 마이페이지 \'내 코스\'에 보관됐어요. 언제든 다시 시작하거나 수정할 수 있어요.')}<h2>0차 완료</h2><p class="sub">남은 대기 시간을 알차게 보냈어요.</p>
 <div class="box"><div class="row stats"><div><span class="sub">방문</span><br><b>${F.n}곳</b></div><div><span class="sub">활용</span><br><b>${fm(F.use)}</b></div><div><span class="sub">복귀 여유</span><br><b>${fm(F.rest)}</b></div></div></div>
-<div class="box"><h3>오늘의 코스</h3>${F.names.length?`<ol class="dcs">${F.names.map((n,i)=>`<li><span class="dot" style="background:${colr(i)}">${i+1}</span><b>${esc(n)}</b></li>`).join('')}</ol>`:'<p class="sub">—</p>'}</div>
+<div class="box"><h3 class="c">오늘의 코스</h3>${F.names.length?`<ol class="dcs">${F.names.map((n,i)=>`<li><span class="dot" style="background:${colr(i)}">${i+1}</span><b>${esc(n)}</b></li>`).join('')}</ol>`:'<p class="sub">—</p>'}</div>
 <button class="btn g mt" data-share="1">코스 공유하기</button>`,
  `<button class="btn" data-go="my">내 코스 보러가기</button><button class="btn g mt" data-go="home">홈으로</button>`)};
 
@@ -516,13 +511,24 @@ const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0};
 const cring=c=>{const R=48,C=2*Math.PI*R,w=c.wait,lc=locOf(c),cs=c.sel.map(k=>ttx(k,lc)*2+sx(k,c.stay,w)),tot=cs.reduce((a,b)=>a+b,0),over=tot>w;let acc=0;
  const segs=over?`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--err)" stroke-width="12"/>`:cs.map((m,j)=>{const len=Math.min(m/w*C,C-acc),g=len>4?1.5:0,o=-acc;acc+=len;return `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${colr(j)}" stroke-width="12" stroke-dasharray="${Math.max(len-g,0)} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<div class="rbc cr" role="img" aria-label="대기 ${fm(w)} 중 코스 ${fm(tot)}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/><g transform="rotate(-90 60 60)">${segs}</g></svg><div class="rbt"><span class="sub">소요</span><b class="${over?'ov':''}">${tot}<small>분</small></b></div></div>`};
-// 마이페이지 코스 카드: 장소 이름을 바로 보여줘야 어떤 코스인지 알아보고 누를 수 있음 (위: 원형 타이머+요약 / 아래: 장소 목록)
-const ccard=(c,i)=>{const vis=c.sel.slice(0,5),more=c.sel.length-vis.length;
- return `<button class="cc2" data-cid="${c.id}" aria-label="코스 ${i+1} 상세 보기"><span class="cc2-top"><span class="cc2-ring">${cring(c)}</span><span class="cc2-info"><b class="cc2-t">코스 ${i+1}</b><span class="sub">${esc(c.date)} · ${esc(c.area||'성수동')}</span><span class="sub">대기 ${fm(c.wait)} · ${c.sel.length}곳</span></span><span class="cc2-go" aria-hidden="true">›</span></span>`+
- `<span class="cc2-pl">${vis.map((k,j)=>`<span class="cc2-p"><i class="dot sm" style="background:${colr(j)}">${j+1}</i><span class="nm">${esc(P[k].n)}</span><span class="sub">${esc(P[k].c)}</span></span>`).join('')}${more>0?`<span class="sub cc2-m">외 ${more}곳</span>`:''}</span></button>`};
+// 마이페이지 코스 카드: 한 행에 [원형 타이머 | 제목·날짜·대기 | 장소 목록] — 공백 없이 한눈에 보이게
+const ccard=(c,i)=>{const vis=c.sel.slice(0,4),more=c.sel.length-vis.length;
+ return `<button class="cc2" data-cid="${c.id}" aria-label="코스 ${i+1} 상세 보기"><span class="cc2-ring">${cring(c)}</span><span class="cc2-info"><b class="cc2-t">코스 ${i+1}</b><span class="sub">${esc(c.date)} · ${esc(c.area||'성수동')}</span><span class="sub">대기 ${fm(c.wait)} · ${c.sel.length}곳</span></span>`+
+ `<span class="cc2-pl">${vis.map((k,j)=>`<span class="cc2-p"><i class="dot sm" style="background:${colr(j)}">${j+1}</i><span class="nm">${esc(P[k].n)}</span></span>`).join('')}${more>0?`<span class="sub cc2-m">외 ${more}곳</span>`:''}</span></button>`};
+// 관심 공간: 간략 주소(구 + 도로명 + 번호) · 필터는 지도 아래 필터와 같은 형태 (상태는 지도와 별도)
+const shortAddr=a=>String(a||'').replace(/\([^)]*\)/g,'').replace(/^서울(특별시|시)?\s*/,'').trim().split(/\s+/).slice(0,3).join(' ');
+const favList=()=>{const b=S.favs.filter(k=>(!S.fcats.length||S.fcats.includes(P[k].c))&&(!S.fonow||isOpen(k)===true));
+ b.sort(byDist);
+ if(S.fsort=='def')b.sort((x,y)=>CAT_ORDER.indexOf(P[x].c)-CAT_ORDER.indexOf(P[y].c)||byDist(x,y));
+ else if(S.fsort=='pop')b.sort((x,y)=>(P[y].pop||0)-(P[x].pop||0)||byDist(x,y));
+ return b};
+const fcatLbl=()=>!S.fcats.length?'장소':'장소 · '+S.fcats[0]+(S.fcats.length>1?' 외 '+(S.fcats.length-1):'');
+const favRow=()=>`<div class="flt" role="group" aria-label="관심 공간 필터"><button class="chip ${S.fcats.length||S.fcatOpen?'on':''}" data-fcatmenu="1" aria-expanded="${S.fcatOpen}">${esc(fcatLbl())} ${S.fcatOpen?'▴':'▾'}</button><button class="chip ${S.fonow?'on':''}" data-fonow="1" aria-pressed="${S.fonow}">영업중</button><select class="srt" id="fsort" aria-label="정렬"><option value="def" ${S.fsort=='def'?'selected':''}>기본순</option><option value="near" ${S.fsort=='near'?'selected':''}>거리 가까운 순</option><option value="pop" ${S.fsort=='pop'?'selected':''}>인기순</option></select></div>
+${S.fcatOpen?`<div class="catp"><div class="row cats" role="group" aria-label="장소 카테고리 (여러 개 선택 가능)"><button class="chip ${S.fcats.length?'':'on'}" aria-pressed="${!S.fcats.length}" data-fcat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.fcats.includes(c)?'on':''}" aria-pressed="${S.fcats.includes(c)}" data-fcat="${c}">${CE[c]} ${c}</button>`).join('')}</div></div>`:''}`;
+const favItem=k=>{const ad=shortAddr(P[k].addr);return `<div class="pc">${cb(P[k].c)}<div><h3>${esc(P[k].n)}</h3><p class="sub">${esc(P[k].c)}${ad?' · '+esc(ad):''}</p></div><button class="add" data-fav="${k}">♥ 해제</button></div>`};
 const my=()=>frame(`${note('안내','만든 코스와 하트(♡)로 저장한 공간을 모아봐요. 코스를 눌러 수정하거나 다시 시작할 수 있어요.')}<h2>마이페이지</h2><p class="sub">내가 만든 코스와 저장한 공간</p><div class="seg"><button class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
 (S.seg=='c'?(S.courses.length?`<div class="clist">${S.courses.map(ccard).join('')}<button class="cc2 new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><span class="cc2-info"><b class="cc2-t">새 코스 만들기</b><span class="sub">웨이팅 등록하기</span></span></button></div>`:'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
-:(S.favs.length?S.favs.map(k=>`<div class="pc">${cb(P[k].c)}<div><h3>${esc(P[k].n)}</h3><p class="sub">${P[k].c}</p></div><button class="add" data-fav="${k}">♥ 해제</button></div>`).join(''):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>')));
+:(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>')));
 // 코스 상세: 하단은 '다시 시작(주) + 장소 바꾸기' 한 줄. 삭제는 자주 쓰지 않으므로 본문 맨 아래로
 const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,locOf(c),c.wait);
  return frame(`<button class="back" data-go="my">← 내 코스</button>${note('참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.')}<h2 class="mt">코스 ${S.courses.indexOf(c)+1}</h2><p class="cs-r">${title(c)}</p><p class="sub">${esc(c.date)} · ${esc(c.area||'성수동')}</p>
@@ -559,6 +565,10 @@ document.addEventListener('click',e=>{
   return}
  else if(has('cat')){if(!d.cat)S.cats=[];else S.cats=S.cats.includes(d.cat)?S.cats.filter(x=>x!=d.cat):[...S.cats,d.cat]}
  else if(has('catmenu'))S.catOpen=!S.catOpen;
+ else if(has('favgo')){S.rsheet=false;S.seg='f';S.i='my'}
+ else if(has('fcat')){if(!d.fcat)S.fcats=[];else S.fcats=S.fcats.includes(d.fcat)?S.fcats.filter(x=>x!=d.fcat):[...S.fcats,d.fcat]}
+ else if(has('fcatmenu'))S.fcatOpen=!S.fcatOpen;
+ else if(has('fonow'))S.fonow=!S.fonow;
  else if(has('onow'))S.onow=!S.onow;
  else if(has('view'))S.view=d.view;
  else if(has('wait')){S.wait=+d.wait;if(!S.active)prune()}
@@ -590,6 +600,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{   // 입력을 마치면 범위(5~240)에 맞춰 표시값 정리
  if(e.target.id=='sort'){S.sort=e.target.value;draw();return}
+ if(e.target.id=='fsort'){S.fsort=e.target.value;draw();return}
 });
 /* ---------- 코스 확인: 드래그로 순서 변경 ---------- */
 let DR=null;
@@ -627,6 +638,6 @@ draw();
 loadPlaces();
 setInterval(()=>{if(!S.active)return;document.querySelectorAll('[data-cd]').forEach(el=>{const k=el.dataset.cd;
  if(k=='hms')el.textContent=hms(remSec());
- else if(k=='pill'){const s=pillSt();if(el.dataset.k!==s.k){el.dataset.k=s.k;el.innerHTML=s.h}}
+ 
  else if(k=='stage')el.textContent=stageTxt();
  else if(k=='banner'){const b=banner();el.className='bn '+b.c;el.textContent=b.t;el.hidden=b.c=='ok'}})},1000);
