@@ -1,4 +1,4 @@
-/* ===== 0차 style.css (v8) =====
+/* ===== 0차 style.css (v9) =====
  * 개선 포인트: 터치 영역 44px, 본문 14px+, 보조 텍스트 대비 강화, 상태 색 토큰(--ok/--warn/--err),
  *             지도 화면 고정 영역 + 스크롤 시트, 비활성 버튼 가독성 */
 :root{--bg:#f1f1f1;--card:#fff;--ink:#111;--mut:#5c5c5c;--line:#cfcfcf;--fill:#ececec;--acc:#111;--acct:#fff;--ok:#16704f;--warn:#9a5a00;--err:#c0312b;--okbg:#e7f4ee;--warnbg:#fff3df;--errbg:#fdeaea}
@@ -14,7 +14,9 @@ a{color:inherit}
 .app{position:relative;width:100%;max-width:430px;height:100vh;height:100dvh;background:var(--card);display:flex;flex-direction:column;overflow:hidden;margin:0 auto;box-shadow:0 0 20px rgba(0,0,0,.08)}
 .hd{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex:none}
 .logo{display:flex;align-items:center;gap:1px;min-height:44px;margin-left:-4px;padding:0 4px;border:0;background:none;font-weight:900;font-size:20px;letter-spacing:-1px;color:var(--ink)}
-.lg0{display:block;height:26px;width:auto;fill:currentColor}
+.lg0{display:block;height:28px;width:28px}   /* v9: 숫자 0 = 코스가 채워지는 원형 타이머 */
+.lg0 circle{fill:none;stroke-width:6}
+.lg0 .tk{stroke:var(--line)}
 .pill{min-height:36px;font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:0 12px;font-weight:700}
 .body{flex:1;overflow-y:auto;padding:16px}
 .nav{height:64px;border-top:1px solid var(--line);display:flex;flex:none;align-items:center;background:var(--card)}
@@ -356,3 +358,26 @@ h3.sec{margin:20px 0 8px}
 .rth{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 0}
 .rth h3{margin:0;font-size:16px}
 .btn.route{width:auto;min-height:40px;padding:0 16px;font-size:14px;display:inline-flex;align-items:center;gap:6px;border-radius:99px}
+
+/* ===== v9: 마이페이지 원형 타이머 코스 격자 · 길찾기 앱 선택 시트 ===== */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.cc{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:16px 8px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);text-align:center}
+.cc:active{background:var(--fill)}
+.cc .rbc{width:112px;height:112px;margin-bottom:6px}
+.cc .rbt b{font-size:20px}
+.cc .rbt b small{font-size:12px;font-weight:800;margin-left:1px}
+.cc-t{font-size:16px;letter-spacing:-.3px}
+.cc .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc-d{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:6px;min-height:22px}
+.cc.new{justify-content:center;border-style:dashed;background:transparent;color:var(--mut)}
+.cc.new .nw{display:grid;place-items:center;width:112px;height:112px;margin-bottom:6px;border:2px dashed var(--line);border-radius:50%;font-size:40px;font-weight:300;line-height:1;color:var(--mut)}
+
+.rs{position:absolute;inset:0;z-index:30;display:flex;align-items:flex-end}
+.rs-bg{position:absolute;inset:0;border:0;background:rgba(0,0,0,.45);cursor:default}
+.rs-p{position:relative;width:100%;padding:20px 16px 16px;background:var(--card);border-radius:20px 20px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.2)}
+.rs-p h3{font-size:18px;margin:0 0 6px}
+.rs-p>.sub{margin:0 0 14px;line-height:1.6;word-break:keep-all}
+.rs-o{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:60px;margin:0 0 8px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);text-align:left;text-decoration:none}
+.rs-o b{font-size:16px}
+a.rs-o{border-color:var(--ok);background:var(--okbg)}
+@media (prefers-reduced-motion:no-preference){.rs-p{animation:rsup .2s ease-out}@keyframes rsup{from{transform:translateY(24px);opacity:0}}}
