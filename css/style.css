@@ -288,3 +288,36 @@ h3.sec{margin:20px 0 8px}
 .kp.me::after{content:"웨이팅 장소";background:#d93025}
 .kp.me::before{content:"";position:absolute;left:50%;bottom:-5px;width:34px;height:12px;margin-left:-17px;border-radius:50%;background:rgba(217,48,37,.35);z-index:-1}
 @media (prefers-reduced-motion:no-preference){.kp.me::before{animation:kpulse 1.8s ease-out infinite}@keyframes kpulse{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.7);opacity:0}}}
+
+/* ===== v9: 안내 문구(연한 회색·문장별 줄바꿈) · 필터 정리 · 코스 타임라인 · 진행 화면 ===== */
+:root{--mut2:#9b9b9b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--mut2:#808080}}
+.note{color:var(--mut2);line-height:1.6}
+.note b{color:var(--mut)}
+.flt2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+.flt2 .chip{min-height:34px;padding:0 12px;font-size:13px;flex:none}
+.lrn .tx .sub{font-size:12px;color:var(--mut2)}
+
+/* 코스 타임라인: 시간·장소 구간을 넉넉히 띄우고, 이동은 회색 연결 문구로 */
+.tl{margin-top:18px}
+.tl>div{margin-bottom:24px}
+.tl .tm{font-size:15px;font-weight:800}
+.tl .tx2>b{font-size:16px}
+.tl .tx2 .sub{margin-top:2px;color:var(--mut2)}
+.tl .mv{margin:-10px 0 14px;font-size:12px;color:var(--mut2)}
+.tl .mv::before{display:none}
+.tl>div:last-child{margin-bottom:4px}
+.tl .hasgo{padding-right:84px;min-height:40px}
+.tl .go{position:absolute;right:0;top:50%;transform:translateY(-50%);min-height:36px;padding:0 12px}
+
+/* 진행 화면 */
+.adj{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0;padding:6px;border:1px solid var(--line);border-radius:99px}
+.adj span{font-size:13px;font-weight:700;color:var(--mut)}
+.adj button{min-width:84px;min-height:40px;border:0;border-radius:99px;background:var(--fill);font-size:14px;font-weight:800}
+.now{display:flex;align-items:baseline;gap:8px;margin:14px 0 6px;padding:12px 14px;border:1px solid var(--ok);border-radius:12px}
+.now b{font-size:15px}
+
+/* 완료: 오늘의 코스 세로 목록 */
+.dcs{list-style:none;margin:10px 0 0;padding:0}
+.dcs li{display:flex;align-items:center;gap:12px;padding:12px 0;font-size:16px}
+.dcs li+li{border-top:1px dashed var(--line)}
