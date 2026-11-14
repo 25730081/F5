@@ -321,3 +321,38 @@ h3.sec{margin:20px 0 8px}
 .dcs{list-style:none;margin:10px 0 0;padding:0}
 .dcs li{display:flex;align-items:center;gap:12px;padding:12px 0;font-size:16px}
 .dcs li+li{border-top:1px dashed var(--line)}
+
+/* ===== v10: 장소 배지(깔끔한 테두리 아이콘) · 프리미엄 핀 · 코스 길찾기 ===== */
+.ic2{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.cb{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;color:var(--c);background:color-mix(in srgb,var(--c) 9%,#fff);border:1.5px solid color-mix(in srgb,var(--c) 28%,#fff)}
+.cb .ic2{width:20px;height:20px}
+.pc2 .cb{width:28px;height:28px;border-radius:9px}
+.pc2 .cb .ic2{width:16px;height:16px}
+.pc{grid-template-columns:auto 1fr auto}
+.pc .cb{width:48px;height:48px;border-radius:14px}
+.pc .cb .ic2{width:24px}
+.lrn .cb{margin-right:2px}
+
+/* 핀: 같은 물방울 모양 · 카테고리 색 · 흰 원 안 라인 아이콘 · 하이라이트와 부드러운 그림자 */
+.kp{filter:drop-shadow(0 3px 4px rgba(16,24,40,.30))}
+.kp>svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+.kp path.bd{fill:var(--pc);stroke:#fff;stroke-width:1.8}
+.kp path.hl{fill:none;stroke:#fff;stroke-opacity:.4;stroke-width:1.6;stroke-linecap:round}
+.kp circle.in{fill:#fff;stroke:rgba(16,24,40,.1);stroke-width:.8}
+.kp .pe{font-size:0}
+.kp .pe svg{position:static;width:calc(var(--w)*.4);height:calc(var(--w)*.4);color:var(--pc);stroke-width:2.2}
+.kp .pe path,.kp .pe circle{fill:none;stroke:currentColor}
+.kp .pe .tg circle:first-child{fill:currentColor;stroke:none}
+.kp.out .pe{display:none}
+.kp.out circle.in{r:5}
+.kp.out path.hl{display:none}
+.kp.me{--pc:#ef3b2d}
+.kp.me .pe svg{width:calc(var(--w)*.46);height:calc(var(--w)*.46)}
+.kp.f::after,.kp.me::after{border-radius:99px;padding:4px 11px;letter-spacing:-.2px}
+.kp.me::after{background:#ef3b2d}
+.kp .nb{border-width:2px;box-shadow:0 1px 3px rgba(16,24,40,.3)}
+
+/* 진행 화면: 코스 헤더 + 길찾기 1개 */
+.rth{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 0}
+.rth h3{margin:0;font-size:16px}
+.btn.route{width:auto;min-height:40px;padding:0 16px;font-size:14px;display:inline-flex;align-items:center;gap:6px;border-radius:99px}
