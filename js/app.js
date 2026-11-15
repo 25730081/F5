@@ -129,7 +129,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}})();
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def'};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false};
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -241,6 +241,14 @@ const setLoc=(lat,lng)=>{if(moveTo(lat,lng))draw()};
 const stages=()=>S.sel.flatMap(k=>[{t:`${ro(P[k].n)} 이동`,m:tt(k)},{t:`${P[k].n}에서 머무르기`,m:stay(k)},{t:'식당 방향으로 복귀 이동',m:tt(k)}]);
 const curStage=()=>{const e=elapsed()/60,st=stages();let c=0;for(let j=0;j<st.length;j++){c+=st[j].m;if(e<c)return j}return st.length};
 const stageTxt=()=>{const st=stages(),j=curStage();return !st.length?'등록한 코스가 없어요':j>=st.length?'코스를 모두 마쳤어요 · 식당으로 돌아가요':st[j].t+' · 약 '+st[j].m+'분'};
+// 진행 화면 '지금' 카드용: 제목(단계)과 부제(도착/종료 시각 · 소요)를 나눠서 돌려준다
+const stageInfo=()=>{const st=stages(),j=curStage();
+ if(!st.length)return{t:'등록한 코스가 없어요',s:''};
+ if(j>=st.length)return{t:'지금 식당으로 돌아가세요',s:'코스를 모두 마쳤어요'};
+ let c=0;for(let i=0;i<=j;i++)c+=st[i].m;
+ const m=st[j].m,at=f2(base()+c);
+ return{t:st[j].t,s:j%3==1?`${at}까지 · 체류 ${m}분`:`${at} 도착 · 도보 ${m}분`}};
+const leftTxt=()=>remSec()<=0?'· 예상 대기시간 종료':`· ${fm(Math.ceil(remSec()/60))} 남음`;
 const stagePlace=()=>{const j=curStage();if(j>=S.sel.length*3||j%3==2)return null;return S.sel[Math.floor(j/3)]};   // 길찾기 대상(이동/체류 단계의 장소)
 const banner=()=>{const r=rem(),s=remSec();
  if(s<=0)return{c:'err',t:'⚠ 예상 대기시간이 끝났어요. 지금 식당으로 돌아가세요'};
@@ -490,12 +498,15 @@ ${h}<div class="box ${r<0?'errbox':''}"><span class="sub">복귀 여유</span> <
 /* ---------- 진행 / 완료 ---------- */
 const prog=()=>{
  if(!S.sel.length)return frame(`<h2>진행 중인 코스가 없어요</h2><div class="box sub c">지도에서 갈 곳을 담아 코스를 만들어보세요.</div>`,`<button class="btn" data-go="map">지도에서 코스 만들기 →</button>`);
- const [h]=tline(S.sel,S.stay,S.loc),b=banner();
- return frame(`<p class="sub c">${esc(S.rest)} · ${S.area}</p><div class="big" data-cd="hms">${hms(remSec())}</div><p class="sub c">식당 복귀까지 · <b class="ink">${backAt()}</b> 복귀</p>
-<div class="adj" role="group" aria-label="대기시간 조절"><button data-live="-10" aria-label="대기시간 10분 줄이기">−10분</button><span>대기시간</span><button data-live="10" aria-label="대기시간 10분 늘리기">+10분</button></div>
+ const [h]=tline(S.sel,S.stay,S.loc),b=banner(),si=stageInfo(),r=rem();
+ return frame(`<p class="sub">${esc(S.rest)} · ${S.area}</p>
+<div class="rtop"><p class="rt"><b class="rt1">${backAt()}까지 복귀</b><span class="rt2" data-cd="left">${leftTxt()}</span></p><button class="chipb" data-wadj="1" aria-expanded="${S.wadj}">대기시간 조정</button></div>
+${S.wadj?`<div class="adj" role="group" aria-label="대기시간 조절"><button data-live="-10" aria-label="대기시간 10분 줄이기">−10분</button><span>대기시간</span><button data-live="10" aria-label="대기시간 10분 늘리기">+10분</button></div>`:''}
+<div class="nowc ${b.c}" data-cd="hero"><span class="nk">지금</span><b class="nt" data-cd="st1">${esc(si.t)}</b><span class="ns" data-cd="st2">${esc(si.s)}</span>
+<button class="btn rbtn" data-route="1"><svg class="ic2" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M6 15.8V10a4 4 0 0 1 4-4h5.8"/></svg>길찾기</button></div>
 <div class="bn ${b.c}" data-cd="banner" role="status" ${b.c=='ok'?'hidden':''}>${esc(b.t)}</div>
-<p class="now"><span class="sub">지금</span> <b data-cd="stage">${stageTxt()}</b></p>
-<div class="rth"><h3>오늘의 코스</h3><button class="btn route" data-route="1"><svg class="ic2" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M6 15.8V10a4 4 0 0 1 4-4h5.8"/></svg>길찾기</button></div>
+<div class="slk"><span>복귀 여유</span><b class="${r<0?'err':''}">${r<0?'⚠ '+fm(-r)+' 초과':fm(r)}</b></div>
+<div class="rth"><h3>오늘의 코스</h3></div>
 ${h}
 <div class="duo"><button class="btn g" data-go="confirm">✎ 순서·체류 수정</button><button class="btn g" data-go="map">＋ 장소 더 담기</button></div>`,
  `<button class="btn" data-finish="1">식당 도착 · 코스 종료</button>`)};
@@ -573,6 +584,7 @@ document.addEventListener('click',e=>{
  else if(has('view'))S.view=d.view;
  else if(has('wait')){S.wait=+d.wait;if(!S.active)prune()}
  else if(has('adj')){S.wait=clampWait(S.wait+ +d.adj);if(!S.active)prune()}
+ else if(has('wadj'))S.wadj=!S.wadj;
  else if(has('live')){S.wait=Math.min(300,Math.max(10,S.wait+ +d.live));toast(`대기시간을 ${d.live>0?'+':'−'}10분 조정했어요 · 복귀 ${backAt()}`)}
  else if(has('focus')){if(S.focus===+d.focus&&t.closest('.lr'))S.focus=null;else{S.focus=+d.focus;S.top=1;panNext=true}}   // 행을 다시 누르면 상세 접기
  else if(has('fav')){const k=+d.fav,had=S.favs.includes(k);S.favs=had?S.favs.filter(x=>x!=k):[...S.favs,k];toast(had?'관심 공간에서 뺐어요':'관심 공간에 저장했어요 · 마이페이지에서 볼 수 있어요')}
@@ -584,7 +596,7 @@ document.addEventListener('click',e=>{
  else if(has('nav')){openNaver();return}
  else if(has('apply')){S.curId=saveCourse();S.i='prog';toast('코스를 수정했어요')}   // 진행 중 코스 수정 완료 → 진행 화면으로
  else if(has('later')){const ed=editing(),id=saveCourse();resetBuild();if(ed){S.cid=id;S.i='mc';toast('수정한 코스를 저장했어요')}else{S.seg='c';S.i='my';toast('내 코스에 저장했어요')}}
- else if(has('finish')){S.rsheet=false;if(S.editId!=null)saveCourse();S.fin={n:S.sel.length,use:Math.min(total(),S.wait),rest:Math.max(rem(),0),names:nm(S.sel),cid:S.curId,wait:S.wait};S.active=false;S.start=null;resetBuild();S.i='done'}
+ else if(has('finish')){S.rsheet=false;S.wadj=false;if(S.editId!=null)saveCourse();S.fin={n:S.sel.length,use:Math.min(total(),S.wait),rest:Math.max(rem(),0),names:nm(S.sel),cid:S.curId,wait:S.wait};S.active=false;S.start=null;resetBuild();S.i='done'}
  else if(has('share')){const txt=`0차 코스 · ${(S.fin&&S.fin.names||[]).join(' → ')} (대기 ${fm(S.fin?S.fin.wait:0)})`;
   if(navigator.share)navigator.share({text:txt}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{toast('코스를 복사했어요');draw()},()=>{});
@@ -640,4 +652,8 @@ setInterval(()=>{if(!S.active)return;document.querySelectorAll('[data-cd]').forE
  if(k=='hms')el.textContent=hms(remSec());
  
  else if(k=='stage')el.textContent=stageTxt();
+ else if(k=='left')el.textContent=leftTxt();
+ else if(k=='st1')el.textContent=stageInfo().t;
+ else if(k=='st2')el.textContent=stageInfo().s;
+ else if(k=='hero')el.className='nowc '+banner().c;
  else if(k=='banner'){const b=banner();el.className='bn '+b.c;el.textContent=b.t;el.hidden=b.c=='ok'}})},1000);
