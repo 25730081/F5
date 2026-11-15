@@ -402,3 +402,23 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .dcs li{justify-content:center}
 .pc>div{min-width:0}
 .pc .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- 진행 화면: 타이머를 줄이고 '지금' 카드와 복귀 여유(숫자)를 중심으로 ---------- */
+.rtop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px}
+.rt{margin:0;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.rt1{font-size:17px;font-weight:900}
+.rt2{font-size:15px;color:var(--mut)}
+.rtop .chipb{flex:none;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);font-size:13px;font-weight:600}
+.rtop .chipb[aria-expanded=true]{background:var(--fill)}
+.nowc{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding:16px;border:1.5px solid var(--ok);border-radius:20px;background:var(--okbg)}
+.nowc.warn{border-color:var(--warn);background:var(--warnbg)}
+.nowc.err{border-color:var(--err);background:var(--errbg)}
+.nowc .nk{font-size:13px;font-weight:800;color:var(--ok)}
+.nowc.warn .nk{color:var(--warn)}
+.nowc.err .nk{color:var(--err)}
+.nowc .nt{font-size:24px;font-weight:900;line-height:1.3;letter-spacing:-.5px;word-break:keep-all}
+.nowc .ns{font-size:15px;color:var(--mut)}
+.nowc .rbtn{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:14px}
+.slk{display:flex;align-items:baseline;justify-content:space-between;margin:14px 2px 0;font-size:14px;font-weight:700}
+.slk b{font-size:22px;font-weight:900;color:var(--ok)}
+.slk b.err{color:var(--err);font-size:16px}
