@@ -424,3 +424,19 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .slk b.err{color:var(--err);font-size:16px}
 .nowc .rbp{margin:6px 0 0;word-break:keep-all}
 .body>.rt{margin:8px 0 0}
+
+/* ---------- 미니 플레이어(진행 중 코스 배너) ---------- */
+.body.hasmp{padding-bottom:124px}
+.mp{position:absolute;left:12px;right:12px;bottom:92px;z-index:10;display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 14px 10px 12px;border:1.5px solid var(--ok);border-radius:16px;background:var(--card);color:var(--ink);text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.mp.warn{border-color:var(--warn)}
+.mp.err{border-color:var(--err)}
+.mp-ic{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--okbg);color:var(--ok)}
+.mp.warn .mp-ic{background:var(--warnbg);color:var(--warn)}
+.mp.err .mp-ic{background:var(--errbg);color:var(--err)}
+.mp-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.mp-k{font-size:12px;font-weight:700;color:var(--ok)}
+.mp.warn .mp-k{color:var(--warn)}
+.mp.err .mp-k{color:var(--err)}
+.mp-t{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-s{font-size:13px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-go{flex:none;font-size:26px;line-height:1;color:var(--mut)}
