@@ -272,7 +272,13 @@ const note=(k,t)=>`<p class="note ${k=='주의'?'warn':k=='참고'?'ref':''}"><b
 // 헤더 우측: 관심 공간(하트) 바로가기. 어느 화면에서든 저장한 장소로 이동
 const hd=()=>{const n=S.favs.length,on=S.i=='my'&&S.seg=='f';return `<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><button class="fvb${on?' on':''}" data-favgo="1" aria-label="관심 공간 ${n}곳 보기"><span class="fh" aria-hidden="true">${n?'♥':'♡'}</span><b>${n}</b></button></header>`};
 const toastH=()=>S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'';
-const frame=(b,f)=>`${hd()}<main class="body">${b}</main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}${routeSheet()}`;
+
+/* ---------- 미니 플레이어: 진행 중인 코스를 홈·마이페이지 하단에 띄움(배달 진행 배너처럼) ---------- */
+const mpOn=()=>S.active&&S.sel.length&&['home','my','mc'].includes(S.i);
+const mpSub=()=>`${backAt()}까지 복귀 · ${remSec()<=0?'예상 대기시간 종료':fm(Math.ceil(remSec()/60))+' 남음'}`;
+const miniPlayer=()=>{if(!mpOn())return '';const si=stageInfo();
+ return `<button class="mp ${banner().c}" data-cd="mpc" data-go="prog" aria-label="진행 중인 코스 보기"><span class="mp-ic" aria-hidden="true"><svg class="ic2" viewBox="0 0 24 24" width="22" height="22"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M6 15.8V10a4 4 0 0 1 4-4h5.8"/></svg></span><span class="mp-tx"><span class="mp-k">웨이팅 중 · 0차 코스</span><b class="mp-t" data-cd="st1">${esc(si.t)}</b><span class="mp-s" data-cd="mps">${esc(mpSub())}</span></span><span class="mp-go" aria-hidden="true">›</span></button>`};
+const frame=(b,f)=>`${hd()}<main class="body${mpOn()?' hasmp':''}">${b}</main>${f?`<div class="ft">${f}</div>`:''}${miniPlayer()}${nav()}${toastH()}${routeSheet()}`;
 const frameM=(top,sheet,f)=>`${hd()}<main class="mapbody"><div class="mtop">${top}</div><div class="sheet" id="sheet">${sheet}</div></main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}`;
 const bar=()=>{let h='';S.sel.forEach((k,j)=>h+=`<i style="width:${cost(k)/S.wait*100}%;background:${colr(j)};color:#fff">${j+1} ${P[k].e} ${cost(k)}′</i>`);const r=rem();
  return `<div class="bar" role="img" aria-label="${r<0?'대기시간 '+fm(-r)+' 초과':'복귀 여유 '+fm(r)}">${h}<i class="${r<0?'x':'m'}" style="flex:1">${r<0?'⚠ '+fm(-r)+' 초과':'여유 '+fm(r)}</i></div>`};
@@ -313,14 +319,7 @@ const saveCourse=()=>{const old=S.courses.find(x=>x.id==S.editId),c={id:S.editId
 const resetBuild=()=>{S.sel=[];S.stay={};S.editId=null;S.focus=null};
 
 /* ---------- 홈 ---------- */
-const home=()=>frame((S.active?note('참고','복귀 시각까지 남은 시간이에요. 코스는 진행 중에도 수정할 수 있어요.'):note('안내','웨이팅 중 남은 시간 동안 다녀올 수 있는 주변 장소를 코스로 만들어드려요.'))+(S.active?
-`<p class="sub">웨이팅 진행 중 · ${S.area}</p><h2>${esc(S.rest)}</h2>
-<p class="rt"><b class="rt1">${backAt()}까지 복귀</b><span class="rt2" data-cd="left">${leftTxt()}</span></p>
-${S.sel.length?`<div class="nowc ${banner().c}" data-cd="hero"><span class="nk">지금</span><b class="nt" data-cd="st1">${esc(stageInfo().t)}</b><span class="ns" data-cd="st2">${esc(stageInfo().s)}</span><span class="sub rbp">${S.sel.map(k=>esc(P[k].n)).join(' → ')}</span></div>
-<div class="slk"><span>복귀 여유</span><b class="${rem()<0?'err':''}">${rem()<0?'⚠ '+fm(-rem())+' 초과':fm(rem())}</b></div>`:'<div class="box"><p class="sub">아직 코스가 없어요. 지도에서 갈 곳을 담아보세요.</p></div>'}
-<button class="btn" data-go="${S.sel.length?'prog':'map'}">${S.sel.length?'코스 이어가기 →':'지도에서 코스 만들기 →'}</button>
-<button class="btn g mt" data-go="reg">웨이팅 시간 다시 등록</button>`
-:
+const home=()=>frame(note('안내','웨이팅 중 남은 시간 동안 다녀올 수 있는 주변 장소를 코스로 만들어드려요.')+(
 `<section class="hero"><div><p class="hero-k">줄 서는 시간을 내 시간으로</p><h2 class="hero-h">웨이팅,<br>이제 0차로.</h2><p class="hero-s">남은 시간을 입력하면 갈 수 있는 곳을 지도로 보여드려요.</p></div>
 <button class="cta" data-go="reg"><span>웨이팅 시간 등록하기</span><span class="cta-a" aria-hidden="true">→</span></button></section>
 <h3 class="sec">이런 곳은 어때요</h3><div class="row">${cats().map(c=>`<button class="chip" data-hcat="${c}">${CE[c]} ${c}</button>`).join('')}</div>
@@ -567,8 +566,8 @@ document.addEventListener('click',e=>{
  if(has('go')){S.rsheet=false;if(d.go=='reg')S.editId=null;if(d.go=='confirm')S.from=S.i;S.i=(d.go=='prog'&&!S.active)?'home':d.go}
  else if(has('cid')){S.cid=+d.cid;S.i='mc'}
  else if(has('tog')){const k=+d.tog;if(S.sel.includes(k)){S.sel=S.sel.filter(x=>x!=k);delete S.stay[k]}else S.sel=[...S.sel,k]}
- else if(has('hcat')){S.cats=[d.hcat];S.i='reg'}
- else if(has('pop')){const[cs,w]=d.pop.split('|');S.wait=+w;S.from='map';resetBuild();
+ else if(has('hcat')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}S.cats=[d.hcat];S.i='reg'}
+ else if(has('pop')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}const[cs,w]=d.pop.split('|');S.wait=+w;S.from='map';resetBuild();
   cs.split(',').forEach(cat=>{const k=P.map((p,i)=>i).filter(i=>P[i].c==cat&&!S.sel.includes(i)&&inRad(i)&&cost(i)<=rem()-BUF).sort(byDist)[0];if(k!=null)S.sel.push(k)});
   if(S.sel.length)S.i='confirm';else{S.i='map';toast('조건에 맞는 장소를 찾지 못했어요')}}
  else if(has('geo')){
@@ -654,6 +653,8 @@ setInterval(()=>{if(!S.active)return;document.querySelectorAll('[data-cd]').forE
  
  else if(k=='stage')el.textContent=stageTxt();
  else if(k=='left')el.textContent=leftTxt();
+ else if(k=='mps')el.textContent=mpSub();
+ else if(k=='mpc')el.className='mp '+banner().c;
  else if(k=='st1')el.textContent=stageInfo().t;
  else if(k=='st2')el.textContent=stageInfo().s;
  else if(k=='hero')el.className='nowc '+banner().c;
