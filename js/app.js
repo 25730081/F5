@@ -55,7 +55,7 @@
  *  - 마이페이지: 코스를 원형 타이머 카드 2열 격자로 표시 (자세한 정보는 눌러서 확인)
  *
  * v10 변경 요약
- *  - 헤더: 우측을 웨이팅 남은 시간(실시간 카운트다운)으로 표시
+ *  - 헤더: 우측을 관심 공간 하트(♥) 바로가기로 표시 (숫자 없음)
  *  - 진행 화면: 대기시간 ±10분 조절을 작게·가운데 정렬 / 코스 타임라인은 '도보 · 체류'를 한 줄로, 장소 간격 확대
  *  - 코스 종료 화면: '오늘의 코스' 가운데 정렬
  *  - 마이페이지 코스 카드: [원형 타이머 | 코스 제목·날짜·대기 | 장소 목록]을 한 행에 배치
@@ -249,15 +249,21 @@ function bookState(p){
  if(c==0)c=1440;
  const n=clock();return c>o?(n>=o&&n<c):(n>=o||n<c);   // 마감이 시작보다 이르면 자정을 넘기는 영업
 }
-function bookInfo(p){
- const d=new Date().getDay(),t=p.wk&&p.wk.w[d],st=bookState(p),n=clock();let today;
- if(p.cd&&p.cd.has(d))today=`오늘(${WD[d]}) 휴무`;
- else if(t)today=`오늘(${WD[d]}) ${t.open}–${t.close} · ${st===true?'영업중':n<mins(t.open)?'영업 전':'영업 종료'}`;
- else today=p.wk?`오늘(${WD[d]}) 운영시간 확인 필요`:'운영시간 미확인 · 방문 전 확인하세요';
- return `<p>🕒 ${esc(today)}</p>`
-  +(p.wk&&p.hrsTxt?`<p>🗓 운영시간 ${esc(p.hrsTxt)}</p>`:'')
-  +(p.closedTxt?`<p>🚫 휴무 ${esc(p.closedTxt)}</p>`:'')
-  +(p.note?`<p>ℹ️ ${esc(p.note)}</p>`:'');
+// 장소 상세용 오늘 운영시간 {t:'19:00 - 21:00', st:'영업중', c:'ok|err|'}
+function todayHrs(p){
+ const d=new Date().getDay(),n=clock();
+ const mk=t=>{const o=mins(t.open);return{t:`${t.open} - ${t.close}`,st:openState(p)===true?'영업중':(o!=null&&n<o?'영업 전':'영업 종료'),c:openState(p)===true?'ok':''}};
+ if(p.c=='서점'&&'wk' in p){
+  if(p.cd&&p.cd.has(d))return{t:'',st:'휴무',c:'err'};
+  const t=p.wk&&p.wk.w[d];return t?mk(t):{t:'',st:p.wk?'확인 필요':'정보 없음',c:''};
+ }
+ if(p.c=='도서관'&&p.hours){
+  if(libClosed(p))return{t:'',st:'휴관',c:'err'};
+  const t=p.hours.open!=null?p.hours:(d==0?p.hours.holiday:d==6?p.hours.saturday:p.hours.weekday);
+  return t&&t.open?mk(t):{t:'',st:'정보 없음',c:''};
+ }
+ if(p.c=='공원')return{t:'상시 개방',st:'',c:''};
+ return{t:'',st:'정보 없음',c:''};
 }
 function openState(p){
  if(p.c=='공원')return true;
@@ -319,9 +325,8 @@ const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫�
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
 const note=(k,t)=>`<p class="note ${k=='주의'?'warn':k=='참고'?'ref':''}"><b>${k}</b><span>${t.split(/(?<=\.)\s+/).join('<br>')}</span></p>`;   // 페이지 상단 안내(안내·참고·주의)
-// 헤더 우측: 웨이팅 남은 시간(실시간). 진행 중이면 매초 줄어들고, 아니면 '웨이팅 없음'
-const hdW=()=>{if(!S.active||!S.start)return{t:'웨이팅 없음',c:''};const s=remSec();return s<=0?{t:'대기 종료',c:'err'}:{t:hms(s),c:s<=600?'warn':''}};
-const hd=()=>{const w=hdW();return `<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><div class="wtc ${w.c}" role="timer" aria-label="웨이팅 남은 시간">${IC.clock}<b data-cd="hdw">${esc(w.t)}</b></div></header>`};
+// 헤더 우측: 관심 공간 하트(숫자 없음, 누르면 관심 공간으로 이동)
+const hd=()=>`<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><button class="fvb${S.i=='my'&&S.seg=='f'?' on':''}" data-favgo="1" aria-label="관심 공간 보기"><span class="fh" aria-hidden="true">♥</span></button></header>`;
 const toastH=()=>S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'';
 
 /* ---------- 미니 플레이어: 진행 중인 코스를 홈·마이페이지 하단에 띄움(배달 진행 배너처럼) ---------- */
@@ -480,9 +485,8 @@ function mountKakaoMap(){
  }))kFail(ph0);
 }
 // 장소 상세 (행을 누르면 아래로 펼침): 주소 · 전화 · 운영/휴무(공휴일 포함) · 도보 시간(참고)
-const dtl=k=>{const p=P[k],tel=safeTel(p.tel),isL=p.c=='도서관',h=isL&&p.hours?p.hours.holiday:null,fv=S.favs.includes(k),
- op=(isL?libInfo(p):'')||TIP[p.c]||'영업시간·휴무는 방문 전에 확인하세요';
- return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><p>🚶 도보 약 ${tt(k)}분 (참고)</p><p>📍 ${p.addr?esc(p.addr):'주소 정보 없음'}</p><p>📞 ${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'전화번호 정보 없음'}</p>${p.c=='서점'&&'wk' in p?bookInfo(p):`<p>🕒 ${esc(op)}</p>`}${h&&typeof h=='object'&&h.open?`<p>🗓 공휴일 ${esc(h.open)}–${esc(h.close)}</p>`:''}<div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
+const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='서점'?p.closedTxt:p.c=='도서관'?p.closed:'';
+ return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div></dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
 // 관심 공간 하트 버튼 (마이페이지 '관심 공간'에 저장/해제)
 const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${fv?'♥':'♡'}</button>`};
 const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cb(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">도보 ${tt(k)}분</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
@@ -704,7 +708,6 @@ draw();
 loadPlaces();
 setInterval(()=>{if(!S.active)return;document.querySelectorAll('[data-cd]').forEach(el=>{const k=el.dataset.cd;
  if(k=='hms')el.textContent=hms(remSec());
- else if(k=='hdw'){const w=hdW();el.textContent=w.t;if(el.parentElement)el.parentElement.className='wtc '+w.c}
  
  else if(k=='stage')el.textContent=stageTxt();
  else if(k=='left')el.textContent=leftTxt();
