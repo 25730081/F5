@@ -66,6 +66,12 @@
  *  - 헤더: 알림(🔔) 아이콘 추가 · 코스별로 '장소 출발 5분 전'(DEP_PRE), '웨이팅 차례 10분 전'(WAIT_PRE) 알림
  *  - 웨이팅 장소: 검색창 추가(카카오 장소 검색) · 입력하면 관련 장소 목록 · 엔터를 누르면 지도에 마커로 표시 → 마커를 눌러 선택
  *  - 웨이팅 장소 선택 + 대기시간 입력을 한 페이지로 통합(기존 '대기시간 입력' 페이지 삭제) · 장소를 고르면 아래에 대기시간 입력이 나타남
+ *
+ * v12 변경 요약
+ *  - 코스 검색(지도) 화면: 정렬 '거리 가까운 순'을 기본·맨 위로 · 담기 버튼을 카트 아이콘으로 · 장소 이름 검색창을 목록 위 필터 자리로 이동
+ *  - 장소 종류 필터를 지도 안(위쪽 칩)으로 이동: 서점 버튼을 누르면 서점만 표시 (다시 누르면 전체)
+ *  - '장소를 1곳 이상 담아주세요' 버튼 삭제: 카트 아이콘으로 담으면 그때 '코스 확인' 버튼이 나타남
+ *  - 모든 화면: 뒤로가기는 < 아이콘 하나로 통일(옆 글자 삭제) · 안내/참고/주의 문구는 우측 정렬 ? 툴팁(눌러서 열기)
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -135,7 +141,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{localStorage.removeItem(KEY)}catch(e){}return null})();   // 새로고침(F5)하면 저장값을 지우고 처음 상태(홈)로 시작
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{}};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{}};
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -329,7 +335,12 @@ const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg';
 const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫자 0 = 코스가 채워지는 원형 타이머 (색은 코스 선택 순서 색, 남은 구간은 복귀 여유)
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
-const note=(k,t)=>`<p class="note ${k=='주의'?'warn':k=='참고'?'ref':''}"><b>${k}</b><span>${t.split(/(?<=\.)\s+/).join('<br>')}</span></p>`;   // 페이지 상단 안내(안내·참고·주의)
+// 안내·참고·주의 문구: 모든 화면에서 ? 아이콘 툴팁(누르면 열림 · 우측 정렬). 뒤로가기는 < 아이콘 하나로 통일
+const BKI=svg('<path d="m15 18-6-6 6-6"/>');
+const backBtn=(go,label)=>`<button class="back" data-go="${go}" aria-label="뒤로 가기${label?' · '+label:''}">${BKI}</button>`;
+const tip=(k,t)=>`<span class="tipw"><button class="tipq ${k=='주의'?'warn':''}" data-tip="1" aria-expanded="false" aria-label="${k} 보기"><span aria-hidden="true">?</span></button><span class="tipb" role="tooltip"><b>${k}</b>${t.split(/(?<=\.)\s+/).join('<br>')}</span></span>`;
+const note=(k,t)=>`<div class="tb">${tip(k,t)}</div>`;                       // ? 만 우측 정렬
+const tbar=(back,k,t)=>`<div class="tb">${back}${tip(k,t)}</div>`;            // 왼쪽 < · 오른쪽 ?
 // 헤더 우측: 관심 공간 하트(숫자 없음, 누르면 관심 공간으로 이동)
 const BELLI='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7.5 2 7.5H4S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
 const bellBtn=()=>`<button class="bellb${S.nopen?' on':''}" data-bell="1" aria-expanded="${S.nopen}" aria-label="알림${S.unread?' · 새 알림 '+S.unread+'개':''}">${BELLI}${S.unread?`<i class="bdg">${S.unread>9?'9+':S.unread}</i>`:''}</button>`;
@@ -353,9 +364,11 @@ const ringSvg=()=>{const R=48,C=2*Math.PI*R,r=rem(),over=r<0;let acc=0;
 const ringBar=()=>`<div class="rb">${ringSvg()}<div class="rbs"><div><span class="sub">대기시간</span><b>${fm(S.wait)}</b></div><div><span class="sub">코스 사용</span><b>${fm(total())}</b></div>${S.sel.length?`<div class="rbl">${S.sel.map((k,j)=>`<span class="dot sm" style="background:${colr(j)}">${j+1}</span>`).join('')}</div>`:''}</div></div>`;
 const cats=()=>CAT_ORDER.filter(c=>c=='카페'||P.some(p=>p.c==c));   // 카페는 API 연결 전이라도 항상 표시
 const CATS4=['서점','도서관','공원','카페'];
-const catLbl=()=>!S.cats.length?'장소':'장소 · '+S.cats[0]+(S.cats.length>1?' 외 '+(S.cats.length-1):'');
-const catRow=()=>`<div class="flt" role="group" aria-label="필터"><button class="chip ${S.cats.length||S.catOpen?'on':''}" data-catmenu="1" aria-expanded="${S.catOpen}">${esc(catLbl())} ${S.catOpen?'▴':'▾'}</button><button class="chip ${S.onow?'on':''}" data-onow="1" aria-pressed="${S.onow}">영업중</button><select class="srt" id="sort" aria-label="정렬"><option value="def" ${S.sort=='def'?'selected':''}>기본순</option><option value="near" ${S.sort=='near'?'selected':''}>거리 가까운 순</option></select></div>
-${S.catOpen?`<div class="catp"><div class="row cats" role="group" aria-label="장소 카테고리 (여러 개 선택 가능)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div></div>`:''}`;
+// 장소 종류 필터: 지도 안(위쪽 칩). 누르면 그 종류만 표시, 같은 칩을 다시 누르거나 '전체'를 누르면 전체
+const mapCats=()=>`<div class="mcats" role="group" aria-label="장소 종류 (누르면 해당 장소만 지도에 표시)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div>`;
+// 목록 위: 장소 이름 검색창(예전 필터 자리) + 영업중 · 정렬
+const mapFlt=()=>`<input class="in" id="q" type="search" placeholder="장소 이름 검색 (예: 낫저스트북스)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색">
+<div class="flt" role="group" aria-label="필터"><button class="chip ${S.onow?'on':''}" data-onow="1" aria-pressed="${S.onow}">영업중</button><select class="srt" id="sort" aria-label="정렬"><option value="near" ${S.sort=='near'?'selected':''}>거리 가까운 순</option><option value="def" ${S.sort=='def'?'selected':''}>기본순</option></select></div>`;
 
 /* ---------- 지도/목록 계산 ---------- */
 // 반경(km)은 웨이팅 시간에 비례 (30분 0.6km · 60분 1.2km · 120분 2.4km · 240분 4.8km). 지도에 원은 그리지 않고, 반경 안 핀을 더 크고 진하게 강조
@@ -373,7 +386,8 @@ const list=()=>{const q=S.q.trim(),b=P.map((p,k)=>k).filter(k=>(!S.cats.length||
  return [...b,...S.sel.filter(k=>!b.includes(k))]};
 // 등록 화면 "갈 수 있는 곳": 반경 안에서 시간이 되는 장소 수
 const avail=fresh=>P.map((p,k)=>k).filter(inRad).filter(k=>fresh?cost(k)<=S.wait-BUF:(!S.sel.includes(k)&&fit(k))).length;
-const addBtn=k=>{const on=S.sel.includes(k);return `<button class="add ${on?'on':''}" data-tog="${k}" ${!on&&!fit(k)?'disabled':''} aria-label="${esc(P[k].n)} ${on?'담음, 누르면 빼기':fit(k)?'코스에 담기':'시간 부족'}">${on?'✓ 담음':fit(k)?'+ 담기':'시간 부족'}</button>`};
+const CARTI=on=>`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>${on?'<path d="m10 10.8 2 2 4-4"/>':''}</svg>`;   // 카트 아이콘 (담으면 체크 표시)
+const addBtn=k=>{const on=S.sel.includes(k),ok=fit(k);return `<button class="add ci ${on?'on':''}" data-tog="${k}" ${!on&&!ok?'disabled':''} aria-pressed="${on}" aria-label="${esc(P[k].n)} ${on?'담음, 누르면 빼기':ok?'코스에 담기':'시간 부족'}" title="${on?'담음':ok?'담기':'시간 부족'}">${CARTI(on)}</button>`};
 const chain=c=>c.sel.map(k=>P[k].e).join(' → ');
 const title=c=>c.sel.map(k=>esc(P[k].n)).join(' → ');
 // 코스는 항상 1개 항목으로 저장. 같은 코스를 다시 시작/저장하면 새로 쌓지 않고 덮어씀
@@ -548,7 +562,7 @@ const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p
  return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div></dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
 // 관심 공간 하트 버튼 (마이페이지 '관심 공간'에 저장/해제)
 const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${fv?'♥':'♡'}</button>`};
-const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cb(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">도보 ${tt(k)}분</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
+const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cb(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">도보 ${tt(k)}분${!S.sel.includes(k)&&!fit(k)?' · 시간 부족':''}</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
 const sheetList=()=>{
  if(!P.length)return `<div class="hint">${loadError?'데이터를 불러오지 못했어요.<br>로컬 서버(또는 GitHub Pages)에서 열어주세요.':'장소를 불러오는 중이에요…'}</div>`;
  const l=list();return l.length?`<div>${l.map(row).join('')}</div>`:`<div class="hint">${S.cats.length==1&&S.cats[0]=='카페'&&!P.some(p=>p.c=='카페')?'카페 정보를 준비 중이에요.':'지도에 보이는 범위에 맞는 장소가 없어요.<br>지도를 축소하거나 필터를 바꿔보세요.'+(S.onow?'<br>영업 정보가 있는 장소만 표시돼요.':'')}</div>`};
@@ -559,17 +573,16 @@ const cfm=()=>!S.sel.length?{t:'장소를 1곳 이상 담아주세요',d:true}:r
 const editing=()=>S.editId!=null&&S.courses.some(c=>c.id==S.editId);
 const mapBack=()=>{   // 장소 담는 화면의 '뒤로': 온 곳으로 돌아감
  const t=S.mback=='confirm'?'confirm':S.active?(S.sel.length?'prog':'home'):editing()?'mc':'reg';
- const L={confirm:'코스 확인',prog:'진행 화면',home:'홈',mc:'코스 상세',reg:'웨이팅 장소·대기시간'}[t];
- return `<button class="back mb" data-go="${t}" aria-label="뒤로 가기 · ${L}">← ${L}</button>`};
+ const L={confirm:'코스 확인',prog:'진행 화면',home:'홈',mc:'코스 상세',reg:'웨이팅 장소'}[t];
+ return backBtn(t,L)};
 const map=()=>{const c=cfm(),ed=editing();
  if(KM.key!==mkey())KM.vb=null;   // 위치·대기시간이 바뀐 직후엔 예전 지도 범위를 쓰지 않음
  const sec=S.active?(S.sel.length?'<button class="btn g" data-go="prog">진행 화면으로</button>':'<button class="btn g" data-go="home">홈으로</button>'):ed?`<button class="btn g" data-cid="${S.editId}">코스 상세로</button>`:'';
  const main=`<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(sec&&!c.d?`코스 확인 (${S.sel.length}곳) →`:c.t)}</button>`;
- return frameM(`${mapBack()}${note('안내','핀을 눌러 장소를 담아보세요. 진한 핀은 대기시간 반경 안이에요.')}<input class="in" id="q" type="search" placeholder="장소 이름 검색 (예: 낫저스트북스)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색">
-<div class="mapx" id="kmap"></div>`,
-`${catRow()}
+ return frameM(`${tbar(mapBack(),'안내','핀을 눌러 장소를 보고 카트 아이콘으로 담아보세요. 진한 핀은 대기시간 반경 안이에요.')}<div class="mapw"><div class="mapx" id="kmap"></div>${mapCats()}</div>`,
+`${mapFlt()}
 <div id="sheetlist">${sheetList()}</div>`,
- sec?`<div class="duo">${main}${sec}</div>`:main)};
+ S.sel.length?(sec?`<div class="duo">${main}${sec}</div>`:main):'')};   // 장소를 담기 전엔 하단 버튼 없음 → 카트로 담으면 '코스 확인'이 나타남
 
 /* ---------- 코스 확인 ---------- */
 // 코스 전체 길찾기 (웨이팅 장소 출발 → 담은 장소 경유 → 웨이팅 장소 복귀, 도보). 경로는 자동 입력됨
@@ -641,11 +654,10 @@ const tline=(sel,stm,ar,w,nav)=>{let t=base();
  const last=sel.length?ttx(sel[sel.length-1],ar):0;
  return [h+r(t,'식당 복귀',sel.length?`도보 ${last}분 이동`:'','m')+'</div>',t]};
 // 코스 확인(수정): 어디서 왔는지(S.from)에 따라 '돌아가기'가 지도 / 진행 화면 / 코스 상세로 이어진다
-const BK={prog:'← 진행 화면으로',mc:'← 코스 상세로',map:'← 지도에서 장소 수정'};
+const BK={prog:'진행 화면',mc:'코스 상세',map:'지도'};
 const confirmScr=()=>{const [h]=tline(S.sel,S.stay,S.loc),r=rem(),ed=editing(),dis=r<0||!S.sel.length?'disabled':'',
  bf=(S.from=='prog'&&S.active)||(S.from=='mc'&&ed&&!S.active)?S.from:'map';
- return frame(`<button class="back" data-go="${bf}">${BK[bf]}</button>
-${note('참고','⋮⋮로 순서를 바꾸고 체류 시간을 조절하세요. 이동시간은 도보 기준 참고값이에요.')}<h2>오늘의 0차 코스</h2>${ringBar()}
+ return frame(`${tbar(backBtn(bf,BK[bf]),'참고','⋮⋮로 순서를 바꾸고 체류 시간을 조절하세요. 이동시간은 도보 기준 참고값이에요.')}<h2>오늘의 0차 코스</h2>${ringBar()}
 
 <div id="order">${S.sel.map((k,j)=>`<div class="pc2"><button class="ib sm dh" data-drag="${j}" aria-label="${esc(P[k].n)} 순서 변경 (끌어서 이동, 위·아래 방향키도 가능)">⋮⋮</button><span class="dot sm" style="background:${colr(j)}">${j+1}</span>${cb(P[k].c)}<h3 class="nm">${esc(P[k].n)}</h3><div class="st"><button class="ib sm" data-st="${k}:-10" ${stay(k)<=dstay()?'disabled':''} aria-label="체류 10분 줄이기">−</button><b>${stay(k)}분</b><button class="ib sm" data-st="${k}:10" ${stay(k)>=240?'disabled':''} aria-label="체류 10분 늘리기">+</button></div><button class="ib sm" data-rm="${k}" aria-label="${esc(P[k].n)} 빼기">✕</button></div>`).join('')||'<div class="box sub">담은 장소가 없어요</div>'}</div>
 <button class="btn g mt" data-go="map">＋ 다른 장소 더 담기 (지도)</button>
@@ -700,7 +712,7 @@ const my=()=>frame(`${note('안내','만든 코스와 하트(♡)로 저장한 �
 :(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>')));
 // 코스 상세: 하단은 '다시 시작(주) + 장소 바꾸기' 한 줄. 삭제는 자주 쓰지 않으므로 본문 맨 아래로
 const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,locOf(c),c.wait);
- return frame(`<button class="back" data-go="my">← 내 코스</button>${note('참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.')}<h2 class="mt">코스 ${S.courses.indexOf(c)+1}</h2><p class="cs-r">${title(c)}</p><p class="sub">${esc(c.date)} · ${esc(c.area||'성수동')}</p>
+ return frame(`${tbar(backBtn('my','내 코스'),'참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.')}<h2 class="mt">코스 ${S.courses.indexOf(c)+1}</h2><p class="cs-r">${title(c)}</p><p class="sub">${esc(c.date)} · ${esc(c.area||'성수동')}</p>
 <div class="row nowrap"><div class="box mini"><span class="sub">대기</span><br><b>${fm(c.wait)}</b></div><div class="box mini"><span class="sub">코스</span><br><b>${fm(ctot(c))}</b></div><div class="box mini"><span class="sub">도보 왕복</span><br><b>${fm(cwalk(c))}</b></div></div>${h}<button class="dl" data-del="${c.id}">이 코스 삭제</button>`,
  `<div class="duo w32"><button class="btn" data-redo="${c.id}">이 코스로 다시 시작</button><button class="btn g" data-edit="${c.id}">장소 바꾸기</button></div>`)};
 
@@ -719,7 +731,11 @@ function draw(){
 const clampWait=w=>Math.min(240,Math.max(30,w));
 // 저장된 코스를 불러와 수정 모드로 (위치·대기시간·장소·체류 시간 복원)
 function loadCourse(c){S.sel=[...c.sel];S.stay={...c.stay};S.wait=c.wait;{const l=locOf(c);S.loc={lat:l.lat,lng:l.lng};S.area=c.area||areaLabel(S.loc);GC.clear();recenter=true}S.editId=c.id;S.cid=c.id;S.from='mc';S.picked=true}
+const closeTips=keep=>document.querySelectorAll('.tipw.open').forEach(w=>{if(w===keep)return;w.classList.remove('open');const b=w.querySelector('[data-tip]');if(b)b.setAttribute('aria-expanded','false')});
+document.addEventListener('keydown',e=>{if(e.key=='Escape')closeTips()});
 document.addEventListener('click',e=>{
+ const tg=e.target.closest('[data-tip]'),tw=tg&&tg.closest('.tipw');closeTips(tw);   // ? 툴팁: 누르면 열고, 다시 누르거나 다른 곳을 누르면 닫음 (화면을 다시 그리지 않음)
+ if(tg){const o=tw.classList.toggle('open');tg.setAttribute('aria-expanded',o);return}
  const c=e.target.closest('[data-cid]'),t=c||e.target.closest('button');
  if(!t||t.disabled)return;const d=t.dataset,has=k=>d[k]!==undefined;
  if(has('go')){S.rsheet=false;if(d.go=='reg'){S.editId=null;if(!S.active&&['home','my','mc','done'].includes(S.i)){S.picked=false;S.wq='';S.sugg=[];S.sgst='';S.res=[];S.rstat='';S.cand=null}}if(d.go=='map')S.mback=S.i;if(d.go=='confirm')S.from=S.i;S.i=(d.go=='prog'&&!S.active)?'home':d.go}
@@ -733,8 +749,7 @@ document.addEventListener('click',e=>{
   if(!navigator.geolocation){toast('이 브라우저에서는 위치를 지원하지 않아요');draw();return}
   navigator.geolocation.getCurrentPosition(p=>{S.picked=true;S.rest='웨이팅 중인 식당';S.swait=true;moveTo(p.coords.latitude,p.coords.longitude,true);draw()},()=>{toast('위치를 가져오지 못했어요. 지도를 눌러 직접 지정해주세요');draw()},{enableHighAccuracy:true,timeout:8000});
   return}
- else if(has('cat')){if(!d.cat)S.cats=[];else S.cats=S.cats.includes(d.cat)?S.cats.filter(x=>x!=d.cat):[...S.cats,d.cat]}
- else if(has('catmenu'))S.catOpen=!S.catOpen;
+ else if(has('cat')){S.cats=(!d.cat||(S.cats.length==1&&S.cats[0]==d.cat))?[]:[d.cat]}   // 서점 → 서점만 / 같은 칩 다시 누르면 전체
  else if(has('favgo')){S.rsheet=false;S.seg='f';S.i='my'}
  else if(has('fcat')){if(!d.fcat)S.fcats=[];else S.fcats=S.fcats.includes(d.fcat)?S.fcats.filter(x=>x!=d.fcat):[...S.fcats,d.fcat]}
  else if(has('fcatmenu'))S.fcatOpen=!S.fcatOpen;
