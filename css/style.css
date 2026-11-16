@@ -440,3 +440,6 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .mp-t{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mp-s{font-size:13px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mp-go{flex:none;font-size:26px;line-height:1;color:var(--mut)}
+
+/* 장소 담는 화면: 왼쪽 상단 뒤로가기 */
+.mtop .back.mb{display:block;min-height:36px;padding:0 0 6px;margin:0;text-align:left;color:var(--ink);font-size:15px}
