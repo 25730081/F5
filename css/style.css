@@ -505,3 +505,25 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .cand .ci .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cand .btn.sm{min-height:40px;padding:0 12px;font-size:13px;white-space:nowrap}
 .locwrap .locmap{height:min(320px,42dvh)}   /* 대기시간 입력이 같은 페이지 아래로 이어지므로 지도를 조금 줄임 */
+
+
+/* ===== v12: < 뒤로가기 · ? 툴팁 · 지도 안 장소 필터 · 카트 담기 ===== */
+.tb{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:0 0 6px}
+.tb .tipw{margin-left:auto}
+.back{width:44px;height:44px;min-height:44px;display:grid;place-items:center;padding:0;margin:0 0 0 -10px;border:0;background:none;color:var(--ink)}
+.tipw{position:relative}
+.tipq{width:44px;height:44px;display:grid;place-items:center;padding:0;margin:0 -10px 0 0;border:0;background:none}
+.tipq>span{width:24px;height:24px;border:1.5px solid var(--mut);border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;line-height:1;color:var(--mut)}
+.tipq.warn>span{border-color:var(--warn);color:var(--warn)}
+.tipw.open .tipq>span{background:var(--acc);border-color:var(--acc);color:var(--acct)}
+.tipb{display:none;position:absolute;right:10px;top:calc(100% - 2px);z-index:60;width:min(280px,calc(100vw - 32px));padding:10px 12px;border-radius:12px;background:var(--acc);color:var(--acct);font-size:13px;line-height:1.6;word-break:keep-all;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.tipw.open .tipb{display:block}
+.tipb b{display:inline-block;margin:0 6px 2px 0;padding:0 8px;border-radius:99px;border:1px solid currentColor;font-size:11px;font-weight:800;line-height:1.6;opacity:.85}
+.mapw{position:relative;margin:2px 0 0}
+.mapw .mapx{margin:0}
+.mcats{position:absolute;left:8px;right:8px;top:8px;z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:none;padding:2px 2px 8px}
+.mcats::-webkit-scrollbar{display:none}
+.mcats .chip{flex:none;min-height:34px;padding:0 12px;font-size:13px;white-space:nowrap;pointer-events:auto;box-shadow:0 1px 5px rgba(0,0,0,.28)}
+.sheet .in{margin-bottom:8px}
+.add.ci{min-width:40px;width:40px;padding:0;display:inline-grid;place-items:center}
+.add.ci svg{display:block}
