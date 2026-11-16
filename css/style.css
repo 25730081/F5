@@ -485,26 +485,12 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .sg{border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .sg-h{padding:8px 12px;background:var(--fill)}
 .sg ul{list-style:none;margin:0;padding:0}
-.sg li{display:flex;flex-direction:column;gap:1px;padding:9px 12px;border-top:1px solid var(--line);cursor:default}   /* 목록은 눌러 고르는 용도가 아님(엔터 → 지도 마커에서 선택) */
-.sg li b{font-size:14px}
-.sg li .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sg li{border-top:1px solid var(--line)}   /* 목록에서 눌러 바로 선택 */
+.sgb{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;min-height:48px;padding:9px 12px;border:0;background:var(--card);color:var(--ink);text-align:left}
+.sgb b{font-size:14px}
+.sgb .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sg-h+ul li:first-child{border-top:0}
 
-/* 검색 결과 마커(번호) */
-.sp{position:relative;display:block;width:30px;height:36px;padding:0;margin:0;border:0;background:none;cursor:pointer;filter:drop-shadow(0 2px 3px rgba(16,24,40,.35))}
-.sp span{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:#1a73e8;border:2px solid #fff;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;line-height:1}
-.sp::after{content:"";position:absolute;left:50%;bottom:0;width:0;height:0;margin-left:-6px;border:6px solid transparent;border-top:8px solid #1a73e8;border-bottom:0}
-.sp.on span{background:#d93025;width:36px;height:36px;left:-3px;top:-4px;font-size:15px}
-.sp.on::after{border-top-color:#d93025}
-
-/* 마커를 누르면 지도 아래에 뜨는 선택 카드 */
-.cand{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:8px 0}
-.cand .cn{flex:none;width:26px;height:26px;border-radius:50%;background:#1a73e8;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
-.cand .ci{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.cand .ci b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cand .ci .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cand .btn.sm{min-height:40px;padding:0 12px;font-size:13px;white-space:nowrap}
-.locwrap .locmap{height:min(320px,42dvh)}   /* 대기시간 입력이 같은 페이지 아래로 이어지므로 지도를 조금 줄임 */
 
 
 /* ===== v12: < 뒤로가기 · ? 툴팁 · 지도 안 장소 필터 · 카트 담기 ===== */
@@ -527,3 +513,15 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .sheet .in{margin-bottom:8px}
 .add.ci{min-width:40px;width:40px;padding:0;display:inline-grid;place-items:center}
 .add.ci svg{display:block}
+
+
+/* ===== v13: 코스 확인 ＋ · 시작/저장 좌우 · 실시간 카운트 · 장소 검색창 같은 행 ===== */
+.h2r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
+.h2r h2{margin:0}
+.h2r .ib{flex:none;display:grid;place-items:center;padding:0}
+.ftr{display:flex;align-items:center;gap:8px}
+.ftr .btn:first-child{flex:1;width:auto;min-width:0}
+.ftr .btn.sv{flex:none;width:auto;min-height:48px;padding:0 18px;font-size:14px}
+.cdt{display:flex;flex-direction:column;align-items:center;gap:2px;margin:12px 0 4px}
+.cdt b{font-size:44px;font-weight:900;letter-spacing:-1px;line-height:1.1;font-variant-numeric:tabular-nums}
+.flt .in{flex:1;min-width:0;width:auto;height:34px;min-height:34px;margin:0;padding:0 12px;border-radius:99px;font-size:16px}
