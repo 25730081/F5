@@ -128,8 +128,8 @@ function geo(k,R){
 
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
-const SAVED=(()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}})();
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false};
+const SAVED=(()=>{try{localStorage.removeItem(KEY)}catch(e){}return null})();   // 새로고침(F5)하면 저장값을 지우고 처음 상태(홈)로 시작
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'def',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null};
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -444,11 +444,15 @@ const refreshSearch=refreshMap;
 const cfm=()=>!S.sel.length?{t:'장소를 1곳 이상 담아주세요',d:true}:rem()<0?{t:`체류 시간을 줄여주세요 (${fm(-rem())} 초과)`,d:true}:{t:`코스 확인 (${S.sel.length}곳 · ${fm(total())}) →`,d:false};
 // 코스 수정 중인지 (저장된 코스를 불러와 고치는 중)
 const editing=()=>S.editId!=null&&S.courses.some(c=>c.id==S.editId);
+const mapBack=()=>{   // 장소 담는 화면의 '뒤로': 온 곳으로 돌아감
+ const t=S.mback=='confirm'?'confirm':S.active?(S.sel.length?'prog':'home'):editing()?'mc':'wait';
+ const L={confirm:'코스 확인',prog:'진행 화면',home:'홈',mc:'코스 상세',wait:'대기시간 입력'}[t];
+ return `<button class="back mb" data-go="${t}" aria-label="뒤로 가기 · ${L}">← ${L}</button>`};
 const map=()=>{const c=cfm(),ed=editing();
  if(KM.key!==mkey())KM.vb=null;   // 위치·대기시간이 바뀐 직후엔 예전 지도 범위를 쓰지 않음
  const sec=S.active?(S.sel.length?'<button class="btn g" data-go="prog">진행 화면으로</button>':'<button class="btn g" data-go="home">홈으로</button>'):ed?`<button class="btn g" data-cid="${S.editId}">코스 상세로</button>`:'';
  const main=`<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(sec&&!c.d?`코스 확인 (${S.sel.length}곳) →`:c.t)}</button>`;
- return frameM(`${note('안내','핀을 눌러 장소를 담아보세요. 진한 핀은 대기시간 반경 안이에요.')}<input class="in" id="q" type="search" placeholder="장소 이름 검색 (예: 낫저스트북스)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색">
+ return frameM(`${mapBack()}${note('안내','핀을 눌러 장소를 담아보세요. 진한 핀은 대기시간 반경 안이에요.')}<input class="in" id="q" type="search" placeholder="장소 이름 검색 (예: 낫저스트북스)" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색">
 <div class="mapx" id="kmap"></div>`,
 `${catRow()}
 <div id="sheetlist">${sheetList()}</div>`,
@@ -563,11 +567,11 @@ function loadCourse(c){S.sel=[...c.sel];S.stay={...c.stay};S.wait=c.wait;{const 
 document.addEventListener('click',e=>{
  const c=e.target.closest('[data-cid]'),t=c||e.target.closest('button');
  if(!t||t.disabled)return;const d=t.dataset,has=k=>d[k]!==undefined;
- if(has('go')){S.rsheet=false;if(d.go=='reg')S.editId=null;if(d.go=='confirm')S.from=S.i;S.i=(d.go=='prog'&&!S.active)?'home':d.go}
+ if(has('go')){S.rsheet=false;if(d.go=='reg')S.editId=null;if(d.go=='map')S.mback=S.i;if(d.go=='confirm')S.from=S.i;S.i=(d.go=='prog'&&!S.active)?'home':d.go}
  else if(has('cid')){S.cid=+d.cid;S.i='mc'}
  else if(has('tog')){const k=+d.tog;if(S.sel.includes(k)){S.sel=S.sel.filter(x=>x!=k);delete S.stay[k]}else S.sel=[...S.sel,k]}
  else if(has('hcat')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}S.cats=[d.hcat];S.i='reg'}
- else if(has('pop')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}const[cs,w]=d.pop.split('|');S.wait=+w;S.from='map';resetBuild();
+ else if(has('pop')){S.mback=null;if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}const[cs,w]=d.pop.split('|');S.wait=+w;S.from='map';resetBuild();
   cs.split(',').forEach(cat=>{const k=P.map((p,i)=>i).filter(i=>P[i].c==cat&&!S.sel.includes(i)&&inRad(i)&&cost(i)<=rem()-BUF).sort(byDist)[0];if(k!=null)S.sel.push(k)});
   if(S.sel.length)S.i='confirm';else{S.i='map';toast('조건에 맞는 장소를 찾지 못했어요')}}
  else if(has('geo')){
@@ -603,7 +607,7 @@ document.addEventListener('click',e=>{
   else toast('이 브라우저에서는 공유를 지원하지 않아요')}
  else if(has('seg'))S.seg=d.seg;
  else if(has('redo')||has('edit')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}
-  const c=S.courses.find(x=>x.id==+(d.redo??d.edit));if(!c)return;loadCourse(c);S.i=has('edit')?'map':'confirm'}   // 시작 → 코스 확인 / 장소 바꾸기 → 지도
+  const c=S.courses.find(x=>x.id==+(d.redo??d.edit));if(!c)return;loadCourse(c);S.mback=null;S.i=has('edit')?'map':'confirm'}   // 시작 → 코스 확인 / 장소 바꾸기 → 지도
  else if(has('del')){if(!confirm('이 코스를 삭제할까요?'))return;S.courses=S.courses.filter(x=>x.id!=+d.del);S.i='my'}
  else return;
  draw()});
