@@ -451,3 +451,57 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .inf .st{margin-left:8px;font-weight:800;color:var(--mut)}
 .inf .st.ok{color:var(--ok)}
 .inf .st.err{color:var(--err)}
+
+/* ===== v11: 헤더 알림 · 웨이팅 장소 검색 ===== */
+.hr{display:flex;align-items:center;gap:8px}
+.bellb{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;padding:0 8px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink)}
+.bellb.on{border-color:var(--ink)}
+.bdg{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;border:2px solid var(--card);background:#d93025;color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:1;display:grid;place-items:center}
+
+/* 알림 시트 (길찾기 시트 .rs 재사용) */
+.ns .rs-p{max-height:78%;display:flex;flex-direction:column}
+.ns-h{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
+.ns-h h3{margin:0}
+.ns-b{overflow-y:auto;min-height:0;flex:1}
+.ns-s{margin:0 0 14px}
+.ns-s h4{margin:0 0 6px;font-size:14px;display:flex;align-items:baseline;gap:8px}
+.nl{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.nl li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}
+.nl li:first-child{border-top:0}
+.nl .tm{flex:none;min-width:52px;font-variant-numeric:tabular-nums;font-size:14px}
+.nl .tx2{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;word-break:keep-all}
+.nl .tx2 b{font-size:14px}
+.nl em{flex:none;font-style:normal;font-size:12px;font-weight:800;color:var(--ok)}
+.nl li.done{background:var(--fill)}
+.nl li.done .tx2,.nl li.done .tm{color:var(--mut)}
+.nl li.done em{color:var(--mut)}
+
+/* 웨이팅 장소 검색 */
+.srch{margin:0 0 4px}
+.srch .in{margin:0}
+.sgbox:empty{display:none}
+.sgbox{margin:6px 0 0}
+.sgi{padding:2px 2px}
+.sg{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sg-h{padding:8px 12px;background:var(--fill)}
+.sg ul{list-style:none;margin:0;padding:0}
+.sg li{display:flex;flex-direction:column;gap:1px;padding:9px 12px;border-top:1px solid var(--line);cursor:default}   /* 목록은 눌러 고르는 용도가 아님(엔터 → 지도 마커에서 선택) */
+.sg li b{font-size:14px}
+.sg li .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sg-h+ul li:first-child{border-top:0}
+
+/* 검색 결과 마커(번호) */
+.sp{position:relative;display:block;width:30px;height:36px;padding:0;margin:0;border:0;background:none;cursor:pointer;filter:drop-shadow(0 2px 3px rgba(16,24,40,.35))}
+.sp span{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:#1a73e8;border:2px solid #fff;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;line-height:1}
+.sp::after{content:"";position:absolute;left:50%;bottom:0;width:0;height:0;margin-left:-6px;border:6px solid transparent;border-top:8px solid #1a73e8;border-bottom:0}
+.sp.on span{background:#d93025;width:36px;height:36px;left:-3px;top:-4px;font-size:15px}
+.sp.on::after{border-top-color:#d93025}
+
+/* 마커를 누르면 지도 아래에 뜨는 선택 카드 */
+.cand{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:8px 0}
+.cand .cn{flex:none;width:26px;height:26px;border-radius:50%;background:#1a73e8;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
+.cand .ci{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.cand .ci b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cand .ci .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cand .btn.sm{min-height:40px;padding:0 12px;font-size:13px;white-space:nowrap}
+.locwrap .locmap{height:min(320px,42dvh)}   /* 대기시간 입력이 같은 페이지 아래로 이어지므로 지도를 조금 줄임 */
