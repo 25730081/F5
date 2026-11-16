@@ -55,7 +55,7 @@
  *  - 마이페이지: 코스를 원형 타이머 카드 2열 격자로 표시 (자세한 정보는 눌러서 확인)
  *
  * v10 변경 요약
- *  - 헤더: 우측 버튼을 하트(♥ 관심 공간 N) 바로가기로 변경 → 누르면 마이페이지 '관심 공간' 탭
+ *  - 헤더: 우측을 웨이팅 남은 시간(실시간 카운트다운)으로 표시
  *  - 진행 화면: 대기시간 ±10분 조절을 작게·가운데 정렬 / 코스 타임라인은 '도보 · 체류'를 한 줄로, 장소 간격 확대
  *  - 코스 종료 화면: '오늘의 코스' 가운데 정렬
  *  - 마이페이지 코스 카드: [원형 타이머 | 코스 제목·날짜·대기 | 장소 목록]을 한 행에 배치
@@ -91,7 +91,8 @@ let loadError=false;
 const num=v=>{const n=parseFloat(v);return Number.isFinite(n)?n:null};
 const SOURCES=[
  {url:'data/seoul_bookstore_100.json',pick:d=>d.DATA,
-  map:x=>({n:x.store_name,c:'서점',e:CE.서점,s:30,lat:num(x.xcnts),lng:num(x.ydnts),addr:x.adres?'서울 '+x.adres:'',tel:x.tel_no,url:x.hmpg_url||x.sns})},
+  map:x=>({n:x.store_name,c:'서점',e:CE.서점,s:30,lat:num(x.xcnts),lng:num(x.ydnts),addr:x.adres?'서울 '+x.adres:'',tel:x.tel_no,url:x.hmpg_url||x.sns,
+   hrsTxt:x.hours,closedTxt:x.closed,note:x.hours_note,wk:parseWeek(x.hours),cd:parseClosed(x.closed)})},
  {url:'data/seoul_library_100.json',pick:d=>d.libraries,
   map:x=>({n:x.name,c:'도서관',e:CE.도서관,s:40,lat:x.coordinates&&x.coordinates.latitude,lng:x.coordinates&&x.coordinates.longitude,addr:x.address,tel:x.phone,url:x.website,closed:x.closedDays,hours:x.hours})},
  {url:'data/seoul_park_130.json',pick:d=>d.DATA,
@@ -138,7 +139,7 @@ const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'li
   if(ok)S.loc={lat:l.lat,lng:l.lng};else if(AREAS.some(a=>a.n==v.area)){const a=aref(v.area);S.loc={lat:a.lat,lng:a.lng}}
   S.area=areaLabel(S.loc)}
  if(['list','card'].includes(v.view))S.view=v.view;
- if(['def','near','pop'].includes(v.sort))S.sort=v.sort;
+ if(['def','near'].includes(v.sort))S.sort=v.sort;
  if(v.onow===true)S.onow=true;
  if(v.active&&Number.isFinite(v.start)){S.active=true;S.start=v.start}
  if(Number.isFinite(v.editId))S.editId=v.editId;
@@ -210,8 +211,57 @@ function libInfo(p){
 }
 // 영업 여부: true 영업중 / false 영업 아님 / null 정보 없음 (공원은 상시 개방으로 간주)
 const mins=t=>{const m=/(\d{1,2}):?(\d{2})/.exec(String(t||''));return m?+m[1]*60+ +m[2]:null};
+// 서점 운영시간 문자열 → 요일별 시간. 예) '월~금 11:00-20:30 / 토 11:00-18:30' · '평일 10:00-17:00' · '화-금 13:00-23:00 / 주말·공휴일 11:00-23:00' · '10:00-22:00'(매일)
+const WD='일월화수목금토';
+function parseWeek(s){
+ s=String(s||'').trim();if(!s||s=='미확인')return null;
+ const w=Array(7).fill(null);let hol=null,any=false;
+ s.split('/').forEach(seg=>{
+  const m=/^(.*?)\s*(\d{1,2}:\d{2})\s*[-~–]\s*(\d{1,2}:\d{2})\s*$/.exec(seg.trim());if(!m)return;
+  const t={open:m[2],close:m[3]},spec=m[1].trim(),days=[];
+  if(!spec)days.push(0,1,2,3,4,5,6);
+  else spec.split(/[·,\s]+/).forEach(tok=>{
+   if(!tok)return;
+   if(tok=='평일'){days.push(1,2,3,4,5);return}
+   if(tok=='주말'){days.push(0,6);return}
+   if(tok=='공휴일'){hol=t;return}
+   const r=/^([일월화수목금토])[~\-–]([일월화수목금토])$/.exec(tok);
+   if(r){let a=WD.indexOf(r[1]);const b=WD.indexOf(r[2]);for(let i=0;i<7;i++){days.push(a);if(a==b)break;a=(a+1)%7}return}
+   if(tok.length==1&&WD.includes(tok))days.push(WD.indexOf(tok));
+  });
+  if(days.length){days.forEach(d=>{w[d]=t});any=true}
+ });
+ return any?{w,hol}:null;
+}
+// 서점 휴무 문자열 → 쉬는 요일 Set. 예) '일요일' · '월요일, 화요일' · '월~목요일' · '금요일, 토요일 정기휴무' (설날·추석·공휴일은 요일이 아니므로 무시)
+function parseClosed(s){
+ const set=new Set();
+ const rest=String(s||'').replace(/([일월화수목금토])\s*[~\-–]\s*([일월화수목금토])\s*요일/g,(_,a,b)=>{let i=WD.indexOf(a);const e=WD.indexOf(b);for(let n=0;n<7;n++){set.add(i);if(i==e)break;i=(i+1)%7}return ' '});
+ rest.replace(/([일월화수목금토])\s*요일/g,(_,a)=>{set.add(WD.indexOf(a));return ' '});
+ return set;
+}
+// 서점 영업 여부: true 영업중 / false 휴무·영업시간 아님 / null 정보 없음
+function bookState(p){
+ const d=new Date().getDay();
+ if(p.cd&&p.cd.has(d))return false;
+ const t=p.wk&&p.wk.w[d];if(!t)return null;
+ const o=mins(t.open);let c=mins(t.close);if(o==null||c==null)return null;
+ if(c==0)c=1440;
+ const n=clock();return c>o?(n>=o&&n<c):(n>=o||n<c);   // 마감이 시작보다 이르면 자정을 넘기는 영업
+}
+function bookInfo(p){
+ const d=new Date().getDay(),t=p.wk&&p.wk.w[d],st=bookState(p),n=clock();let today;
+ if(p.cd&&p.cd.has(d))today=`오늘(${WD[d]}) 휴무`;
+ else if(t)today=`오늘(${WD[d]}) ${t.open}–${t.close} · ${st===true?'영업중':n<mins(t.open)?'영업 전':'영업 종료'}`;
+ else today=p.wk?`오늘(${WD[d]}) 운영시간 확인 필요`:'운영시간 미확인 · 방문 전 확인하세요';
+ return `<p>🕒 ${esc(today)}</p>`
+  +(p.wk&&p.hrsTxt?`<p>🗓 운영시간 ${esc(p.hrsTxt)}</p>`:'')
+  +(p.closedTxt?`<p>🚫 휴무 ${esc(p.closedTxt)}</p>`:'')
+  +(p.note?`<p>ℹ️ ${esc(p.note)}</p>`:'');
+}
 function openState(p){
  if(p.c=='공원')return true;
+ if(p.c=='서점'&&'wk' in p)return bookState(p);
  if(typeof p.openNow=='boolean')return p.openNow;
  const h=p.hours;if(!h)return null;
  if(libClosed(p))return false;
@@ -269,8 +319,9 @@ const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫�
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
 const note=(k,t)=>`<p class="note ${k=='주의'?'warn':k=='참고'?'ref':''}"><b>${k}</b><span>${t.split(/(?<=\.)\s+/).join('<br>')}</span></p>`;   // 페이지 상단 안내(안내·참고·주의)
-// 헤더 우측: 관심 공간(하트) 바로가기. 어느 화면에서든 저장한 장소로 이동
-const hd=()=>{const n=S.favs.length,on=S.i=='my'&&S.seg=='f';return `<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><button class="fvb${on?' on':''}" data-favgo="1" aria-label="관심 공간 ${n}곳 보기"><span class="fh" aria-hidden="true">${n?'♥':'♡'}</span><b>${n}</b></button></header>`};
+// 헤더 우측: 웨이팅 남은 시간(실시간). 진행 중이면 매초 줄어들고, 아니면 '웨이팅 없음'
+const hdW=()=>{if(!S.active||!S.start)return{t:'웨이팅 없음',c:''};const s=remSec();return s<=0?{t:'대기 종료',c:'err'}:{t:hms(s),c:s<=600?'warn':''}};
+const hd=()=>{const w=hdW();return `<header class="hd"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button><div class="wtc ${w.c}" role="timer" aria-label="웨이팅 남은 시간">${IC.clock}<b data-cd="hdw">${esc(w.t)}</b></div></header>`};
 const toastH=()=>S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'';
 
 /* ---------- 미니 플레이어: 진행 중인 코스를 홈·마이페이지 하단에 띄움(배달 진행 배너처럼) ---------- */
@@ -291,7 +342,7 @@ const ringBar=()=>`<div class="rb">${ringSvg()}<div class="rbs"><div><span class
 const cats=()=>CAT_ORDER.filter(c=>c=='카페'||P.some(p=>p.c==c));   // 카페는 API 연결 전이라도 항상 표시
 const CATS4=['서점','도서관','공원','카페'];
 const catLbl=()=>!S.cats.length?'장소':'장소 · '+S.cats[0]+(S.cats.length>1?' 외 '+(S.cats.length-1):'');
-const catRow=()=>`<div class="flt" role="group" aria-label="필터"><button class="chip ${S.cats.length||S.catOpen?'on':''}" data-catmenu="1" aria-expanded="${S.catOpen}">${esc(catLbl())} ${S.catOpen?'▴':'▾'}</button><button class="chip ${S.onow?'on':''}" data-onow="1" aria-pressed="${S.onow}">영업중</button><select class="srt" id="sort" aria-label="정렬"><option value="def" ${S.sort=='def'?'selected':''}>기본순</option><option value="near" ${S.sort=='near'?'selected':''}>거리 가까운 순</option><option value="pop" ${S.sort=='pop'?'selected':''}>인기순</option></select></div>
+const catRow=()=>`<div class="flt" role="group" aria-label="필터"><button class="chip ${S.cats.length||S.catOpen?'on':''}" data-catmenu="1" aria-expanded="${S.catOpen}">${esc(catLbl())} ${S.catOpen?'▴':'▾'}</button><button class="chip ${S.onow?'on':''}" data-onow="1" aria-pressed="${S.onow}">영업중</button><select class="srt" id="sort" aria-label="정렬"><option value="def" ${S.sort=='def'?'selected':''}>기본순</option><option value="near" ${S.sort=='near'?'selected':''}>거리 가까운 순</option></select></div>
 ${S.catOpen?`<div class="catp"><div class="row cats" role="group" aria-label="장소 카테고리 (여러 개 선택 가능)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div></div>`:''}`;
 
 /* ---------- 지도/목록 계산 ---------- */
@@ -307,7 +358,6 @@ const byDist=(a,b)=>tt(a)-tt(b);
 const list=()=>{const q=S.q.trim(),b=P.map((p,k)=>k).filter(k=>(!S.cats.length||S.cats.includes(P[k].c))&&matchQ(k)&&(q||inView(k))&&(!S.onow||isOpen(k)===true));
  b.sort(byDist);
  if(S.sort=='def')b.sort((x,y)=>CAT_ORDER.indexOf(P[x].c)-CAT_ORDER.indexOf(P[y].c)||byDist(x,y));      // 기본순: 카테고리 순 → 가까운 순
- else if(S.sort=='pop')b.sort((x,y)=>(P[y].pop||0)-(P[x].pop||0)||byDist(x,y));                         // 인기순: pop 값(API) 큰 순, 없으면 가까운 순
  return [...b,...S.sel.filter(k=>!b.includes(k))]};
 // 등록 화면 "갈 수 있는 곳": 반경 안에서 시간이 되는 장소 수
 const avail=fresh=>P.map((p,k)=>k).filter(inRad).filter(k=>fresh?cost(k)<=S.wait-BUF:(!S.sel.includes(k)&&fit(k))).length;
@@ -432,7 +482,7 @@ function mountKakaoMap(){
 // 장소 상세 (행을 누르면 아래로 펼침): 주소 · 전화 · 운영/휴무(공휴일 포함) · 도보 시간(참고)
 const dtl=k=>{const p=P[k],tel=safeTel(p.tel),isL=p.c=='도서관',h=isL&&p.hours?p.hours.holiday:null,fv=S.favs.includes(k),
  op=(isL?libInfo(p):'')||TIP[p.c]||'영업시간·휴무는 방문 전에 확인하세요';
- return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><p>🚶 도보 약 ${tt(k)}분 (참고)</p><p>📍 ${p.addr?esc(p.addr):'주소 정보 없음'}</p><p>📞 ${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'전화번호 정보 없음'}</p><p>🕒 ${esc(op)}</p>${h&&typeof h=='object'&&h.open?`<p>🗓 공휴일 ${esc(h.open)}–${esc(h.close)}</p>`:''}<div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
+ return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><p>🚶 도보 약 ${tt(k)}분 (참고)</p><p>📍 ${p.addr?esc(p.addr):'주소 정보 없음'}</p><p>📞 ${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'전화번호 정보 없음'}</p>${p.c=='서점'&&'wk' in p?bookInfo(p):`<p>🕒 ${esc(op)}</p>`}${h&&typeof h=='object'&&h.open?`<p>🗓 공휴일 ${esc(h.open)}–${esc(h.close)}</p>`:''}<div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
 // 관심 공간 하트 버튼 (마이페이지 '관심 공간'에 저장/해제)
 const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${fv?'♥':'♡'}</button>`};
 const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cb(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">도보 ${tt(k)}분</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
@@ -654,6 +704,7 @@ draw();
 loadPlaces();
 setInterval(()=>{if(!S.active)return;document.querySelectorAll('[data-cd]').forEach(el=>{const k=el.dataset.cd;
  if(k=='hms')el.textContent=hms(remSec());
+ else if(k=='hdw'){const w=hdW();el.textContent=w.t;if(el.parentElement)el.parentElement.className='wtc '+w.c}
  
  else if(k=='stage')el.textContent=stageTxt();
  else if(k=='left')el.textContent=leftTxt();
