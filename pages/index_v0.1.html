@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>0차 와이어프레임</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f2f2f0;--paper:#fff;--ink:#222;--sub:#777;--line:#bbb;--fill:#e4e4e1;--acc:#2f5bd8;--accbg:#e6ecfc;--note:#c2410c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1b1a;--paper:#262625;--ink:#eee;--sub:#999;--line:#555;--fill:#3a3a38;--acc:#8fb0ff;--accbg:#2a3556;--note:#fb923c}}
+:root[data-theme="dark"]{--bg:#1b1b1a;--paper:#262625;--ink:#eee;--sub:#999;--line:#555;--fill:#3a3a38;--acc:#8fb0ff;--accbg:#2a3556;--note:#fb923c}
+*{box-sizing:border-box;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;line-height:1.5;padding:28px 16px 48px;font-size:13px}
+.w{max-width:1320px;margin:0 auto}
+h1{font-size:22px}
+h2{font-size:15px;margin:28px 0 10px}
+.lead{color:var(--sub);margin-top:4px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.meta span{border:1px solid var(--line);background:var(--paper);padding:3px 10px;border-radius:99px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.lg{display:flex;gap:10px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px}
+.lg b{display:block}
+.lg small{color:var(--sub)}
+.sw{width:56px;height:36px;flex:none}
+.screens{display:flex;flex-wrap:wrap;gap:28px 24px;align-items:flex-start}
+figure{width:375px;max-width:100%}
+figcaption{margin-bottom:8px;font-weight:700;font-size:14px}
+.phone{width:375px;max-width:100%;height:690px;background:var(--paper);border:2px solid var(--ink);border-radius:26px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.logo{font-weight:700;font-size:20px;display:flex;align-items:center;gap:6px}
+.logo i{width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;display:inline-block}
+.wait{border:1.5px solid var(--ink);border-radius:99px;padding:3px 11px;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;position:relative}
+.fav{width:34px;height:34px;border:1.5px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.fav.on{background:var(--ink);color:var(--paper)}
+.fav.sm{width:28px;height:28px;font-size:13px}
+.body{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:10px;overflow:hidden;position:relative}
+.nav{display:flex;border-top:1.5px solid var(--ink);padding:8px 0 10px}
+.nav div{flex:1;text-align:center;font-size:10px;color:var(--sub);white-space:nowrap}
+.nav div:before{content:"";display:block;width:18px;height:18px;border:1.5px solid currentColor;border-radius:5px;margin:0 auto 2px}
+.nav .on{color:var(--ink);font-weight:700}
+.blk{border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--paper);position:relative}
+.blk.f{background:var(--fill)}
+.btn{border:2px solid var(--ink);border-radius:10px;text-align:center;padding:11px;font-weight:700;position:relative}
+.btn.p{background:var(--ink);color:var(--paper)}
+.btn.s{padding:5px 10px;font-size:12px;border-width:1.5px}
+.tx{height:9px;border-radius:5px;background:var(--fill);margin:6px 0}
+.tx.s{width:55%}.tx.m{width:78%}
+.img{background:linear-gradient(to top right,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px)),linear-gradient(to bottom right,transparent calc(50% - 1px),var(--line) 50%,transparent calc(50% + 1px));border:1.5px solid var(--line);border-radius:8px;flex:none}
+.row{display:flex;gap:8px;align-items:center}
+.sp{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);border-radius:99px;padding:3px 11px;font-size:12px;white-space:nowrap}
+.chip.on{background:var(--accbg);border-color:var(--acc);color:var(--acc);font-weight:700}
+.card{display:flex;gap:10px}
+.card .img{width:84px;height:84px}
+.card>div:nth-child(2){flex:1}
+.b{font-weight:700}
+.mute{color:var(--sub)}
+.tag{font-size:11px;border-radius:5px;padding:1px 7px;background:var(--accbg);color:var(--acc);font-weight:700;display:inline-block}
+.tag.no{background:var(--fill);color:var(--sub)}
+.n{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--note);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
+.nl{margin-top:10px;border:1.5px dashed var(--note);border-radius:8px;padding:10px 10px 10px 12px;font-size:12px}
+.nl b{color:var(--note)}
+.nl ol{list-style:none;padding:0}
+.nl li{margin-top:4px}
+.nl li span{display:inline-flex;width:16px;height:16px;border-radius:50%;background:var(--note);color:#fff;font-size:10px;font-weight:700;align-items:center;justify-content:center;margin-right:6px}
+.map{position:relative;background-color:var(--fill);background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:36px 36px;overflow:hidden}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.pin{position:absolute;padding:2px 8px;border-radius:99px;background:var(--ink);color:var(--paper);font-size:11px;font-weight:700;white-space:nowrap;z-index:2}
+.pin.d{background:var(--acc);color:#fff}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-top:2px solid var(--ink);border-radius:18px 18px 0 0;padding:12px 16px;display:flex;flex-direction:column;gap:8px;z-index:3}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:2}
+.tl{display:flex;gap:10px;align-items:stretch}
+.tl .dot{width:22px;display:flex;flex-direction:column;align-items:center}
+.tl .dot i{width:14px;height:14px;border:2px solid var(--ink);border-radius:50%;background:var(--paper);flex:none}
+.tl .dot u{flex:1;width:0;border-left:2px dashed var(--line);margin:2px 0}
+.tl>div:last-child{flex:1;padding-bottom:8px}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>0차 · 와이어프레임</h1>
+<p class="lead">본격적인 식사 전, 기다리는 동안의 첫 번째 코스</p>
+<div class="meta">
+  <span>핵심 사용자: 맛집 웨이팅 중 남은 시간 동안 주변에서 시간을 보내려는 20대 외식 이용자</span>
+  <span>모바일 세로 375pt</span>
+  <span>화면 8개</span>
+</div>
+
+<h2>표기 규칙</h2>
+<div class="legend">
+  <div class="lg"><div class="sw blk"></div><div><b>영역 블록</b><small>버튼, 입력창, 배경이 있는 영역</small></div></div>
+  <div class="lg"><div class="sw"><div class="tx"></div><div class="tx m"></div><div class="tx s"></div></div><div><b>본문 자리</b><small>실제 문구를 확정하지 않은 텍스트 영역</small></div></div>
+  <div class="lg"><div class="sw img"></div><div><b>이미지 자리</b><small>대각선 표기는 사진 영역을 의미</small></div></div>
+  <div class="lg"><div class="sw" style="display:flex;align-items:center;justify-content:center"><span class="n" style="position:static">1</span></div><div><b>데이터 주석</b><small>화면에 실제로 표시되지 않는 설계 메모</small></div></div>
+</div>
+
+<h2>화면 8개</h2>
+<div class="screens">
+
+<!-- 1 홈 -->
+<figure><figcaption>① 홈</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 3:00:00<span class="n" style="right:-6px;top:-8px">1</span></div></div>
+  <div class="body">
+    <div class="b" style="font-size:17px;line-height:1.4">본격적인 식사 전,<br>기다리는 동안의 첫 번째 코스</div>
+    <div class="blk"><div class="mute">식당 위치</div><div class="b">📍 식당 주변 검색</div></div>
+    <div class="blk"><span class="n" style="right:-6px;top:-6px">2</span>
+      <div class="mute">남은 웨이팅 시간</div>
+      <div class="row sp"><span class="chip">−</span><span class="b" style="font-size:22px">3시간 00분</span><span class="chip">+</span></div>
+      <div class="row wrap" style="margin-top:6px"><span class="chip">30분</span><span class="chip">1시간</span><span class="chip">2시간</span><span class="chip on">3시간</span></div>
+    </div>
+    <div class="blk row sp"><span>이전 웨이팅 불러오기</span><span class="mute">›</span></div>
+    <div class="btn p" style="margin-top:auto">주변 공간 찾기<span class="n" style="right:-6px;top:-8px">3</span></div>
+  </div>
+  <div class="nav"><div class="on">홈</div><div>검색</div><div>지도</div><div>관심공간</div><div>마이페이지</div></div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>헤더 공통: 남은 웨이팅 시간 실시간 카운트다운(h:mm:ss). 입력 시각 기준으로 줄어들고 누르면 시간 수정</li>
+<li><span>2</span>웨이팅 시간은 분 단위로 저장, 기본값 180분</li>
+<li><span>3</span>입력한 위치·대기시간 기준으로 공간 목록 검색</li></ol></div>
+</figure>
+
+<!-- 2 공간 목록 -->
+<figure><figcaption>② 공간 목록 (검색창)</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 2:47:30</div></div>
+  <div class="body">
+    <div class="blk row"><span class="n" style="right:-6px;top:-6px">1</span>🔍 <span class="mute">지역·장소 검색</span></div>
+    <div class="row sp" style="position:relative"><span class="mute">결과 18건</span><div class="row"><span class="chip">거리순 ▾</span><span class="chip" style="position:relative">필터<span class="n" style="right:-8px;top:-8px">2</span></span></div></div>
+    <div class="blk card"><span class="n" style="right:-6px;top:-6px">3</span><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div><span class="tag">도보 6분 · 체류 90분</span><div class="mute" style="font-size:11px">여유 1시간</div></div><div class="fav sm">♡</div></div>
+    <div class="blk card"><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div><span class="tag">도보 9분 · 체류 60분</span><div class="mute" style="font-size:11px">여유 1시간 30분</div></div><div class="fav sm">♡</div></div>
+    <div class="blk card"><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div><span class="tag no">도보 15분 · 빠듯함</span></div><div class="fav sm">♡</div></div>
+  </div>
+  <div class="nav"><div>홈</div><div class="on">검색</div><div>지도</div><div>관심공간</div><div>마이페이지</div></div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>식당 주변 지역·장소 검색으로 후보를 좁힘</li>
+<li><span>2</span>필터 버튼을 누르면 카테고리 시트(③) 표시</li>
+<li><span>3</span>카드 필드: 이미지, 장소명, 이동시간, 추천 체류시간, 방문 가능 여부·여유시간, 관심공간 하트</li></ol></div>
+</figure>
+
+<!-- 3 카테고리 필터 -->
+<figure><figcaption>③ 공간 목록 · 카테고리 필터</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 2:47:30</div></div>
+  <div class="body">
+    <div class="blk row">🔍 <span class="mute">지역·장소 검색</span></div>
+    <div class="row wrap"><span class="chip on">카페 ✕</span><span class="chip on">소품샵 ✕</span></div>
+    <div class="blk card"><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div></div></div>
+    <div class="blk card"><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div></div></div>
+  </div>
+  <div class="dim"></div>
+  <div class="sheet">
+    <div class="row sp"><span class="b">카테고리 (복수 선택)</span><span class="mute">초기화</span></div>
+    <div class="row wrap" style="position:relative"><span class="n" style="right:-4px;top:-10px">1</span><span class="chip on">카페</span><span class="chip on">소품샵</span><span class="chip">쇼핑</span><span class="chip">편의시설</span><span class="chip">서점</span><span class="chip">전시·팝업</span></div>
+    <div class="b">정렬</div>
+    <div class="row" style="position:relative"><span class="n" style="right:0;top:-10px">2</span><span class="chip on">거리순</span><span class="chip">체류시간순</span></div>
+    <div class="b">보기 방식</div>
+    <div class="row"><span class="chip on">목록</span><span class="chip">카드</span></div>
+    <div class="btn p">12건 보기</div>
+  </div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>카테고리 복수 선택. 선택 즉시 결과 건수 갱신</li>
+<li><span>2</span>거리·체류시간 정렬. 보기 방식(목록·카드)은 Could 범위</li></ol></div>
+</figure>
+
+<!-- 4 공간 상세 -->
+<figure><figcaption>④ 공간 상세</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 2:41:12</div></div>
+  <div class="body" style="padding-top:10px">
+    <div class="img" style="height:140px;position:relative"><span class="n" style="right:8px;top:8px">1</span></div>
+    <div class="row sp"><div><div class="tx m" style="height:14px;width:140px"></div><div class="mute">카페</div></div><span class="tag">여유 1시간</span></div>
+    <div class="blk"><span class="n" style="right:-6px;top:-6px">2</span>
+      <div class="row sp"><span class="mute">주소</span><span class="b">서울 성동구 …</span></div>
+      <div class="row sp"><span class="mute">영업시간</span><span class="b">00:00–00:00</span></div>
+      <div class="row sp"><span class="mute">이동거리</span><span class="b">480m</span></div>
+      <div class="row sp"><span class="mute">예상 이동시간</span><span class="b">도보 6분</span></div>
+      <div class="row sp"><span class="mute">추천 체류시간</span><span class="b">90분</span></div>
+    </div>
+    <div class="row" style="margin-top:auto"><div class="btn" style="flex:1">♡ 관심공간 저장<span class="n" style="right:-6px;top:-8px">3</span></div><div class="btn p" style="flex:1">＋ 0차 공간 추가<span class="n" style="right:-6px;top:-8px">4</span></div></div>
+  </div>
+  <div class="nav"><div>홈</div><div class="on">검색</div><div>지도</div><div>관심공간</div><div>마이페이지</div></div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>선택한 장소 ID에 해당하는 이미지·상세 표시</li>
+<li><span>2</span>여유시간 = 남은 웨이팅 시간 − 왕복 이동시간 − 추천 체류시간</li>
+<li><span>3</span>LocalStorage에 저장, 하트가 채워지고 관심공간에 반영</li>
+<li><span>4</span>이번 웨이팅 코스에 공간 추가. 추가 즉시 지도(⑤)의 코스에 반영</li></ol></div>
+</figure>
+
+<!-- 5 지도 -->
+<figure><figcaption>⑤ 지도 (추가한 공간 반영 코스)</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 2:38:05</div></div>
+  <div class="body" style="padding:0;gap:0">
+    <div class="map" style="flex:1">
+      <svg viewBox="0 0 375 330" preserveAspectRatio="none"><polyline points="60,270 60,190 150,190 150,110 260,110 260,60 320,60" fill="none" stroke="var(--acc)" stroke-width="5" stroke-linejoin="round"/></svg>
+      <div class="pin" style="left:20px;top:276px">식당</div>
+      <div class="pin d" style="left:112px;top:168px">1 카페 모리</div>
+      <div class="pin d" style="left:214px;top:88px">2 소품샵 담</div>
+      <div class="pin" style="left:270px;top:30px">식당 복귀</div>
+      <span class="n" style="left:300px;top:96px">1</span>
+    </div>
+    <div class="sheet" style="position:static;border-radius:0;gap:6px">
+      <div class="row sp"><span class="b" style="font-size:15px">오늘의 0차 코스</span><span class="tag">장소 2곳</span></div>
+      <div class="mute" style="position:relative">총 2시간 20분 · 복귀 마감까지 여유 18분<span class="n" style="right:0;top:-4px">2</span></div>
+      <div class="row"><div class="btn" style="flex:1;position:relative">코스 상세<span class="n" style="right:-6px;top:-8px">3</span></div><div class="btn p" style="flex:1">장소 더 추가</div></div>
+    </div>
+  </div>
+  <div class="nav"><div>홈</div><div>검색</div><div class="on">지도</div><div>관심공간</div><div>마이페이지</div></div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>출발지는 입력한 식당 위치, 경유지는 ④에서 추가한 공간 순서. 지도·경로는 외부 지도 서비스 사용</li>
+<li><span>2</span>총 소요 = 이동시간 + 장소별 체류시간. 남은 웨이팅 시간과 비교해 여유 계산</li>
+<li><span>3</span>코스 상세(⑧)로 이동. 추가한 공간이 없으면 안내 문구와 장소 찾기 버튼 표시</li></ol></div>
+</figure>
+
+<!-- 6 관심공간 -->
+<figure><figcaption>⑥ 관심공간</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 2:36:40</div></div>
+  <div class="body">
+    <div class="row sp"><span class="b" style="font-size:16px">관심공간 3곳</span><span class="mute">편집</span></div>
+    <div class="mute" style="position:relative">현재 웨이팅 시간 기준으로 방문 가능 여부를 보여줘요<span class="n" style="right:-4px;top:-18px">1</span></div>
+    <div class="blk card"><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div><span class="tag">카페 · 도보 6분 · 방문 가능</span></div><div class="fav sm on">♥</div></div>
+    <div class="row" style="justify-content:flex-end;margin-top:-4px;position:relative"><span class="btn s">＋ 경로 추가</span><span class="n" style="right:-6px;top:-8px">2</span></div>
+    <div class="blk card"><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div><span class="tag">소품샵 · 도보 9분 · 방문 가능</span></div><div class="fav sm on">♥</div></div>
+    <div class="row" style="justify-content:flex-end;margin-top:-4px"><span class="btn s">＋ 경로 추가</span></div>
+    <div class="blk card"><div class="img"></div><div><div class="tx m"></div><div class="tx s"></div><span class="tag no">쇼핑 · 도보 15분 · 시간 부족</span></div><div class="fav sm on">♥</div></div>
+  </div>
+  <div class="nav"><div>홈</div><div>검색</div><div>지도</div><div class="on">관심공간</div><div>마이페이지</div></div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>LocalStorage 저장 목록. 이동시간·체류시간으로 현재 대기시간에 맞는지 재계산(흐름 B)</li>
+<li><span>2</span>경로 추가: 해당 공간을 오늘의 코스에 넣고 지도(⑤)에 반영. 이미 추가된 공간은 "추가됨"으로 변경</li></ol></div>
+</figure>
+
+<!-- 7 마이페이지 -->
+<figure><figcaption>⑦ 마이페이지</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 2:36:40</div></div>
+  <div class="body">
+    <div class="blk row sp"><span class="b">관심공간</span><span class="mute">3곳 ›</span></div>
+    <div class="row sp" style="position:relative"><span class="b">최근 본 공간</span><span class="mute">확인한 순서</span><span class="n" style="left:92px;top:-2px">1</span></div>
+    <div class="blk card"><div class="img" style="width:64px;height:64px"></div><div><div class="tx m"></div><div class="tx s"></div><span class="mute" style="font-size:11px">방금 전 확인</span></div></div>
+    <div class="blk card"><div class="img" style="width:64px;height:64px"></div><div><div class="tx m"></div><div class="tx s"></div><span class="mute" style="font-size:11px">2번째로 확인</span></div></div>
+    <div class="blk card"><div class="img" style="width:64px;height:64px"></div><div><div class="tx m"></div><div class="tx s"></div><span class="mute" style="font-size:11px">3번째로 확인</span></div></div>
+    <div class="blk row sp"><span>저장한 웨이팅 상태</span><span class="mute">›</span><span class="n" style="right:-6px;top:-6px">2</span></div>
+  </div>
+  <div class="nav"><div>홈</div><div>검색</div><div>지도</div><div>관심공간</div><div class="on">마이페이지</div></div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>최근 확인한 공간과 확인 순서. 항목을 누르면 공간 상세로 이동</li>
+<li><span>2</span>웨이팅 상태 저장(Could): 이전 웨이팅 정보를 다시 불러옴</li></ol></div>
+</figure>
+
+<!-- 8 코스 상세 -->
+<figure><figcaption>⑧ 코스 상세 (추가 구성)</figcaption>
+<div class="phone">
+  <div class="hd"><div class="logo"><i></i>0차</div><div class="wait">⏱ 2:38:05</div></div>
+  <div class="body">
+    <div class="row sp"><span class="b">‹ 오늘의 0차 코스</span><span class="mute">순서 편집</span></div>
+    <div class="blk"><span class="n" style="right:-6px;top:-6px">1</span>
+      <div class="row sp"><span class="mute">식당 복귀 마감</span><span class="b">0:00</span></div>
+      <div class="row sp"><span class="mute">복귀 여유</span><span class="b">18분</span></div>
+    </div>
+    <div class="tl"><div class="dot"><i></i><u></u></div><div><div class="b">식당 출발</div><div class="mute">도보 6분</div></div></div>
+    <div class="tl"><div class="dot"><i style="background:var(--acc)"></i><u></u></div><div><div class="b">1 카페 모리 · 체류 90분</div><div class="tx m"></div></div></div>
+    <div class="tl"><div class="dot"><i></i><u></u></div><div><div class="mute">도보 4분</div></div></div>
+    <div class="tl"><div class="dot"><i style="background:var(--acc)"></i><u></u></div><div><div class="b">2 소품샵 담 · 체류 40분</div><div class="tx m"></div></div></div>
+    <div class="tl"><div class="dot"><i></i></div><div><div class="b">식당 복귀</div><div class="mute">도보 10분</div></div></div>
+    <div class="btn p" style="margin-top:auto">이 코스로 결정<span class="n" style="right:-6px;top:-8px">2</span></div>
+  </div>
+  <div class="nav"><div>홈</div><div>검색</div><div class="on">지도</div><div>관심공간</div><div>마이페이지</div></div>
+</div>
+<div class="nl"><b>데이터 주석</b><ol>
+<li><span>1</span>복귀 마감 = 현재 시각 + 남은 웨이팅 시간. 실제 대기시간이 변동될 수 있어 여유를 두고 표시</li>
+<li><span>2</span>여러 공간을 이은 코스에서 방문할 곳을 결정하면 흐름 A 완료. 체류시간은 장소별로 조정 가능</li></ol></div>
+</figure>
+
+</div>
+</div>
+</body>
+</html>
