@@ -371,11 +371,6 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 @media (prefers-reduced-motion:no-preference){.rs-p{animation:rsup .2s ease-out}@keyframes rsup{from{transform:translateY(24px);opacity:0}}}
 
 /* ===== v10: 헤더 하트 · 마이페이지 코스 카드/관심 공간 · 코스 상세 하단 버튼 ===== */
-.wtc{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:99px;background:var(--card);font-size:13px}
-.wtc svg{width:16px;height:16px}
-.wtc b{font-variant-numeric:tabular-nums}
-.wtc.warn{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
-.wtc.err{border-color:var(--err);background:var(--errbg);color:var(--err)}
 
 .clist{display:flex;flex-direction:column;gap:10px;margin:10px 0}
 .cc2{display:flex;align-items:center;gap:12px;width:100%;min-width:0;padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);text-align:left}
@@ -444,3 +439,15 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 
 /* 장소 담는 화면: 왼쪽 상단 뒤로가기 */
 .mtop .back.mb{display:block;min-height:36px;padding:0 0 6px;margin:0;text-align:left;color:var(--ink);font-size:15px}
+
+.fvb{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:99px;background:var(--card)}
+.fvb .fh{font-size:17px;line-height:1;color:#d93025}
+.fvb.on{border-color:#d93025}
+.inf{margin:0}
+.inf>div{display:flex;gap:10px;padding:4px 0;align-items:baseline}
+.inf dt{flex:none;width:84px;color:var(--mut);font-weight:700}
+.inf dd{margin:0;flex:1;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.inf dd b{font-variant-numeric:tabular-nums}
+.inf .st{margin-left:8px;font-weight:800;color:var(--mut)}
+.inf .st.ok{color:var(--ok)}
+.inf .st.err{color:var(--err)}
