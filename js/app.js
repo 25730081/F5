@@ -315,8 +315,9 @@ const resetBuild=()=>{S.sel=[];S.stay={};S.editId=null;S.focus=null};
 /* ---------- 홈 ---------- */
 const home=()=>frame((S.active?note('참고','복귀 시각까지 남은 시간이에요. 코스는 진행 중에도 수정할 수 있어요.'):note('안내','웨이팅 중 남은 시간 동안 다녀올 수 있는 주변 장소를 코스로 만들어드려요.'))+(S.active?
 `<p class="sub">웨이팅 진행 중 · ${S.area}</p><h2>${esc(S.rest)}</h2>
-<div class="box cur"><p class="sub c">식당 복귀까지</p><div class="big2" data-cd="hms">${hms(remSec())}</div><p class="sub c"><b class="ink">${backAt()}</b>까지 돌아가야 해요</p></div>
-<div class="box"><h3>오늘의 0차 코스</h3>${S.sel.length?`<div class="rb flat">${ringSvg()}<div class="rbs"><div class="rbn"><span class="sub">지금</span><b data-cd="stage">${stageTxt()}</b></div><p class="sub rbp">${S.sel.map(k=>esc(P[k].n)).join(' → ')}</p></div></div>`:'<p class="sub">아직 코스가 없어요. 지도에서 갈 곳을 담아보세요.</p>'}</div>
+<p class="rt"><b class="rt1">${backAt()}까지 복귀</b><span class="rt2" data-cd="left">${leftTxt()}</span></p>
+${S.sel.length?`<div class="nowc ${banner().c}" data-cd="hero"><span class="nk">지금</span><b class="nt" data-cd="st1">${esc(stageInfo().t)}</b><span class="ns" data-cd="st2">${esc(stageInfo().s)}</span><span class="sub rbp">${S.sel.map(k=>esc(P[k].n)).join(' → ')}</span></div>
+<div class="slk"><span>복귀 여유</span><b class="${rem()<0?'err':''}">${rem()<0?'⚠ '+fm(-rem())+' 초과':fm(rem())}</b></div>`:'<div class="box"><p class="sub">아직 코스가 없어요. 지도에서 갈 곳을 담아보세요.</p></div>'}
 <button class="btn" data-go="${S.sel.length?'prog':'map'}">${S.sel.length?'코스 이어가기 →':'지도에서 코스 만들기 →'}</button>
 <button class="btn g mt" data-go="reg">웨이팅 시간 다시 등록</button>`
 :
