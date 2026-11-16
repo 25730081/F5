@@ -422,3 +422,5 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .slk{display:flex;align-items:baseline;justify-content:space-between;margin:14px 2px 0;font-size:14px;font-weight:700}
 .slk b{font-size:22px;font-weight:900;color:var(--ok)}
 .slk b.err{color:var(--err);font-size:16px}
+.nowc .rbp{margin:6px 0 0;word-break:keep-all}
+.body>.rt{margin:8px 0 0}
