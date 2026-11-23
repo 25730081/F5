@@ -91,7 +91,7 @@
  * v16 변경 요약
  *  - 로그인 화면 추가: 마이페이지 · 홈 '웨이팅 시간 등록하기' · 하단 등록 버튼(그 밖에 로그인이 필요한 화면 포함)은 로그인 전이면 로그인 화면으로
  *  - 로그인 후 원래 가려던 화면으로 이동 · '로그인 상태 유지'를 켜면 새로고침해도 유지(localStorage '0cha:auth') · 마이페이지 맨 아래 로그아웃
- *  - 지금은 서버 없이 화면 흐름만 동작 (아이디·비밀번호가 비어 있지 않으면 로그인, 간편 로그인도 데모 로그인)
+ *  - 아이디/비밀번호 로그인은 구글 시트(Apps Script)로 전송해 검증 (간편 로그인은 아직 데모 로그인)
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -164,7 +164,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{localStorage.removeItem(KEY)}catch(e){}return null})();   // 새로고침(F5)하면 저장값을 지우고 처음 상태(홈)로 시작
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:''};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:'',lbusy:false};
 // 로그인: '로그인 상태 유지'를 켜면 새로고침해도 유지 (코스 저장값과 별도 키)
 const AUTH='0cha:auth';
 S.user=(()=>{try{const v=JSON.parse(localStorage.getItem(AUTH));return v&&typeof v.id=='string'&&v.id?{id:v.id.slice(0,40),via:v.via||'id'}:null}catch(e){return null}})();
@@ -732,13 +732,31 @@ const login=()=>`<div class="lg">
 <div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="lpw" type="password" autocomplete="current-password" placeholder="비밀번호를 입력해주세요" value="${esc(S.lpw)}" aria-label="비밀번호"><button type="button" class="lg-eye" data-lgeye="1" aria-pressed="false" aria-label="비밀번호 보기">${LGI.eyeOff}</button></div>
 ${S.lerr?`<p class="lg-err" id="lgerr" role="alert">${esc(S.lerr)}</p>`:''}
 <label class="lg-keep"><input type="checkbox" id="lkeep" ${S.lkeep?'checked':''}><span class="lg-cb" aria-hidden="true">${LGI.check}</span>로그인 상태 유지</label>
-<button type="submit" class="lg-btn">로그인 ${LGI.arrow}</button>
+<button type="submit" class="lg-btn" ${S.lbusy?'disabled aria-busy="true"':''}>${S.lbusy?'로그인 중…':'로그인 '+LGI.arrow}</button>
 </form>
 <div class="lg-links"><button data-lnk="id">아이디 찾기</button><i aria-hidden="true"></i><button data-lnk="pw">비밀번호 찾기</button><i aria-hidden="true"></i><button class="em" data-lnk="join">회원가입</button></div>
 <div class="lg-or"><span>간편 로그인</span></div>
 <div class="lg-sns"><button data-sns="apple" aria-label="Apple로 로그인">${LGI.apple}</button><button data-sns="google" aria-label="Google로 로그인">${LGI.google}</button><button data-sns="naver" aria-label="네이버로 로그인">${LGI.naver}</button></div>
 </div></div>${toastH()}`;
 const SNS={apple:'Apple',google:'Google',naver:'네이버'};
+
+/* ---------- 구글 시트(Apps Script) 로그인 API ---------- */
+const AUTH_URL='https://script.google.com/macros/s/AKfycbwI_SYv8pnkyX4ooXy_2yeEBy2tpuHlEd7lKN-0cA9Hcq_xFW0-8-UD0ldN5Jd31q49yA/exec';
+// 요청: POST {action:'login', id, pw}  →  응답: {ok:true, id} 또는 {ok:false, error:'메시지'}
+// ※ Content-Type 을 text/plain 으로 보내야 CORS 사전요청(preflight)이 생기지 않아 Apps Script 에서 정상 동작합니다.
+async function authLogin(id,pw){
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),15000);
+ try{
+  const r=await fetch(AUTH_URL,{method:'POST',redirect:'follow',signal:ctl.signal,
+   headers:{'Content-Type':'text/plain;charset=utf-8'},
+   body:JSON.stringify({action:'login',id,pw})});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const j=await r.json();
+  return j&&typeof j=='object'?j:{ok:false,error:'서버 응답이 올바르지 않아요'};
+ }catch(e){
+  return{ok:false,error:e&&e.name=='AbortError'?'응답이 너무 늦어요. 잠시 후 다시 시도해주세요':'서버에 연결하지 못했어요. 네트워크를 확인해주세요'};
+ }finally{clearTimeout(timer)}
+}
 function signIn(id,via){
  S.user={id,via};S.lpw='';S.lerr='';
  try{if(S.lkeep)localStorage.setItem(AUTH,JSON.stringify(S.user));else localStorage.removeItem(AUTH)}catch(e){}
@@ -829,12 +847,17 @@ document.addEventListener('click',e=>{
  else if(has('del')){if(!confirm('이 코스를 삭제할까요?'))return;S.courses=S.courses.filter(x=>x.id!=+d.del);S.i='my'}
  else return;
  draw()});
-document.addEventListener('submit',e=>{   // 로그인 (엔터 또는 로그인 버튼)
+document.addEventListener('submit',async e=>{   // 로그인 (엔터 또는 로그인 버튼) → 구글 시트로 아이디/비밀번호 전송
  if(e.target.id!='lgf')return;e.preventDefault();
+ if(S.lbusy)return;   // 중복 제출 방지
  const id=S.lid.trim(),err=(m,f)=>{S.lerr=m;draw();const el=document.getElementById(f);if(el)el.focus()};
  if(!id)return err('아이디를 입력해주세요','lid');
  if(!S.lpw)return err('비밀번호를 입력해주세요','lpw');
- signIn(id.slice(0,40),'id')});
+ S.lbusy=true;S.lerr='';draw();
+ const res=await authLogin(id.slice(0,40),S.lpw);
+ S.lbusy=false;
+ if(res.ok)return signIn(String(res.id||id).slice(0,40),'id');
+ S.lpw='';err(res.error||'아이디 또는 비밀번호가 올바르지 않아요','lpw')});
 document.addEventListener('input',e=>{
  if(e.target.id=='lid'||e.target.id=='lpw'){S[e.target.id]=e.target.value;if(S.lerr){S.lerr='';const el=document.getElementById('lgerr');if(el)el.remove()}}
  if(e.target.id=='q'){S.q=e.target.value;refreshSearch()}
