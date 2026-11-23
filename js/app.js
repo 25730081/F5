@@ -877,9 +877,9 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     { c: '미술관', codes: ['Ct9t6m8'], max: 500 },                                             // Culture > Cultural Facilities > Art Museums/Galleries
     { c: '박물관', codes: ['Cr0q2v2'], max: 500 },                                             // Culture > Cultural Facilities > Museums
     { c: '체험관광', codes: ['Cc9i5o2'], max: 500 },                                           // Experience Programs
-    { c: '쇼핑', codes: ['Cu8e6t5'], max: 1000 },                                              // Shopping
     { c: '카페', codes: ['Cx0t8m5'], max: 1000 },                                              // Cuisine > Cafes & Tea Shops
-    { c: '전시회', codes: ['Cu9u5z7', 'Cu6j1f4', 'Cw7q1x8', 'Cf9q1q4'], max: 1500 },          // Events > Exhibitions · Expos · Other Events · Events (전시회+행사 통일)
+    { c: '쇼핑', codes: ['Cn0t1e0', 'Cy4k5t1', 'Cn7z1h7', 'Cs3j7y4', 'Ct1z4k9'], max: 1000 },   // Shopping > Specialty Shops & Stores · Shopping Malls & Outlets · Traditional Markets · Department Stores · Supermarkets & Warehouses
+    { c: '전시회', codes: ['Cf9q1q4'], max: 1500 },                                           // Festivals/Events/Performances > Events (전시회+행사)
   ];
 
   const H = { 'Accept': 'application/json;charset=UTF-8', 'Content-Type': 'application/json;charset=UTF-8', 'VISITSEOUL-API-KEY': API_KEY };
@@ -990,16 +990,15 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
 
   // 카테고리별 캐시 (24시간). 다 못 받았으면(complete:false) 받은 것까지 저장해 두고, 다음 접속 때 못 받은 것만 이어서 받음
   const ckey = c => VS_CKEY + ':' + c;
-  const readCache = c => { try { const v = JSON.parse(localStorage.getItem(ckey(c))); return v && Date.now() - v.t < TTL && Array.isArray(v.places) ? { places: v.places, done: Array.isArray(v.done) ? v.done : [], complete: v.complete !== false } : null; } catch (e) { return null; } };
-  const writeCache = (c, places, done, complete) => { try { localStorage.setItem(ckey(c), JSON.stringify({ t: Date.now(), places, done, complete })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
+  const sigOf = p => p.codes.join(',');
+  const OLD_OK = new Set(['미술관', '박물관', '체험관광']);   // sig 없이 저장된 예전 캐시는 코드가 안 바뀐 카테고리만 인정
+  const readCache = p => { try { const v = JSON.parse(localStorage.getItem(ckey(p.c))); if (!v || Date.now() - v.t >= TTL || !Array.isArray(v.places)) return null; if (v.sig ? v.sig !== sigOf(p) : !OLD_OK.has(p.c)) return null; return { places: v.places, done: Array.isArray(v.done) ? v.done : [], complete: v.complete !== false }; } catch (e) { return null; } };
+  const writeCache = (p, places, done, complete) => { try { localStorage.setItem(ckey(p.c), JSON.stringify({ t: Date.now(), sig: sigOf(p), places, done, complete })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
 
   async function run() {
     const todo = [], prior = {};
     for (const p of PICK) {
-      const c = readCache(p.c);
-      if (!c) for (const k of ['vs:places:v4', 'vs:places:v3']) {   // 옛 캐시는 만료됐어도 일단 보여줌 (새로 받는 동안 빈 화면 방지)
-        try { const v = JSON.parse(localStorage.getItem(k + ':' + p.c)); if (v && Array.isArray(v.places) && v.places.length) { add(v.places); break; } } catch (e) { /* 무시 */ }
-      }
+      const c = readCache(p);
       if (c) { add(c.places); prior[p.c] = c; if (c.complete) continue; }   // 다 받은 카테고리는 API를 부르지 않음
       todo.push(p);
     }
@@ -1015,7 +1014,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
         const f0 = VS_FAIL.length;
         const r = await pool(items, async it => toPlace(p.c, await detail(it.cid), it.cid), add);
         const nf = VS_FAIL.length - f0, complete = !halted && nf <= Math.max(3, items.length * 0.05);   // 원래 500이 나는 콘텐츠 몇 개 때문에 매번 다시 받지 않도록 5%(최소 3건)까진 완료로 침
-        writeCache(p.c, (pr ? pr.places : []).concat(r.out), [...skip, ...r.done], complete);   // 못 받은 건 done 에 없으므로 다음에 다시 시도
+        writeCache(p, (pr ? pr.places : []).concat(r.out), [...skip, ...r.done], complete);   // 못 받은 건 done 에 없으므로 다음에 다시 시도
         console.info(`[비짓서울] ${p.c}: 새로 받을 목록 ${items.length}건 → 표시 ${r.out.length}건 (상세 조회 실패 ${nf}건${halted ? ', 서버 불안정으로 중단' : ''}, 좌표 없음·이미 끝난 행사 등 제외 ${Math.max(0, r.done.length - r.out.length)}건)`);
         if (!complete) failed.push(p.c);
       } catch (e) {
