@@ -876,10 +876,10 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const PICK = [
     { c: '쇼핑', codes: ['Cu8e6t5'], max: 600 },
     { c: '체험관광', codes: ['Cc9i5o2'], max: 300 },
-    { c: '카페', under: /음식|맛집|식음료|먹거리|food|dining|restaurant|eat/i, name: /카페|cafe|coffee|커피|찻집/i, max: 600 },
+    { c: '카페', re: /(음식|맛집|식음료|먹거리|food|dining|restaurant)[\s\S]*(카페|cafe|coffee|커피|찻집)/i, max: 600 },   // 음식 > 카페
     { c: '전시회', under: FEST, name: /전시|exhibition|^행사$|^events?$/i, max: 400 },   // 전시회와 행사를 '전시회' 하나로 통일
-    { c: '미술관', under: CULT, mid: EXH, name: /미술관|화랑|gallery|\bart\b/i, max: 300 },
-    { c: '박물관', under: CULT, mid: EXH, name: /박물관|museum/i, not: /미술관|화랑|gallery|\bart\b/i, max: 300 },
+    { c: '미술관', re: /(문화관광|culture)[\s\S]*(전시시설|exhibition)[\s\S]*(미술관|화랑|gallery|\bart\b)/i, max: 300 },   // 문화관광 > 전시시설 > 미술관/화랑
+    { c: '박물관', re: /(문화관광|culture)[\s\S]*(전시시설|exhibition)[\s\S]*(박물관|museum)/i, not: /미술관|화랑|gallery|\bart\b/i, max: 300 },   // 문화관광 > 전시시설 > 박물관
   ];
 
   const H = { 'Accept': 'application/json;charset=UTF-8', 'Content-Type': 'application/json;charset=UTF-8', 'VISITSEOUL-API-KEY': API_KEY };
@@ -978,17 +978,25 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     for (const p of PICK) { const c = readCache(p.c); if (c) add(c); else todo.push(p); }   // 캐시된 카테고리는 바로 표시
     if (!todo.length) return;
     const cats = (await call('/category/list', { method: 'GET' })).data;
+    // 목록이 중첩(children)돼 있어도 모두 펼치고, 경로는 ctgry_path 전체 문자열로 비교
+    const flat = [];
+    (function walk(a) { (a || []).forEach(x => { if (!x || typeof x !== 'object') return; flat.push(x); Object.values(x).forEach(v => { if (Array.isArray(v) && v.length && typeof v[0] === 'object') walk(v); }); }); })(cats);
+    const pathOf = x => String(x.ctgry_path || x.ctgry_nm || x.ctgry_name || x.name || '');
+    console.info('[비짓서울] category/list 원본 예시:', JSON.stringify(cats.slice(0, 3)).slice(0, 600));
     const seen = new Set(), failed = [];
+    console.info('[비짓서울] 전체 카테고리 경로 ' + cats.length + '개:\n' + flat.map(x => x.com_ctgry_sn + '  ' + pathOf(x)).join('\n'));   // 글자로 출력 → 복사 가능
     for (const p of todo) try {
       const codes = [...(p.codes || [])];
-      if (p.name) cats.forEach(x => {
-        const s = x.ctgry_path.split('>').map(v => v.trim()), last = s[s.length - 1];
+      if (p.name || p.re) flat.forEach(x => {
+        const path = pathOf(x), s = path.split('>').map(v => v.trim()), last = s[s.length - 1];
+        if (!x.com_ctgry_sn) return;
+        if (p.re) { if (p.re.test(path) && !(p.not && p.not.test(last))) codes.push(x.com_ctgry_sn); return; }
         if (s.length > 1 && p.under.test(s[0]) && (!p.mid || (s.length > 2 && p.mid.test(s[1]))) && p.name.test(last) && !(p.not && p.not.test(last))) codes.push(x.com_ctgry_sn);
       });
       console.info('[비짓서울] 선택된 카테고리', p.c, codes);
       if (![...new Set(codes)].length) {       // 카테고리를 하나도 못 찾으면 빈 결과를 캐시하지 않고 실패 처리 + 후보 경로를 콘솔에 출력
-        console.warn('[비짓서울] ' + p.c + ' 카테고리를 못 찾았어요. 아래 후보 경로를 보고 PICK 의 under/mid/name 을 조정하세요:',
-          cats.filter(x => /전시|박물|미술|화랑|축제|공연|행사|음식|카페|museum|gallery|exhibit|festival|event|food|cafe/i.test(x.ctgry_path)).map(x => x.com_ctgry_sn + '  ' + x.ctgry_path));
+        console.warn('[비짓서울] ' + p.c + ' 카테고리를 못 찾았어요. 아래 후보 경로를 복사해서 보내주세요:\n' +
+          flat.filter(x => /전시|박물|미술|화랑|축제|공연|행사|음식|카페|커피|museum|gallery|exhibit|festival|event|food|cafe|coffee/i.test(pathOf(x))).map(x => x.com_ctgry_sn + '  ' + pathOf(x)).join('\n'));
         throw new Error('카테고리 없음');
       }
       let items = [];
