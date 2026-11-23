@@ -925,15 +925,19 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   }
 
   const VS_FAIL = [];
-  async function pool(items, fn) {
-    const out = []; let i = 0;
+  async function pool(items, fn, again) {
+    const out = [], bad = []; let i = 0;
     await Promise.all(Array.from({ length: CONC }, async () => {
       while (i < items.length) {
         const it = items[i++];
-        try { const r = await fn(it); if (r) out.push(r); } catch (e) { VS_FAIL.push(it.cid); }   // 서버가 500을 주는 콘텐츠는 건너뜀 (마지막에 개수만 안내)
+        try { const r = await fn(it); if (r) out.push(r); } catch (e) { bad.push(it); }
         await sleep(150);
       }
     }));
+    for (const it of bad) {   // 실패한 콘텐츠는 천천히, 요청 방식(GET)을 바꿔 1번만 더 시도. 그래도 안 되면 건너뜀
+      await sleep(400);
+      try { const r = await again(it); if (r) out.push(r); } catch (e) { VS_FAIL.push(it.cid); }
+    }
     return out;
   }
 
@@ -965,7 +969,8 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       let items = [];
       for (const code of [...new Set(codes)]) items.push(...await listAll(code, p.max - items.length));
       items = items.filter(x => !seen.has(x.cid)); items.forEach(x => seen.add(x.cid));
-      const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)));
+      const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)),
+        async it => toPlace(p.c, (await call('/contents/info?cid=' + encodeURIComponent(it.cid), { method: 'GET', r500: false })).data));
       add(batch); writeCache(p.c, batch);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
     } catch (e) {
       failed.push(p.c);                        // 이 카테고리만 건너뛰고 나머지는 계속 (캐시 안 함 → 다음에 다시 시도)
