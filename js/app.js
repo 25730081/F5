@@ -92,11 +92,6 @@
  *  - 로그인 화면 추가: 마이페이지 · 홈 '웨이팅 시간 등록하기' · 하단 등록 버튼(그 밖에 로그인이 필요한 화면 포함)은 로그인 전이면 로그인 화면으로
  *  - 로그인 후 원래 가려던 화면으로 이동 · '로그인 상태 유지'를 켜면 새로고침해도 유지(localStorage '0cha:auth') · 마이페이지 맨 아래 로그아웃
  *  - 지금은 서버 없이 화면 흐름만 동작 (아이디·비밀번호가 비어 있지 않으면 로그인, 간편 로그인도 데모 로그인)
- *
- * v17 변경 요약
- *  - 구글 시트(Apps Script 웹앱) 연동: 회원가입 → 시트 A(아이디)·B(비밀번호)·C(가입일시)에 저장 / 로그인 → 시트에서 확인한 결과를 받아 처리
- *  - 로그인 화면에서 '회원가입'을 누르면 같은 화면이 가입 모드(비밀번호 확인 추가)로 바뀜
- *  - 요청 중에는 버튼 비활성화(중복 전송 방지) · 15초 넘으면 시간 초과 안내
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -169,9 +164,19 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{localStorage.removeItem(KEY)}catch(e){}return null})();   // 새로고침(F5)하면 저장값을 지우고 처음 상태(홈)로 시작
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lpw2:'',lmode:'login',lbusy:false,lkeep:true,lerr:''};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:'',lbusy:false,jid:'',jpw:'',jpw2:'',jerr:''};
 // 로그인: '로그인 상태 유지'를 켜면 새로고침해도 유지 (코스 저장값과 별도 키)
 const AUTH='0cha:auth';
+// 회원정보 저장소: 구글 시트(member) ← Apps Script 웹앱 (컬럼: userId | password(해시) | createdate)
+const MEMBER_API='https://script.google.com/macros/s/AKfycbwI_SYv8pnkyX4ooXy_2yeEBy2tpuHlEd7lKN-0cA9Hcq_xFW0-8-UD0ldN5Jd31q49yA/exec';
+async function memberApi(payload){
+ const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),15000);
+ try{
+  const r=await fetch(MEMBER_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:ctl.signal});   // text/plain → CORS preflight 없이 호출
+  return await r.json();
+ }catch(e){return{ok:false,message:'서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요'}}
+ finally{clearTimeout(tm)}
+}
 S.user=(()=>{try{const v=JSON.parse(localStorage.getItem(AUTH));return v&&typeof v.id=='string'&&v.id?{id:v.id.slice(0,40),via:v.via||'id'}:null}catch(e){return null}})();
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
@@ -713,21 +718,6 @@ const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]
 <div class="row nowrap"><div class="box mini"><span class="sub">대기</span><br><b>${fm(c.wait)}</b></div><div class="box mini"><span class="sub">코스</span><br><b>${fm(ctot(c))}</b></div><div class="box mini"><span class="sub">도보 왕복</span><br><b>${fm(cwalk(c))}</b></div></div>${h}<button class="dl" data-del="${c.id}">이 코스 삭제</button>`,
  `<div class="duo w32"><button class="btn" data-redo="${c.id}">이 코스로 다시 시작</button><button class="btn g" data-edit="${c.id}">장소 바꾸기</button></div>`)};
 
-/* ---------- 구글 시트 연동 (Google Apps Script 웹앱) ---------- */
-const SHEET_API='https://script.google.com/macros/s/AKfycbwI_SYv8pnkyX4ooXy_2yeEBy2tpuHlEd7lKN-0cA9Hcq_xFW0-8-UD0ldN5Jd31q49yA/exec';
-// action: 'login' | 'join'  →  { ok:true, id } 또는 { ok:false, error:'안내 문구' }
-async function sheetApi(action,id,pw){
- const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),15000);
- try{
-  // Content-Type 을 text/plain 으로 보내면 '단순 요청'이라 CORS 사전 요청(preflight) 없이 Apps Script 로 전달됩니다
-  const r=await fetch(SHEET_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,id,pw}),signal:ctl.signal});
-  const j=await r.json();
-  return j&&typeof j=='object'?j:{ok:false,error:'서버 응답을 읽을 수 없어요'};
- }catch(e){
-  return {ok:false,error:e&&e.name=='AbortError'?'서버 응답이 늦어지고 있어요. 잠시 후 다시 시도해주세요':'서버에 연결하지 못했어요. 네트워크를 확인해주세요'};
- }finally{clearTimeout(tm)}
-}
-
 /* ---------- 로그인 ---------- */
 // 마이페이지 · 웨이팅 시간 등록(홈 버튼 · 하단 등록 버튼) 등 로그인이 필요한 화면은 로그인 후 원래 가려던 곳으로 이동
 const NEED_LOGIN=['reg','map','confirm','prog','my','mc'];
@@ -746,29 +736,42 @@ const login=()=>`<div class="lg">
 <div class="lg-top"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button></div>
 <div class="lg-main">
 <h1 class="lg-brand" aria-label="0차">${LOGO}<span aria-hidden="true">차</span></h1>
-<p class="lg-cap">${S.lmode=='join'?'아이디와 비밀번호로 간편하게 가입하세요':'로그인하고 웨이팅 시간을 0차로 채워보세요'}</p>
+<p class="lg-cap">로그인하고 웨이팅 시간을 0차로 채워보세요</p>
 <form id="lgf" class="lg-form" novalidate>
 <div class="lg-f"><span class="lg-ic">${LGI.user}</span><input id="lid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="아이디를 입력해주세요" value="${esc(S.lid)}" aria-label="아이디"></div>
-<div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="lpw" type="password" autocomplete="${S.lmode=='join'?'new-password':'current-password'}" placeholder="비밀번호를 입력해주세요" value="${esc(S.lpw)}" aria-label="비밀번호"><button type="button" class="lg-eye" data-lgeye="1" aria-pressed="false" aria-label="비밀번호 보기">${LGI.eyeOff}</button></div>
-${S.lmode=='join'?`<div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="lpw2" type="password" autocomplete="new-password" placeholder="비밀번호를 한 번 더 입력해주세요" value="${esc(S.lpw2)}" aria-label="비밀번호 확인"></div>`:''}
+<div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="lpw" type="password" autocomplete="current-password" placeholder="비밀번호를 입력해주세요" value="${esc(S.lpw)}" aria-label="비밀번호"><button type="button" class="lg-eye" data-lgeye="lpw" aria-pressed="false" aria-label="비밀번호 보기">${LGI.eyeOff}</button></div>
 ${S.lerr?`<p class="lg-err" id="lgerr" role="alert">${esc(S.lerr)}</p>`:''}
 <label class="lg-keep"><input type="checkbox" id="lkeep" ${S.lkeep?'checked':''}><span class="lg-cb" aria-hidden="true">${LGI.check}</span>로그인 상태 유지</label>
-<button type="submit" class="lg-btn" ${S.lbusy?'disabled aria-busy="true"':''}>${S.lbusy?'<span class="lg-spin" aria-hidden="true"></span>확인 중…':(S.lmode=='join'?'가입하기':'로그인')+' '+LGI.arrow}</button>
+<button type="submit" class="lg-btn"${S.lbusy?' disabled':''}>${S.lbusy?'로그인 중…':'로그인 '+LGI.arrow}</button>
 </form>
-<div class="lg-links"><button data-lnk="id">아이디 찾기</button><i aria-hidden="true"></i><button data-lnk="pw">비밀번호 찾기</button><i aria-hidden="true"></i><button class="em" data-lnk="join">${S.lmode=='join'?'로그인으로':'회원가입'}</button></div>
+<div class="lg-links"><button data-lnk="id">아이디 찾기</button><i aria-hidden="true"></i><button data-lnk="pw">비밀번호 찾기</button><i aria-hidden="true"></i><button class="em" data-lnk="join">회원가입</button></div>
 <div class="lg-or"><span>간편 로그인</span></div>
 <div class="lg-sns"><button data-sns="apple" aria-label="Apple로 로그인">${LGI.apple}</button><button data-sns="google" aria-label="Google로 로그인">${LGI.google}</button><button data-sns="naver" aria-label="네이버로 로그인">${LGI.naver}</button></div>
 </div></div>${toastH()}`;
+const joinScr=()=>`<div class="lg">
+<div class="lg-top"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button></div>
+<div class="lg-main">
+<h1 class="lg-brand" aria-label="0차">${LOGO}<span aria-hidden="true">차</span></h1>
+<p class="lg-cap">회원가입하고 웨이팅 시간을 0차로 채워보세요</p>
+<form id="jf" class="lg-form" novalidate>
+<div class="lg-f"><span class="lg-ic">${LGI.user}</span><input id="jid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="20" placeholder="아이디 (영문·숫자·_ 4~20자)" value="${esc(S.jid)}" aria-label="아이디"></div>
+<div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="jpw" type="password" autocomplete="new-password" placeholder="비밀번호 (4자 이상)" value="${esc(S.jpw)}" aria-label="비밀번호"><button type="button" class="lg-eye" data-lgeye="jpw" aria-pressed="false" aria-label="비밀번호 보기">${LGI.eyeOff}</button></div>
+<div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="jpw2" type="password" autocomplete="new-password" placeholder="비밀번호를 한 번 더 입력해주세요" value="${esc(S.jpw2)}" aria-label="비밀번호 확인"><button type="button" class="lg-eye" data-lgeye="jpw2" aria-pressed="false" aria-label="비밀번호 확인 보기">${LGI.eyeOff}</button></div>
+${S.jerr?`<p class="lg-err" id="jgerr" role="alert">${esc(S.jerr)}</p>`:''}
+<button type="submit" class="lg-btn"${S.lbusy?' disabled':''}>${S.lbusy?'가입 중…':'회원가입'}</button>
+</form>
+<div class="lg-links"><button class="em" data-lnk="login">이미 계정이 있어요. 로그인</button></div>
+</div></div>${toastH()}`;
 const SNS={apple:'Apple',google:'Google',naver:'네이버'};
 function signIn(id,via){
- S.user={id,via};S.lpw='';S.lpw2='';S.lerr='';S.lmode='login';S.lbusy=false;
+ S.user={id,via};S.lpw='';S.lerr='';
  try{if(S.lkeep)localStorage.setItem(AUTH,JSON.stringify(S.user));else localStorage.removeItem(AUTH)}catch(e){}
  S.i=S.after&&S.after!='login'?S.after:'home';S.after=null;
  toast(`${id}님, 환영해요`);draw()}
-function signOut(){S.user=null;S.lid='';S.lpw='';S.lpw2='';S.lmode='login';S.lbusy=false;try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
+function signOut(){S.user=null;S.lid='';S.lpw='';try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
 
 /* ---------- 렌더 ---------- */
-const SC={home,reg,map,confirm:confirmScr,prog,done,my,mc,login};
+const SC={home,reg,map,confirm:confirmScr,prog,done,my,mc,login,join:joinScr};
 let lastScr=null;
 function draw(){
  if(!S.user&&NEED_LOGIN.includes(S.i)){S.after=S.i;S.i='login';S.lerr=''}   // 로그인 전이면 로그인 화면으로 (로그인 후 원래 화면으로 이동)
@@ -840,8 +843,8 @@ document.addEventListener('click',e=>{
   if(navigator.share)navigator.share({text:txt}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{toast('코스를 복사했어요');draw()},()=>{});
   else toast('이 브라우저에서는 공유를 지원하지 않아요')}
- else if(has('lgeye')){const i=document.getElementById('lpw');if(!i)return;const show=i.type=='password';i.type=show?'text':'password';t.innerHTML=show?LGI.eye:LGI.eyeOff;t.setAttribute('aria-pressed',show);t.setAttribute('aria-label',show?'비밀번호 숨기기':'비밀번호 보기');return}
- else if(has('lnk')){if(S.lbusy)return;if(d.lnk=='join'){S.lmode=S.lmode=='join'?'login':'join';S.lpw='';S.lpw2='';S.lerr=''}else toast({id:'아이디 찾기',pw:'비밀번호 찾기'}[d.lnk]+'은(는) 준비 중이에요')}
+ else if(has('lgeye')){const i=document.getElementById(d.lgeye);if(!i)return;const show=i.type=='password';i.type=show?'text':'password';t.innerHTML=show?LGI.eye:LGI.eyeOff;t.setAttribute('aria-pressed',show);t.setAttribute('aria-label',show?'비밀번호 숨기기':'비밀번호 보기');return}
+ else if(has('lnk')){if(d.lnk=='join'){S.i='join';S.jerr='';S.jpw='';S.jpw2=''}else if(d.lnk=='login'){S.i='login';S.lerr=''}else toast({id:'아이디 찾기',pw:'비밀번호 찾기'}[d.lnk]+'은(는) 준비 중이에요')}
  else if(has('sns')){signIn(SNS[d.sns]+' 사용자',d.sns);return}
  else if(has('logout'))signOut();
  else if(has('seg'))S.seg=d.seg;
@@ -850,24 +853,32 @@ document.addEventListener('click',e=>{
  else if(has('del')){if(!confirm('이 코스를 삭제할까요?'))return;S.courses=S.courses.filter(x=>x.id!=+d.del);S.i='my'}
  else return;
  draw()});
-document.addEventListener('submit',async e=>{   // 로그인 · 회원가입 (엔터 또는 버튼) → 구글 시트로 전송
- if(e.target.id!='lgf')return;e.preventDefault();
+document.addEventListener('submit',async e=>{   // 로그인 / 회원가입 (엔터 또는 버튼) → 구글 시트(member) 연동
+ const fid=e.target.id;if(fid!='lgf'&&fid!='jf')return;e.preventDefault();
  if(S.lbusy)return;
- const join=S.lmode=='join',id=S.lid.trim(),err=(m,f)=>{S.lerr=m;draw();const el=document.getElementById(f);if(el)el.focus()};
- if(!id)return err('아이디를 입력해주세요','lid');
- if(!S.lpw)return err('비밀번호를 입력해주세요','lpw');
- if(join){   // 가입 전 입력값 점검 (서버에서도 같은 규칙으로 다시 확인)
-  if(!/^[A-Za-z0-9_.-]{3,20}$/.test(id))return err('아이디는 영문·숫자·_ . - 3~20자로 입력해주세요','lid');
-  if(S.lpw.length<4||S.lpw.length>40)return err('비밀번호는 4~40자로 입력해주세요','lpw');
-  if(S.lpw!==S.lpw2)return err('비밀번호가 서로 달라요','lpw2');
+ const err=(k,m,f)=>{S[k]=m;draw();const el=document.getElementById(f);if(el)el.focus()};
+ if(fid=='lgf'){
+  const id=S.lid.trim();
+  if(!id)return err('lerr','아이디를 입력해주세요','lid');
+  if(!S.lpw)return err('lerr','비밀번호를 입력해주세요','lpw');
+  S.lbusy=true;S.lerr='';draw();
+  const r=await memberApi({action:'login',userId:id,password:S.lpw});
+  S.lbusy=false;
+  if(r&&r.ok)return signIn(String(r.userId||id).slice(0,40),'id');
+  return err('lerr',(r&&r.message)||'로그인하지 못했어요','lpw');
  }
- S.lbusy=true;S.lerr='';draw();
- const r=await sheetApi(join?'join':'login',id,S.lpw);
+ const id=S.jid.trim();
+ if(!/^[A-Za-z0-9_]{4,20}$/.test(id))return err('jerr','아이디는 영문·숫자·_ 4~20자로 입력해주세요','jid');
+ if(S.jpw.length<4)return err('jerr','비밀번호는 4자 이상 입력해주세요','jpw');
+ if(S.jpw!==S.jpw2)return err('jerr','비밀번호가 서로 달라요','jpw2');
+ S.lbusy=true;S.jerr='';draw();
+ const r=await memberApi({action:'join',userId:id,password:S.jpw});
  S.lbusy=false;
- if(r.ok){signIn(String(r.id||id).slice(0,40),'id');return}
- err(r.error||'요청에 실패했어요. 다시 시도해주세요',join?'lid':(/비밀번호/.test(r.error||'')?'lpw':'lid'))});
+ if(r&&r.ok){S.lid=id;S.lpw='';S.lerr='';S.jid='';S.jpw='';S.jpw2='';S.i='login';toast('회원가입이 완료됐어요. 로그인해주세요');return draw()}
+ err('jerr',(r&&r.message)||'회원가입하지 못했어요','jid')});
 document.addEventListener('input',e=>{
- if(e.target.id=='lid'||e.target.id=='lpw'||e.target.id=='lpw2'){S[e.target.id]=e.target.value;if(S.lerr){S.lerr='';const el=document.getElementById('lgerr');if(el)el.remove()}}
+ if(e.target.id=='lid'||e.target.id=='lpw'){S[e.target.id]=e.target.value;if(S.lerr){S.lerr='';const el=document.getElementById('lgerr');if(el)el.remove()}}
+ if(e.target.id=='jid'||e.target.id=='jpw'||e.target.id=='jpw2'){S[e.target.id]=e.target.value;if(S.jerr){S.jerr='';const el=document.getElementById('jgerr');if(el)el.remove()}}
  if(e.target.id=='q'){S.q=e.target.value;refreshSearch()}
  if(e.target.id=='cq'){S.cq=e.target.value;const el=document.getElementById('cl');if(el)el.innerHTML=clistHtml()}   // 입력창은 다시 그리지 않고 목록만 갱신
  if(e.target.id=='wq'){S.wq=e.target.value;if(S.res.length||S.rstat)clearRes();suggest()}   // 다시 입력하면 이전 검색 결과 마커를 지우고 관련 장소 목록으로
