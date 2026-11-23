@@ -591,3 +591,5 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 /* 마이페이지 로그아웃 */
 .lo{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:20px 0 0;padding-top:8px;border-top:1px solid var(--line)}
 .lo .dl{margin:0;color:var(--mut)}
+.lg-btn:disabled{opacity:.6;box-shadow:none}   /* 로그인·회원가입 요청 중 */
+.lg-links .em{min-height:48px}
