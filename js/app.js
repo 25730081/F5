@@ -867,7 +867,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const BASE = 'https://api-call.visitseoul.net/api/v1';
   const TTL = 24 * 3600 * 1000;
   const VS_CKEY = 'vs:places:v5';
-  const CONC = 2;                    // 상세 조회 동시 호출 수 (호출 제한에 걸리면 더 줄이세요)
+  const CONC = 1;                    // 상세 조회 동시 호출 수 (호출 제한에 걸리면 더 줄이세요)
 
   // c = 앱 버튼 이름 / codes = 코드 직접 지정 / under·mid·name = 카테고리 경로(예: "문화관광 > 전시시설 > 박물관")에서
   // 최상위 이름이 under, (선택) 두 번째 이름이 mid, 마지막 이름이 name 에 맞는 카테고리를 자동 선택 / not = 제외 / max = 최대 개수(최신순)
@@ -915,13 +915,9 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     return out.slice(0, limit);
   }
 
-  // 문서에 상세 조회가 POST/GET 으로 섞여 표기돼 있어 POST 먼저, 안 되면 GET
+  // 상세 조회는 POST 만 허용됨 (GET 은 서버가 405 로 거부)
   async function detail(cid) {
-    try { return (await call('/contents/info', { body: { cid }, r500: false })).data; }
-    catch (e) {
-      if (e.status === 405 || e.status === 404) return (await call('/contents/info?cid=' + encodeURIComponent(cid), { method: 'GET' })).data;
-      throw e;
-    }
+    return (await call('/contents/info', { body: { cid }, r500: false })).data;
   }
 
   const today = () => new Date().toISOString().slice(0, 10).replace(/-/g, '.');   // 'YYYY.MM.DD'
@@ -947,24 +943,38 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   }
 
   const VS_FAIL = [];
-  let gap = 150, streak = 0, halted = false;   // 요청 간격(자동 조절) · 연속 실패 수 · 서버가 계속 실패하면 중단
+  let gap = 200, streak = 0, halted = false;   // 요청 간격(자동 조절) · 연속 실패 수 · 서버가 계속 실패하면 중단
 
-  // 상세 조회를 CONC개씩 병렬로. 실패하면 간격을 늘리고, 성공하면 줄임. 20개 모일 때마다 바로 지도에 반영
-  async function pool(items, fn, again, onPart) {
-    const out = [], bad = [], done = []; let i = 0, pend = [];
+  // 상세 조회. 서버 500은 일시적인 경우가 많아서, 실패하면 점점 길게 쉬었다가 같은 요청(POST)을 다시 보냄.
+  // (GET 은 서버가 405 로 거부하므로 쓰지 않음) 20개 모일 때마다 바로 지도에 반영
+  async function pool(items, fn, onPart) {
+    const out = [], done = []; let bad = [], i = 0, pend = [];
     const take = r => { out.push(r); pend.push(r); if (pend.length >= 20) { onPart(pend); pend = []; } };
-    await Promise.all(Array.from({ length: CONC }, async () => {
-      while (i < items.length && !halted) {
-        const it = items[i++];
-        try { const r = await fn(it); done.push(it.cid); if (r) take(r); streak = 0; gap = Math.max(150, gap * 0.8); }
-        catch (e) { bad.push(it); streak++; gap = Math.min(3000, gap * 1.6); if (streak >= 30) halted = true; }
-        await sleep(gap);
+    const attempt = async it => {
+      let err;
+      for (let a = 0; a < 3; a++) {
+        try { return { ok: true, r: await fn(it) }; }
+        catch (e) { err = e; await sleep(Math.min(8000, 800 * 2 ** a)); }
       }
+      return { ok: false, err };
+    };
+    const one = async it => {
+      const x = await attempt(it);
+      if (x.ok) { done.push(it.cid); if (x.r) take(x.r); streak = 0; gap = Math.max(200, gap * 0.8); }
+      else {
+        bad.push(it); streak++; gap = Math.min(3000, gap * 1.5);
+        if (streak % 10 === 0) { if (streak >= 40) halted = true; else { console.warn('[비짓서울] 연속 실패 ' + streak + '건 → 20초 쉬었다가 계속'); await sleep(20000); } }
+      }
+    };
+    await Promise.all(Array.from({ length: CONC }, async () => {
+      while (i < items.length && !halted) { await one(items[i++]); await sleep(gap); }
     }));
-    if (!halted) for (const it of bad) {   // 실패한 콘텐츠는 천천히, 요청 방식(GET)을 바꿔 1번만 더 시도. 그래도 안 되면 다음 접속 때 다시 시도
-      await sleep(Math.max(400, gap));
-      try { const r = await again(it); done.push(it.cid); if (r) take(r); } catch (e) { VS_FAIL.push(it.cid); }
+    for (let round = 0; round < 2 && bad.length && !halted; round++) {   // 못 받은 콘텐츠는 잠시 쉬었다가 최대 2번 더 시도
+      await sleep(5000 * (round + 1));
+      const again = bad; bad = [];
+      for (const it of again) { if (halted) { bad.push(it); continue; } await one(it); await sleep(gap); }
     }
+    bad.forEach(it => VS_FAIL.push(it.cid));
     if (pend.length) onPart(pend);
     return { out, done };
   }
@@ -1003,8 +1013,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
         for (const code of p.codes) { const got = await listAll(code, p.max - items.length); console.info('[비짓서울] 코드', code, '목록', got.length, '건'); items.push(...got); }
         items = items.filter(x => !seen.has(x.cid) && !skip.has(x.cid)); items.forEach(x => seen.add(x.cid));
         const f0 = VS_FAIL.length;
-        const r = await pool(items, async it => toPlace(p.c, await detail(it.cid), it.cid),
-          async it => toPlace(p.c, (await call('/contents/info?cid=' + encodeURIComponent(it.cid), { method: 'GET', r500: false })).data, it.cid), add);
+        const r = await pool(items, async it => toPlace(p.c, await detail(it.cid), it.cid), add);
         const nf = VS_FAIL.length - f0, complete = !halted && nf <= Math.max(3, items.length * 0.05);   // 원래 500이 나는 콘텐츠 몇 개 때문에 매번 다시 받지 않도록 5%(최소 3건)까진 완료로 침
         writeCache(p.c, (pr ? pr.places : []).concat(r.out), [...skip, ...r.done], complete);   // 못 받은 건 done 에 없으므로 다음에 다시 시도
         console.info(`[비짓서울] ${p.c}: 새로 받을 목록 ${items.length}건 → 표시 ${r.out.length}건 (상세 조회 실패 ${nf}건${halted ? ', 서버 불안정으로 중단' : ''}, 좌표 없음·이미 끝난 행사 등 제외 ${Math.max(0, r.done.length - r.out.length)}건)`);
