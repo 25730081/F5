@@ -141,6 +141,7 @@ function addPlaces(list,fromJson){
   P.push({e:'📍',...p,s:DSTAY,j:!!fromJson});   // 출처별 s 값과 상관없이 기본 체류는 DSTAY
  });
  resolveFavs();   // 저장해 둔 관심 공간 중 방금 올라온 장소가 있으면 복원
+ resolveCourses(false);   // 저장해 둔 코스 중 장소가 다 올라온 것은 복원
 }
 function addApiPlaces(list){addPlaces(list,false);draw()}
 
@@ -190,6 +191,34 @@ function resolveFavs(){if(!S.user||!favPend.length)return;const rest=[];favPend.
 function saveFavs(){const k=favKey();if(!k)return;try{localStorage.setItem(k,JSON.stringify([...S.favs.map(i=>favId(P[i])),...favPend]))}catch(e){}}
 function resetFavs(){S.favs=[];loadFavNames();resolveFavs()}   // 계정이 바뀌거나 로그인/로그아웃할 때
 loadFavNames();   // 새로고침 후에도 '로그인 상태 유지'면 그 계정의 관심 공간을 읽어옴
+// 내 코스: 계정별 localStorage 저장 (관심 공간과 같은 방식, 키: 0cha:courses:<로그인방식>:<아이디>)
+//   저장 형태: 장소 ID 대신 "카테고리|장소명" 으로 저장 → 불러올 때 현재 장소 ID로 되돌림
+const COURSEP='0cha:courses:';
+const courseKey=()=>S.user?COURSEP+(S.user.via||'id')+':'+encodeURIComponent(S.user.id):null;
+let cPend=[];            // 저장돼 있지만 장소(API)가 아직 다 안 올라와 복원 대기 중인 코스
+let cLast='';            // 마지막으로 저장한 내용 (바뀐 때만 다시 씀)
+let placesFinal=false;   // 비짓서울 장소 받기가 정상 완료됐는지
+let courseDirty=false;   // 복원된 코스가 새로 생겼는지 (마이페이지 갱신용)
+function toRawCourse(c){const key=k=>favId(P[k]);return {...c,sel:c.sel.filter(k=>P[k]).map(key),stay:Object.fromEntries(Object.entries(c.stay||{}).filter(([k])=>P[k]).map(([k,v])=>[key(k),v]))}}
+function fromRawCourse(r,partial){
+ const f=n=>P.findIndex(p=>favId(p)==n),names=Array.isArray(r.sel)?r.sel.filter(x=>typeof x=='string'):[],ids=names.map(f);
+ if(!partial&&ids.some(k=>k<0))return null;   // 장소가 다 올라와야 복원 (아니면 대기)
+ const stay={};Object.entries(r.stay||{}).forEach(([n,v])=>{const k=f(n);if(k>=0)stay[k]=v});
+ return {...r,sel:ids.filter(k=>k>=0),stay}}
+function loadCourseNames(){cPend=[];cLast='';const k=courseKey();if(!k)return;try{const v=JSON.parse(localStorage.getItem(k));if(Array.isArray(v)){cLast=localStorage.getItem(k);cPend=v.filter(r=>r&&typeof r=='object'&&Number.isFinite(r.id)&&Array.isArray(r.sel)).slice(0,200)}}catch(e){}}
+function resolveCourses(final){
+ if(!S.user||!cPend.length)return;
+ cPend=cPend.filter(r=>{
+  if(S.courses.some(x=>x.id==r.id))return false;
+  const c=fromRawCourse(r,final);
+  if(!c)return true;                                  // 아직 장소가 덜 올라옴 → 계속 대기
+  if(c.sel.length){S.courses.push(c);courseDirty=true}  // 장소 받기가 끝났는데도 없는 장소는 빼고 복원
+  return false});
+ S.courses.sort((a,b)=>a.id-b.id)}
+function saveCourses(){const k=courseKey();if(!k)return;try{const s=JSON.stringify([...S.courses.map(toRawCourse),...cPend]);if(s!==cLast){localStorage.setItem(k,s);cLast=s}}catch(e){}}
+function resetCourses(){S.courses=[];S.cid=null;S.editId=null;S.curId=null;loadCourseNames();resolveCourses(placesFinal)}
+function placesDone(complete){placesFinal=!!complete;if(complete&&cPend.length){resolveCourses(true);if(S.i==='my'||S.i==='home')draw()}}   // 장소 받기가 끝났을 때 (API 코드가 호출)
+loadCourseNames();   // 새로고침 후에도 '로그인 상태 유지'면 그 계정의 코스를 읽어옴
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -206,14 +235,13 @@ loadFavNames();   // 새로고침 후에도 '로그인 상태 유지'면 그 계
 })();
 const nm=a=>a.map(k=>P[k].n);
 const nmap=m=>Object.fromEntries(Object.entries(m).filter(([k])=>P[k]).map(([k,v])=>[P[k].n,v]));
-function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,view:S.view,sort:S.sort,onow:S.onow,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay),courses:S.courses.map(c=>({...c,sel:nm(c.sel),stay:nmap(c.stay)}))}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,view:S.view,sort:S.sort,onow:S.onow,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay)}))}catch(e){}}
 // 저장된 장소 이름 → 현재 장소 ID (데이터 로드 후 복원)
 function restore(){
- const v=SAVED;if(!v||!Array.isArray(v.courses))return false;
+ const v=SAVED;if(!v||typeof v!='object')return false;
  const ids=a=>(Array.isArray(a)?a:[]).map(n=>P.findIndex(p=>p.n==n)).filter(k=>k>=0);
  const sm=m=>Object.fromEntries(Object.entries(m||{}).map(([n,x])=>[P.findIndex(p=>p.n==n),x]).filter(([k])=>k>=0));
  S.sel=ids(v.sel);S.stay=sm(v.stay);
- S.courses=v.courses.map(c=>({...c,sel:ids(c.sel),stay:sm(c.stay)})).filter(c=>c.sel.length);
  return true;
 }
 async function loadPlaces(){
@@ -721,7 +749,7 @@ const favRow=()=>`<div class="flt" role="group" aria-label="관심 공간 필터
 ${S.fcatOpen?`<div class="catp"><div class="row cats" role="group" aria-label="장소 카테고리 (여러 개 선택 가능)"><button class="chip ${S.fcats.length?'':'on'}" aria-pressed="${!S.fcats.length}" data-fcat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.fcats.includes(c)?'on':''}" aria-pressed="${S.fcats.includes(c)}" data-fcat="${c}">${CE[c]} ${c}</button>`).join('')}</div></div>`:''}`;
 const favItem=k=>{const ad=shortAddr(P[k].addr);return `<div class="pc">${cb(P[k].c)}<div><h3>${esc(P[k].n)}</h3><p class="sub">${esc(P[k].c)}${ad?' · '+esc(ad):''}</p></div><button class="add ci del" data-fav="${k}" aria-label="${esc(P[k].n)} 관심 공간에서 삭제" title="삭제">${svg('<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>')}</button></div>`};
 const my=()=>frame(`${ttl('마이페이지','안내','만든 코스와 하트(♡)로 저장한 공간을 모아봐요. 코스를 눌러 수정하거나 다시 시작할 수 있어요.')}<p class="sub">내가 만든 코스와 저장한 공간</p><div class="seg"><button class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
-(S.seg=='c'?(S.courses.length?cRow()+`<div class="clist"><div class="dc" id="cl">${clistHtml()}</div><button class="cc2 new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><span class="cc2-info"><b class="cc2-t">새 코스 만들기</b><span class="sub">웨이팅 등록하기</span></span></button></div>`:'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
+(S.seg=='c'?(S.courses.length?cRow()+`<div class="clist"><div class="dc" id="cl">${clistHtml()}</div><button class="cc2 new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><span class="cc2-info"><b class="cc2-t">새 코스 만들기</b><span class="sub">웨이팅 등록하기</span></span></button></div>`:'<div class="box sub c">'+(cPend.length?`저장한 코스 ${cPend.length}개의 장소를 불러오는 중이에요.<br>잠시만 기다려 주세요.`:'보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.')+'</div>')
 :(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>'))+
 (S.user?`<div class="lo"><span class="sub">${esc(S.user.id)} 님으로 로그인 중</span><button class="dl" data-logout="1">로그아웃</button></div>`:''));
 // 코스 상세: 하단은 '다시 시작(주) + 장소 바꾸기' 한 줄. 삭제는 자주 쓰지 않으므로 본문 맨 아래로
@@ -776,11 +804,11 @@ ${S.jerr?`<p class="lg-err" id="jgerr" role="alert">${esc(S.jerr)}</p>`:''}
 </div></div>${toastH()}`;
 const SNS={apple:'Apple',google:'Google',naver:'네이버'};
 function signIn(id,via){
- S.user={id,via};S.lpw='';S.lerr='';resetFavs();
+ S.user={id,via};S.lpw='';S.lerr='';resetFavs();resetCourses();
  try{if(S.lkeep)localStorage.setItem(AUTH,JSON.stringify(S.user));else localStorage.removeItem(AUTH)}catch(e){}
  S.i=S.after&&S.after!='login'?S.after:'home';S.after=null;
  toast(`${id}님, 환영해요`);draw()}
-function signOut(){S.user=null;S.lid='';S.lpw='';S.favs=[];favPend=[];try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
+function signOut(){S.user=null;S.lid='';S.lpw='';S.favs=[];favPend=[];S.courses=[];cPend=[];cLast='';S.cid=null;S.editId=null;S.curId=null;try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
 
 /* ---------- 렌더 ---------- */
 const SC={home,reg,map,confirm:confirmScr,prog,done,my,mc,login,join:joinScr};
@@ -795,7 +823,7 @@ function draw(){
  const n=root.querySelector('.body,.sheet,.lg');if(n)n.scrollTop=keep;
  if(S.i==='map'&&jump&&S.focus!=null){const r=root.querySelector('[data-row="'+S.focus+'"]');if(r)r.scrollIntoView({block:'nearest'})}
  if(S.i==='reg'&&S.swait){S.swait=false;const w=root.querySelector('#waitsec');if(w)w.scrollIntoView({block:'start',behavior:'smooth'})}   // 장소를 고르면 대기시간 입력이 보이게
- lastScr=S.i;S.top=0;save();
+ lastScr=S.i;S.top=0;save();saveCourses();
 }
 const clampWait=w=>Math.min(240,Math.max(30,w));
 // 저장된 코스를 불러와 수정 모드로 (위치·대기시간·장소·체류 시간 복원)
@@ -1065,7 +1093,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     list = list.filter(p => { const k = p.c + '|' + String(p.n || '').trim() + '|' + p.lat + '|' + p.lng; if (have.has(k)) return false; have.add(k); return true; });
     if (!list.length) return;
     addPlaces(list, false);
-    if (S.i === 'map') refreshMap(); else if (S.i === 'home') draw();
+    if (S.i === 'map') refreshMap(); else if (S.i === 'home' || (S.i === 'my' && courseDirty)) { courseDirty = false; draw(); }
   }
 
   // 카테고리별 캐시 (24시간). 받는 도중에도 주기적으로 저장 → 새로고침해도 받은 곳까지는 남고, 이어서 받음
@@ -1082,7 +1110,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       if (c) { add(c.places); if (c.complete) continue; }   // 다 받은 카테고리는 API를 부르지 않음
       jobs.push({ p, pr: c, skip: new Set(c ? c.done : []), items: [], i: 0, out: [], done: [], bad: [], pend: [], sinceSave: 0, lastAdd: Date.now(), err: null });
     }
-    if (!jobs.length) return;
+    if (!jobs.length) { if (typeof placesDone === 'function') placesDone(true); return; }   // 전부 캐시에 있으면 바로 완료
     if (typeof liveToast === 'function') liveToast('비짓서울 장소를 받는 중이에요. 처음엔 몇 분 걸리고, 받는 대로 지도에 나타나요');
 
     // 1) 카테고리별 콘텐츠 목록 (가벼운 호출)
@@ -1140,6 +1168,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     if (VS_FAIL.length) console.info(`[비짓서울] 상세 정보를 못 받은 콘텐츠 ${VS_FAIL.length}건 (다음 새로고침 때 이어서 시도):`, VS_FAIL.join(', '));
     if (failed.length && typeof liveToast === 'function') liveToast(halted ? '비짓서울 서버가 불안정해요. 받은 장소까지만 표시했어요. 잠시 뒤 새로고침하면 이어서 받아요' : `비짓서울 ${failed.join('·')} 장소를 일부 못 불러왔어요. 새로고침하면 이어서 받아요`);
     else if (typeof liveToast === 'function') liveToast('비짓서울 장소를 모두 받았어요');
+    if (typeof placesDone === 'function') placesDone(!failed.length && !halted);
   }
 
   run().catch(e => {
