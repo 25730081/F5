@@ -876,7 +876,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const PICK = [
     { c: '쇼핑', codes: ['Cu8e6t5'], max: 600 },
     { c: '체험관광', codes: ['Cc9i5o2'], max: 300 },
-    { c: '카페', under: /음식|food/i, name: /카페|cafe|coffee/i, max: 600 },
+    { c: '카페', under: /음식|맛집|식음료|먹거리|food|dining|restaurant|eat/i, name: /카페|cafe|coffee|커피|찻집/i, max: 600 },
     { c: '전시회', under: FEST, name: /전시|exhibition|^행사$|^events?$/i, max: 400 },   // 전시회와 행사를 '전시회' 하나로 통일
     { c: '미술관', under: CULT, mid: EXH, name: /미술관|화랑|gallery|\bart\b/i, max: 300 },
     { c: '박물관', under: CULT, mid: EXH, name: /박물관|museum/i, not: /미술관|화랑|gallery|\bart\b/i, max: 300 },
@@ -970,7 +970,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
 
   // 카테고리별로 따로 캐시 (24시간): 새로고침해도 이미 받은 카테고리는 API를 다시 부르지 않고, 실패한 카테고리만 다시 시도
   const ckey = c => VS_CKEY + ':' + c;
-  const readCache = c => { try { const v = JSON.parse(localStorage.getItem(ckey(c))); return v && Date.now() - v.t < TTL && Array.isArray(v.places) ? v.places : null; } catch (e) { return null; } };
+  const readCache = c => { try { const v = JSON.parse(localStorage.getItem(ckey(c))); return v && Date.now() - v.t < TTL && Array.isArray(v.places) && v.places.length ? v.places : null; } catch (e) { return null; } };
   const writeCache = (c, places) => { try { localStorage.setItem(ckey(c), JSON.stringify({ t: Date.now(), places })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
 
   async function run() {
