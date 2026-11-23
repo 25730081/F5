@@ -1046,7 +1046,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const PICK = [   // 카테고리 코드는 비짓서울 category/list 에서 확인한 값. 작은 카테고리부터 받아서 바로 뭔가 보이게 함
     // 박물관(Cr0q2v2)·미술관(Ct9t6m8)·쇼핑(전문매장·쇼핑몰/아울렛·전통시장·백화점)은 data/*.json 에서 읽음 (SOURCES 참고) · 마트/창고형(Ct1z4k9)은 안 씀
     { c: '체험관광', codes: ['Cq3m6s6', 'Cd0m9o0'], max: 500 },                               // Experience Programs > Craft Workshops(공예체험) · Traditional Experience(전통체험)
-    { c: '전시회', codes: ['Cu9u5z7'], max: 500 },                                            // Festivals/Events/Performances > Events > Exhibitions (전시회만)
+    { c: '전시회', codes: ['Cu9u5z7'], max: 500, ver: 2 },                                   // Festivals/Events/Performances > Events > Exhibitions (전시회만) · ver: 날짜·좌표 처리 수정 → 예전 캐시 버리고 다시 받기
     { c: '카페', codes: ['Cx0t8m5'], max: 1000 },                                              // Cuisine > Cafes & Tea Shops
   ];
 
@@ -1088,18 +1088,32 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     return (await call('/contents/info', { body: { cid }, r500: false })).data;
   }
 
-  const today = () => new Date().toISOString().slice(0, 10).replace(/-/g, '.');   // 'YYYY.MM.DD'
+  // 날짜 → 숫자(YYYYMMDD). '2026.12.31' · '2026-12-31' · '20261231' 어떤 형식이든 같은 값 (예전엔 글자 비교라 '-' 형식이면 진행 중 전시도 끝난 것으로 빠졌음)
+  const dnum = s => { const m = /(\d{4})\D?(\d{1,2})\D?(\d{1,2})/.exec(String(s || '')); return m ? +m[1] * 10000 + +m[2] * 100 + +m[3] : null; };
+  const todayN = () => { const d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); };   // 한국 시간 기준 오늘
+  // 좌표가 없는 전시·행사는 주소로 위치 찾기 (카카오 주소 검색 · 지도 SDK의 services 사용)
+  const geocode = addr => new Promise(res => {
+    const a = String(addr || '').replace(/\([^)]*\)/g, ' ').split(/[,·]/)[0].replace(/\s+/g, ' ').trim();   // 괄호(층·관 이름 등) 빼고 첫 주소만
+    if (!a || typeof kLoad !== 'function') return res(null);
+    const ok = kLoad(() => {
+      try { new kakao.maps.services.Geocoder().addressSearch(a, (d, st) => res(st === kakao.maps.services.Status.OK && d[0] ? { lat: +d[0].y, lng: +d[0].x } : null)); }
+      catch (e) { res(null); }
+    });
+    if (!ok) res(null);
+  });
   const clean = (s, n) => String(s == null ? '' : s).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim().slice(0, n);
   const lines = (s, n) => String(s == null ? '' : s).replace(/\r/g, '').split('\n').map(v => v.trim()).filter(Boolean).join(' / ').slice(0, n);
 
   // 상세 응답 → 앱 장소 형식 (정보는 상세 패널에 전부 표시)
   function toPlace(c, d, cid) {
     const x = d.extra || {}, t = d.traffic || {}, lat = +t.map_position_y, lng = +t.map_position_x;
-    if (!lat || !lng) return null;
-    if (d.schdul_info_endde && d.schdul_info_endde < today()) return null;   // 이미 끝난 전시/행사
+    const end = dnum(d.schdul_info_endde);
+    if (end && end < todayN()) return { _skip: 'ended' };   // 이미 끝난 전시/행사
+    const noXY = !lat || !lng, addr0 = t.new_adres || t.adres || '';
+    if (noXY && !addr0) return { _skip: 'nocoord' };       // 좌표도 주소도 없음
     const fee = x.trrsrt_use_chrge === 'F' ? '무료' : x.trrsrt_use_chrge === 'C' ? '유료' : '';
     return {
-      n: d.post_sj, c, e: CE[c], cid, lat, lng,
+      n: d.post_sj, c, e: CE[c], cid, lat: noXY ? null : lat, lng: noXY ? null : lng, _geo: noXY,
       addr: t.new_adres || t.adres || '', tel: x.cmmn_telno || '', site: x.cmmn_hmpg_url || '',
       hrsTxt: lines(x.cmmn_use_time, 200), closedTxt: lines(x.closed_days, 120), bizDays: lines(x.business_days, 80),
       period: d.schdul_info_bgnde ? d.schdul_info_bgnde + (d.schdul_info_endde ? ' ~ ' + d.schdul_info_endde : '') : '',
@@ -1124,7 +1138,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
 
   // 카테고리별 캐시 (24시간). 받는 도중에도 주기적으로 저장 → 새로고침해도 받은 곳까지는 남고, 이어서 받음
   const ckey = c => VS_CKEY + ':' + c;
-  const sigOf = p => p.codes.join(',');
+  const sigOf = p => p.codes.join(',') + (p.ver ? '#' + p.ver : '');
   const OLD_OK = new Set();   // sig 없이 저장된 예전 캐시는 쓰지 않음 (체험관광·전시회 코드가 바뀜)
   // JSON으로 옮긴 카테고리(미술관·박물관·쇼핑)의 예전 API 캐시는 지워서 저장 공간 확보
   try { ['미술관', '박물관', '쇼핑'].forEach(c => localStorage.removeItem(VS_CKEY + ':' + c)); } catch (e) {}
@@ -1136,7 +1150,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     for (const p of PICK) {
       const c = readCache(p);
       if (c) { add(c.places); if (c.complete) continue; }   // 다 받은 카테고리는 API를 부르지 않음
-      jobs.push({ p, pr: c, skip: new Set(c ? c.done : []), items: [], i: 0, out: [], done: [], bad: [], pend: [], sinceSave: 0, lastAdd: Date.now(), err: null });
+      jobs.push({ p, pr: c, skip: new Set(c ? c.done : []), items: [], i: 0, out: [], done: [], bad: [], pend: [], sinceSave: 0, lastAdd: Date.now(), err: null, why: { ended: 0, nocoord: 0, geo: 0 } });
     }
     if (!jobs.length) { if (typeof placesDone === 'function') placesDone(true); return; }   // 전부 캐시에 있으면 바로 완료
     if (typeof liveToast === 'function') liveToast('비짓서울 장소를 받는 중이에요. 처음엔 몇 분 걸리고, 받는 대로 지도에 나타나요');
@@ -1167,7 +1181,14 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       const x = await attempt(it);
       if (x.ok) {
         j.done.push(it.cid); streak = 0; gap = Math.max(200, gap * 0.8);
-        if (x.r) { x.r.c = j.p.c; x.r.e = CE[j.p.c]; j.out.push(x.r); j.pend.push(x.r); }
+        let r = x.r;
+        if (r && r._skip) { j.why[r._skip]++; r = null; }
+        if (r && r._geo) {                                          // 좌표 없음 → 주소로 위치 찾기
+          const g = await geocode(r.addr);
+          if (g) { r.lat = g.lat; r.lng = g.lng; j.why.geo++; } else { j.why.nocoord++; r = null; }
+          if (r) delete r._geo;
+        }
+        if (r) { r.c = j.p.c; r.e = CE[j.p.c]; j.out.push(r); j.pend.push(r); }
         if (j.pend.length >= 8 || (j.pend.length && Date.now() - j.lastAdd > 4000)) { add(j.pend); j.pend = []; j.lastAdd = Date.now(); }   // 8개 모이거나 4초가 지나면 화면에 반영
         if (++j.sinceSave >= 25) flush(j);                         // 25개마다 저장 (새로고침해도 이어받기)
       } else {
@@ -1190,7 +1211,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       const nf = j.bad.length, complete = !j.err && !halted && nf <= Math.max(3, j.items.length * 0.05);   // 원래 500이 나는 콘텐츠 몇 개 때문에 매번 다시 받지 않도록 5%(최소 3건)까진 완료로 침
       save(j, complete);
       j.bad.forEach(it => VS_FAIL.push(it.cid));
-      console.info(`[비짓서울] ${j.p.c}: 새로 받을 목록 ${j.items.length}건 → 표시 ${j.out.length}건 (상세 조회 실패 ${nf}건${halted ? ', 서버 불안정으로 중단' : ''}, 좌표 없음·이미 끝난 행사 등 제외 ${Math.max(0, j.done.length - j.out.length)}건)`);
+      console.info(`[비짓서울] ${j.p.c}: 새로 받을 목록 ${j.items.length}건 → 표시 ${j.out.length}건 (상세 조회 실패 ${nf}건${halted ? ', 서버 불안정으로 중단' : ''}, 제외: 끝난 전시·행사 ${j.why.ended}건 · 좌표·주소 없음 ${j.why.nocoord}건 · 그 밖 ${Math.max(0, j.done.length - j.out.length - j.why.ended - j.why.nocoord)}건 / 주소로 위치를 찾은 곳 ${j.why.geo}건)`);
       if (!complete) failed.push(j.p.c);
     }
     if (VS_FAIL.length) console.info(`[비짓서울] 상세 정보를 못 받은 콘텐츠 ${VS_FAIL.length}건 (다음 새로고침 때 이어서 시도):`, VS_FAIL.join(', '));
