@@ -848,7 +848,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const BASE = 'https://api-call.visitseoul.net/api/v1';
   const TTL = 24 * 3600 * 1000;
   const VS_CKEY = 'vs:places:v3';
-  const CONC = 4;                    // 상세 조회 동시 호출 수
+  const CONC = 2;                    // 상세 조회 동시 호출 수 (호출 제한에 걸리면 더 줄이세요)
 
   // c = 앱 버튼 이름 / codes = 코드 직접 지정 / under·mid·name = 카테고리 경로(예: "문화관광 > 전시시설 > 박물관")에서
   // 최상위 이름이 under, (선택) 두 번째 이름이 mid, 마지막 이름이 name 에 맞는 카테고리를 자동 선택 / not = 제외 / max = 최대 개수(최신순)
@@ -868,13 +868,19 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
 
   async function call(path, o) {
     const { method = 'POST', body, r500 = true } = o || {};
-    for (let t = 0; t < 3; t++) {
+    let last = 0;
+    for (let t = 0; t < 4; t++) {
       const r = await fetch(BASE + path, { method, headers: H, body: body && JSON.stringify(body) });
       if (r.ok) return r.json();
-      if (r.status === 429 || (r500 && r.status >= 500)) { await sleep(800 * (t + 1)); continue; }   // 호출 제한(429)은 재시도. 상세 조회의 500은 그 콘텐츠 자체 오류라 재시도 안 함
+      last = r.status;
+      if (r.status === 429 || (r500 && r.status >= 500)) {   // 호출 제한(429)·서버 오류는 점점 길게 쉬었다가 재시도. 상세 조회의 500은 그 콘텐츠 자체 오류라 재시도 안 함
+        const ra = +r.headers.get('Retry-After');
+        await sleep(ra > 0 ? Math.min(ra, 30) * 1000 : 1500 * 2 ** t);
+        continue;
+      }
       const e = new Error(r.status + ' ' + method + ' ' + path); e.status = r.status; throw e;
     }
-    throw new Error('재시도 초과 ' + path);
+    const e = new Error(`재시도 초과 (마지막 응답 ${last}) ${path}`); e.status = last; throw e;
   }
 
   async function listAll(code, limit) {
@@ -925,7 +931,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       while (i < items.length) {
         const it = items[i++];
         try { const r = await fn(it); if (r) out.push(r); } catch (e) { VS_FAIL.push(it.cid); }   // 서버가 500을 주는 콘텐츠는 건너뜀 (마지막에 개수만 안내)
-        await sleep(60);
+        await sleep(150);
       }
     }));
     return out;
@@ -938,15 +944,18 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     if (S.i === 'map') refreshMap(); else if (S.i === 'home') draw();
   }
 
-  const readCache = () => { try { const v = JSON.parse(localStorage.getItem(VS_CKEY)); return v && Date.now() - v.t < TTL && Array.isArray(v.places) ? v.places : null; } catch (e) { return null; } };
-  const writeCache = places => { try { localStorage.setItem(VS_CKEY, JSON.stringify({ t: Date.now(), places })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
+  // 카테고리별로 따로 캐시 (24시간): 새로고침해도 이미 받은 카테고리는 API를 다시 부르지 않고, 실패한 카테고리만 다시 시도
+  const ckey = c => VS_CKEY + ':' + c;
+  const readCache = c => { try { const v = JSON.parse(localStorage.getItem(ckey(c))); return v && Date.now() - v.t < TTL && Array.isArray(v.places) ? v.places : null; } catch (e) { return null; } };
+  const writeCache = (c, places) => { try { localStorage.setItem(ckey(c), JSON.stringify({ t: Date.now(), places })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
 
   async function run() {
-    const cached = readCache();
-    if (cached) { add(cached); return; }
+    const todo = [];
+    for (const p of PICK) { const c = readCache(p.c); if (c) add(c); else todo.push(p); }   // 캐시된 카테고리는 바로 표시
+    if (!todo.length) return;
     const cats = (await call('/category/list', { method: 'GET' })).data;
-    const all = [], seen = new Set();
-    for (const p of PICK) {
+    const seen = new Set(), failed = [];
+    for (const p of todo) try {
       const codes = [...(p.codes || [])];
       if (p.name) cats.forEach(x => {
         const s = x.ctgry_path.split('>').map(v => v.trim()), last = s[s.length - 1];
@@ -957,10 +966,13 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       for (const code of [...new Set(codes)]) items.push(...await listAll(code, p.max - items.length));
       items = items.filter(x => !seen.has(x.cid)); items.forEach(x => seen.add(x.cid));
       const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)));
-      all.push(...batch); add(batch);          // 카테고리 하나가 끝날 때마다 바로 지도에 반영
+      add(batch); writeCache(p.c, batch);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
+    } catch (e) {
+      failed.push(p.c);                        // 이 카테고리만 건너뛰고 나머지는 계속 (캐시 안 함 → 다음에 다시 시도)
+      console.error('[비짓서울] 카테고리 실패:', p.c, e.message);
     }
     if (VS_FAIL.length) console.info(`[비짓서울] 상세 정보를 못 받아 건너뛴 콘텐츠 ${VS_FAIL.length}건 (서버 500 오류):`, VS_FAIL.join(', '));
-    writeCache(all);
+    if (failed.length && typeof liveToast === 'function') liveToast(`비짓서울 ${failed.join('·')} 장소를 불러오지 못했어요. 잠시 뒤 새로고침해 주세요`);
   }
 
   run().catch(e => {
