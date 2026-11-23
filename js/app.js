@@ -873,13 +873,13 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   // 최상위 이름이 under, (선택) 두 번째 이름이 mid, 마지막 이름이 name 에 맞는 카테고리를 자동 선택 / not = 제외 / max = 최대 개수(최신순)
   // ※ 경로가 한글인지 영어인지 확실치 않아 둘 다 맞게 써둠. 콘솔의 '[비짓서울] 선택된 카테고리' 로그를 보고 조정
   const CULT = /문화관광|culture/i, EXH = /전시시설|exhibition/i, FEST = /축제|공연|행사|festival|event/i;
-  const PICK = [   // 카테고리 코드는 비짓서울 category/list 에서 확인한 값 (이름 매칭 없이 코드로 직접 지정)
-    { c: '쇼핑', codes: ['Cu8e6t5'], max: 1000 },                                              // Shopping
-    { c: '체험관광', codes: ['Cc9i5o2'], max: 500 },                                           // Experience Programs
-    { c: '카페', codes: ['Cx0t8m5'], max: 1000 },                                              // Cuisine > Cafes & Tea Shops
-    { c: '전시회', codes: ['Cu9u5z7', 'Cu6j1f4', 'Cw7q1x8', 'Cf9q1q4'], max: 1500 },          // Events > Exhibitions · Expos · Other Events · Events (전시회+행사 통일)
+  const PICK = [   // 카테고리 코드는 비짓서울 category/list 에서 확인한 값. 작은 카테고리부터 받아서 바로 뭔가 보이게 함
     { c: '미술관', codes: ['Ct9t6m8'], max: 500 },                                             // Culture > Cultural Facilities > Art Museums/Galleries
     { c: '박물관', codes: ['Cr0q2v2'], max: 500 },                                             // Culture > Cultural Facilities > Museums
+    { c: '체험관광', codes: ['Cc9i5o2'], max: 500 },                                           // Experience Programs
+    { c: '쇼핑', codes: ['Cu8e6t5'], max: 1000 },                                              // Shopping
+    { c: '카페', codes: ['Cx0t8m5'], max: 1000 },                                              // Cuisine > Cafes & Tea Shops
+    { c: '전시회', codes: ['Cu9u5z7', 'Cu6j1f4', 'Cw7q1x8', 'Cf9q1q4'], max: 1500 },          // Events > Exhibitions · Expos · Other Events · Events (전시회+행사 통일)
   ];
 
   const H = { 'Accept': 'application/json;charset=UTF-8', 'Content-Type': 'application/json;charset=UTF-8', 'VISITSEOUL-API-KEY': API_KEY };
@@ -892,7 +892,8 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       const r = await fetch(BASE + path, { method, headers: H, body: body && JSON.stringify(body) });
       if (r.ok) return r.json();
       last = r.status;
-      if (r.status >= 500 && !call.logged) { call.logged = 1; r.clone().text().then(t => console.warn('[비짓서울] 첫 서버 오류 응답:', r.status, path, t.slice(0, 300))).catch(() => {}); }   // 원인 확인용: 서버가 보낸 오류 내용을 1번만 출력
+      const lk = method + ' ' + path.split('?')[0]; call.logged = call.logged || {};
+      if (r.status >= 500 && !call.logged[lk]) { call.logged[lk] = 1; r.clone().text().then(t => console.warn('[비짓서울] 서버 오류 응답:', r.status, lk, t.slice(0, 300))).catch(() => {}); }   // 원인 확인용: 서버가 보낸 오류 내용을 1번만 출력
       if (r.status === 429 || (r500 && r.status >= 500)) {   // 호출 제한(429)·서버 오류는 점점 길게 쉬었다가 재시도. 상세 조회의 500은 그 콘텐츠 자체 오류라 재시도 안 함
         const ra = +r.headers.get('Retry-After');
         await sleep(ra > 0 ? Math.min(ra, 30) * 1000 : 1500 * 2 ** t);
@@ -907,6 +908,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     const out = [];
     for (let p = 1; out.length < limit; p++) {
       const d = await call('/contents/list', { body: { com_ctgry_sn: code, lang_code_id: 'ko', sort_type: 'latest', page_no: p } });
+      if (d.data[0] && !listAll.logged) { listAll.logged = 1; console.info('[비짓서울] 목록 항목 예시:', JSON.stringify(d.data[0]).slice(0, 500)); }
       out.push(...d.data);
       if (!d.data.length || out.length >= d.paging.total_count) break;
     }
@@ -927,13 +929,13 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const lines = (s, n) => String(s == null ? '' : s).replace(/\r/g, '').split('\n').map(v => v.trim()).filter(Boolean).join(' / ').slice(0, n);
 
   // 상세 응답 → 앱 장소 형식 (정보는 상세 패널에 전부 표시)
-  function toPlace(c, d) {
+  function toPlace(c, d, cid) {
     const x = d.extra || {}, t = d.traffic || {}, lat = +t.map_position_y, lng = +t.map_position_x;
     if (!lat || !lng) return null;
     if (d.schdul_info_endde && d.schdul_info_endde < today()) return null;   // 이미 끝난 전시/행사
     const fee = x.trrsrt_use_chrge === 'F' ? '무료' : x.trrsrt_use_chrge === 'C' ? '유료' : '';
     return {
-      n: d.post_sj, c, e: CE[c], lat, lng,
+      n: d.post_sj, c, e: CE[c], cid, lat, lng,
       addr: t.new_adres || t.adres || '', tel: x.cmmn_telno || '', site: x.cmmn_hmpg_url || '',
       hrsTxt: lines(x.cmmn_use_time, 200), closedTxt: lines(x.closed_days, 120), bizDays: lines(x.business_days, 80),
       period: d.schdul_info_bgnde ? d.schdul_info_bgnde + (d.schdul_info_endde ? ' ~ ' + d.schdul_info_endde : '') : '',
@@ -945,78 +947,75 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   }
 
   const VS_FAIL = [];
-  async function pool(items, fn, again) {
-    const out = [], bad = []; let i = 0;
+  let gap = 150, streak = 0, halted = false;   // 요청 간격(자동 조절) · 연속 실패 수 · 서버가 계속 실패하면 중단
+
+  // 상세 조회를 CONC개씩 병렬로. 실패하면 간격을 늘리고, 성공하면 줄임. 20개 모일 때마다 바로 지도에 반영
+  async function pool(items, fn, again, onPart) {
+    const out = [], bad = [], done = []; let i = 0, pend = [];
+    const take = r => { out.push(r); pend.push(r); if (pend.length >= 20) { onPart(pend); pend = []; } };
     await Promise.all(Array.from({ length: CONC }, async () => {
-      while (i < items.length) {
+      while (i < items.length && !halted) {
         const it = items[i++];
-        try { const r = await fn(it); if (r) out.push(r); } catch (e) { bad.push(it); }
-        await sleep(150);
+        try { const r = await fn(it); done.push(it.cid); if (r) take(r); streak = 0; gap = Math.max(150, gap * 0.8); }
+        catch (e) { bad.push(it); streak++; gap = Math.min(3000, gap * 1.6); if (streak >= 30) halted = true; }
+        await sleep(gap);
       }
     }));
-    for (const it of bad) {   // 실패한 콘텐츠는 천천히, 요청 방식(GET)을 바꿔 1번만 더 시도. 그래도 안 되면 건너뜀
-      await sleep(400);
-      try { const r = await again(it); if (r) out.push(r); } catch (e) { VS_FAIL.push(it.cid); }
+    if (!halted) for (const it of bad) {   // 실패한 콘텐츠는 천천히, 요청 방식(GET)을 바꿔 1번만 더 시도. 그래도 안 되면 다음 접속 때 다시 시도
+      await sleep(Math.max(400, gap));
+      try { const r = await again(it); done.push(it.cid); if (r) take(r); } catch (e) { VS_FAIL.push(it.cid); }
     }
-    return out;
+    if (pend.length) onPart(pend);
+    return { out, done };
   }
 
-  // 받은 장소를 앱에 추가. 입력창이 있는 화면은 다시 그리지 않음(타이핑 끊김 방지)
+  // 받은 장소를 앱에 추가 (같은 장소는 한 번만). 입력창이 있는 화면은 다시 그리지 않음(타이핑 끊김 방지)
   function add(list) {
+    const have = new Set(P.map(p => p.c + '|' + p.n + '|' + p.lat + '|' + p.lng));
+    list = list.filter(p => { const k = p.c + '|' + String(p.n || '').trim() + '|' + p.lat + '|' + p.lng; if (have.has(k)) return false; have.add(k); return true; });
     if (!list.length) return;
     addPlaces(list, false);
     if (S.i === 'map') refreshMap(); else if (S.i === 'home') draw();
   }
 
-  // 카테고리별로 따로 캐시 (24시간): 새로고침해도 이미 받은 카테고리는 API를 다시 부르지 않고, 실패한 카테고리만 다시 시도
+  // 카테고리별 캐시 (24시간). 다 못 받았으면(complete:false) 받은 것까지 저장해 두고, 다음 접속 때 못 받은 것만 이어서 받음
   const ckey = c => VS_CKEY + ':' + c;
-  const readCache = c => { try { const v = JSON.parse(localStorage.getItem(ckey(c))); return v && Date.now() - v.t < TTL && Array.isArray(v.places) && v.places.length ? v.places : null; } catch (e) { return null; } };
-  const writeCache = (c, places) => { try { localStorage.setItem(ckey(c), JSON.stringify({ t: Date.now(), places })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
+  const readCache = c => { try { const v = JSON.parse(localStorage.getItem(ckey(c))); return v && Date.now() - v.t < TTL && Array.isArray(v.places) ? { places: v.places, done: Array.isArray(v.done) ? v.done : [], complete: v.complete !== false } : null; } catch (e) { return null; } };
+  const writeCache = (c, places, done, complete) => { try { localStorage.setItem(ckey(c), JSON.stringify({ t: Date.now(), places, done, complete })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
 
   async function run() {
-    const todo = [];
-    for (const p of PICK) { const c = readCache(p.c); if (c) add(c); else todo.push(p); }   // 캐시된 카테고리는 바로 표시
-    if (!todo.length) return;
-    let cats = [];   // 코드를 직접 지정했으므로 카테고리 목록은 참고용 (실패해도 계속 진행)
-    try { cats = (await call('/category/list', { method: 'GET' })).data || []; } catch (e) { console.warn('[비짓서울] 카테고리 목록 조회 실패 (코드 직접 지정이라 계속 진행):', e.message); }
-    // 목록이 중첩(children)돼 있어도 모두 펼치고, 경로는 ctgry_path 전체 문자열로 비교
-    const flat = [];
-    (function walk(a) { (a || []).forEach(x => { if (!x || typeof x !== 'object') return; flat.push(x); Object.values(x).forEach(v => { if (Array.isArray(v) && v.length && typeof v[0] === 'object') walk(v); }); }); })(cats);
-    const pathOf = x => String(x.ctgry_path || x.ctgry_nm || x.ctgry_name || x.name || '');
-    console.info('[비짓서울] category/list 원본 예시:', JSON.stringify(cats.slice(0, 3)).slice(0, 600));
-    const seen = new Set(), failed = [];
-    console.info('[비짓서울] 전체 카테고리 경로 ' + cats.length + '개:\n' + flat.map(x => x.com_ctgry_sn + '  ' + pathOf(x)).join('\n'));   // 글자로 출력 → 복사 가능
-    for (const p of todo) try {
-      const codes = [...(p.codes || [])];
-      if (p.name || p.re) flat.forEach(x => {
-        const path = pathOf(x), s = path.split('>').map(v => v.trim()), last = s[s.length - 1];
-        if (!x.com_ctgry_sn) return;
-        if (p.re) { if (p.re.test(path) && !(p.not && p.not.test(last))) codes.push(x.com_ctgry_sn); return; }
-        if (s.length > 1 && p.under.test(s[0]) && (!p.mid || (s.length > 2 && p.mid.test(s[1]))) && p.name.test(last) && !(p.not && p.not.test(last))) codes.push(x.com_ctgry_sn);
-      });
-      console.info('[비짓서울] 선택된 카테고리', p.c, codes);
-      if (![...new Set(codes)].length) {       // 카테고리를 하나도 못 찾으면 빈 결과를 캐시하지 않고 실패 처리 + 후보 경로를 콘솔에 출력
-        console.warn('[비짓서울] ' + p.c + ' 카테고리를 못 찾았어요. 아래 후보 경로를 복사해서 보내주세요:\n' +
-          flat.filter(x => /전시|박물|미술|화랑|축제|공연|행사|음식|카페|커피|museum|gallery|exhibit|festival|event|food|cafe|coffee/i.test(pathOf(x))).map(x => x.com_ctgry_sn + '  ' + pathOf(x)).join('\n'));
-        throw new Error('카테고리 없음');
+    const todo = [], prior = {};
+    for (const p of PICK) {
+      const c = readCache(p.c);
+      if (!c) for (const k of ['vs:places:v4', 'vs:places:v3']) {   // 옛 캐시는 만료됐어도 일단 보여줌 (새로 받는 동안 빈 화면 방지)
+        try { const v = JSON.parse(localStorage.getItem(k + ':' + p.c)); if (v && Array.isArray(v.places) && v.places.length) { add(v.places); break; } } catch (e) { /* 무시 */ }
       }
-      let items = [];
-      for (const code of [...new Set(codes)]) { const got = await listAll(code, p.max - items.length); console.info('[비짓서울] 코드', code, '목록', got.length, '건'); items.push(...got); }
-      items = items.filter(x => !seen.has(x.cid)); items.forEach(x => seen.add(x.cid));
-      const f0 = VS_FAIL.length;
-      const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)),
-        async it => toPlace(p.c, (await call('/contents/info?cid=' + encodeURIComponent(it.cid), { method: 'GET', r500: false })).data));
-      add(batch);
-      const nf = VS_FAIL.length - f0;
-      console.info(`[비짓서울] ${p.c}: 목록 ${items.length}건 → 표시 ${batch.length}건 (상세 조회 실패 ${nf}건, 좌표 없음·이미 끝난 행사 등 제외 ${Math.max(0, items.length - batch.length - nf)}건)`);
-      if (batch.length && nf <= items.length * 0.3) writeCache(p.c, batch);   // 상세 조회가 많이 실패한 카테고리는 저장하지 않음 → 다음에 다시 시도
-      else console.warn(`[비짓서울] ${p.c}: 상세 조회 실패 ${nf}건 / 전체 ${items.length}건 → 캐시하지 않음`);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
-    } catch (e) {
-      failed.push(p.c);                        // 이 카테고리만 건너뛰고 나머지는 계속 (캐시 안 함 → 다음에 다시 시도)
-      console.error('[비짓서울] 카테고리 실패:', p.c, e.message);
+      if (c) { add(c.places); prior[p.c] = c; if (c.complete) continue; }   // 다 받은 카테고리는 API를 부르지 않음
+      todo.push(p);
     }
-    if (VS_FAIL.length) console.info(`[비짓서울] 상세 정보를 못 받아 건너뛴 콘텐츠 ${VS_FAIL.length}건 (서버 500 오류):`, VS_FAIL.join(', '));
-    if (failed.length && typeof liveToast === 'function') liveToast(`비짓서울 ${failed.join('·')} 장소를 불러오지 못했어요. 잠시 뒤 새로고침해 주세요`);
+    if (!todo.length) return;
+    const seen = new Set(), failed = [];
+    for (const p of todo) {
+      if (halted) { failed.push(p.c); continue; }
+      try {
+        const pr = prior[p.c], skip = new Set(pr ? pr.done : []);
+        let items = [];
+        for (const code of p.codes) { const got = await listAll(code, p.max - items.length); console.info('[비짓서울] 코드', code, '목록', got.length, '건'); items.push(...got); }
+        items = items.filter(x => !seen.has(x.cid) && !skip.has(x.cid)); items.forEach(x => seen.add(x.cid));
+        const f0 = VS_FAIL.length;
+        const r = await pool(items, async it => toPlace(p.c, await detail(it.cid), it.cid),
+          async it => toPlace(p.c, (await call('/contents/info?cid=' + encodeURIComponent(it.cid), { method: 'GET', r500: false })).data, it.cid), add);
+        const nf = VS_FAIL.length - f0, complete = !halted && nf <= Math.max(3, items.length * 0.05);   // 원래 500이 나는 콘텐츠 몇 개 때문에 매번 다시 받지 않도록 5%(최소 3건)까진 완료로 침
+        writeCache(p.c, (pr ? pr.places : []).concat(r.out), [...skip, ...r.done], complete);   // 못 받은 건 done 에 없으므로 다음에 다시 시도
+        console.info(`[비짓서울] ${p.c}: 새로 받을 목록 ${items.length}건 → 표시 ${r.out.length}건 (상세 조회 실패 ${nf}건${halted ? ', 서버 불안정으로 중단' : ''}, 좌표 없음·이미 끝난 행사 등 제외 ${Math.max(0, r.done.length - r.out.length)}건)`);
+        if (!complete) failed.push(p.c);
+      } catch (e) {
+        failed.push(p.c);                        // 이 카테고리만 건너뛰고 나머지는 계속 (이미 받은 건 캐시에 남아 있음)
+        console.error('[비짓서울] 카테고리 실패:', p.c, e.message);
+      }
+    }
+    if (VS_FAIL.length) console.info(`[비짓서울] 상세 정보를 못 받은 콘텐츠 ${VS_FAIL.length}건 (다음 새로고침 때 이어서 시도):`, VS_FAIL.join(', '));
+    if (failed.length && typeof liveToast === 'function') liveToast(halted ? '비짓서울 서버가 불안정해요. 받은 장소까지만 표시했어요. 잠시 뒤 새로고침하면 이어서 받아요' : `비짓서울 ${failed.join('·')} 장소를 일부 못 불러왔어요. 새로고침하면 이어서 받아요`);
   }
 
   run().catch(e => {
