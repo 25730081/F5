@@ -92,6 +92,12 @@
  *  - 로그인 화면 추가: 마이페이지 · 홈 '웨이팅 시간 등록하기' · 하단 등록 버튼(그 밖에 로그인이 필요한 화면 포함)은 로그인 전이면 로그인 화면으로
  *  - 로그인 후 원래 가려던 화면으로 이동 · '로그인 상태 유지'를 켜면 새로고침해도 유지(localStorage '0cha:auth') · 마이페이지 맨 아래 로그아웃
  *  - 지금은 서버 없이 화면 흐름만 동작 (아이디·비밀번호가 비어 있지 않으면 로그인, 간편 로그인도 데모 로그인)
+ *
+ * v17 변경 요약
+ *  - 박물관·미술관·쇼핑은 data/seoul_museum.json · seoul_gallery.json · seoul_shopping.json 에서 읽음 (장소 상세에 '분류' 표시)
+ *  - 비짓서울 API는 카페 · 체험관광(공예체험 Cq3m6s6 · 전통체험 Cd0m9o0) · 전시회(Exhibitions Cu9u5z7)만 호출 · 마트/창고형 제외
+ *  - 계정별 저장 정리: 관심 공간·내 코스를 계정 키로 저장 · 로그아웃하면 화면에서만 지우고 다시 로그인하면 복원
+ *    장소키에 좌표 포함(같은 이름 지점 구분) · 장소가 늦게 올라와도 저장된 코스가 잘리지 않음
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -124,6 +130,7 @@ const P=[];               // 장소 목록 (인덱스 = 장소 ID, 추가만 하
 let loadError=false;
 
 const num=v=>{const n=parseFloat(v);return Number.isFinite(n)?n:null};
+const vsRows=d=>Array.isArray(d)?d:(d&&(d.DATA||d.data))||[];   // 비짓서울 JSON: {meta, DATA:[...]} (배열만 있는 파일도 허용)
 const SOURCES=[
  {url:'data/seoul_bookstore_100.json',pick:d=>d.DATA,
   map:x=>({n:x.store_name,c:'서점',e:CE.서점,s:30,lat:num(x.xcnts),lng:num(x.ydnts),addr:x.adres?'서울 '+x.adres:'',tel:x.tel_no,url:x.hmpg_url||x.sns,
@@ -131,17 +138,22 @@ const SOURCES=[
  {url:'data/seoul_library_100.json',pick:d=>d.libraries,
   map:x=>({n:x.name,c:'도서관',e:CE.도서관,s:40,lat:x.coordinates&&x.coordinates.latitude,lng:x.coordinates&&x.coordinates.longitude,addr:x.address,tel:x.phone,url:x.website,closed:x.closedDays,hours:x.hours})},
  {url:'data/seoul_park_130.json',pick:d=>d.DATA,
-  map:x=>({n:x.park_nm,c:'공원',e:CE.공원,s:40,lat:num(x.ycrd),lng:num(x.xcrd),addr:x.park_addr,tel:x.telno,url:x.url})}];
- // 카페·쇼핑·체험관광·전시회·미술관·박물관은 파일 맨 아래 비짓서울 API 코드가 직접 받아 addPlaces()로 추가
+  map:x=>({n:x.park_nm,c:'공원',e:CE.공원,s:40,lat:num(x.ycrd),lng:num(x.xcrd),addr:x.park_addr,tel:x.telno,url:x.url})},
+ // 박물관·미술관·쇼핑: 비짓서울 데이터를 미리 받아 둔 JSON (tools/visitseoul_json.html 로 생성 · {meta, DATA:[...]} 형식)
+ {url:'data/seoul_museum.json',pick:vsRows,map:x=>({...x,c:'박물관',e:CE.박물관,lat:num(x.lat),lng:num(x.lng)})},
+ {url:'data/seoul_gallery.json',pick:vsRows,map:x=>({...x,c:'미술관',e:CE.미술관,lat:num(x.lat),lng:num(x.lng)})},
+ {url:'data/seoul_shopping.json',pick:vsRows,map:x=>({...x,c:'쇼핑',e:CE.쇼핑,lat:num(x.lat),lng:num(x.lng)})}];
+ // 카페 · 체험관광(공예체험·전통체험) · 전시회는 파일 맨 아래 비짓서울 API 코드가 직접 받아 addPlaces()로 추가
 
 function addPlaces(list,fromJson){
  list.forEach(p=>{
   p.n=String(p.n||'').trim();
   if(!p.n||p.lat==null||p.lng==null||p.lat<33||p.lat>39||p.lng<124||p.lng>132)return;   // 좌표 없거나 범위 밖이면 제외
   P.push({e:'📍',...p,s:DSTAY,j:!!fromJson});   // 출처별 s 값과 상관없이 기본 체류는 DSTAY
+  indexPlace(P.length-1);
  });
  resolveFavs();   // 저장해 둔 관심 공간 중 방금 올라온 장소가 있으면 복원
- resolveCourses(false);   // 저장해 둔 코스 중 장소가 다 올라온 것은 복원
+ if(rehydrateCourses())courseDirty=true;   // 저장해 둔 코스 중 장소가 덜 채워졌던 것을 다시 채움
 }
 function addApiPlaces(list){addPlaces(list,false);draw()}
 
@@ -180,45 +192,52 @@ async function memberApi(payload){
  finally{clearTimeout(tm)}
 }
 S.user=(()=>{try{const v=JSON.parse(localStorage.getItem(AUTH));return v&&typeof v.id=='string'&&v.id?{id:v.id.slice(0,40),via:v.via||'id'}:null}catch(e){return null}})();
-// 관심 공간: 계정별 localStorage 저장 (같은 브라우저라도 로그인한 계정마다 키가 따로 생김)
-//   키: 0cha:favs:<로그인방식>:<아이디> / 값: ["카테고리|장소명", ...]  (장소 ID는 로드 순서에 따라 바뀔 수 있어 이름으로 저장)
-const FAVP='0cha:favs:';
-const favKey=()=>S.user?FAVP+(S.user.via||'id')+':'+encodeURIComponent(S.user.id):null;
-const favId=p=>p.c+'|'+p.n;
-let favPend=[];   // 저장은 돼 있지만 아직 장소 목록(API)에 안 올라온 항목 — 올라오면 자동 복원
-function loadFavNames(){favPend=[];const k=favKey();if(!k)return;try{const v=JSON.parse(localStorage.getItem(k));if(Array.isArray(v))favPend=v.filter(x=>typeof x=='string').slice(0,500)}catch(e){}}
-function resolveFavs(){if(!S.user||!favPend.length)return;const rest=[];favPend.forEach(s=>{const k=P.findIndex(p=>favId(p)==s);if(k>=0){if(!S.favs.includes(k))S.favs.push(k)}else rest.push(s)});favPend=rest}
-function saveFavs(){const k=favKey();if(!k)return;try{localStorage.setItem(k,JSON.stringify([...S.favs.map(i=>favId(P[i])),...favPend]))}catch(e){}}
-function resetFavs(){S.favs=[];loadFavNames();resolveFavs()}   // 계정이 바뀌거나 로그인/로그아웃할 때
-loadFavNames();   // 새로고침 후에도 '로그인 상태 유지'면 그 계정의 관심 공간을 읽어옴
-// 내 코스: 계정별 localStorage 저장 (관심 공간과 같은 방식, 키: 0cha:courses:<로그인방식>:<아이디>)
-//   저장 형태: 장소 ID 대신 "카테고리|장소명" 으로 저장 → 불러올 때 현재 장소 ID로 되돌림
-const COURSEP='0cha:courses:';
-const courseKey=()=>S.user?COURSEP+(S.user.via||'id')+':'+encodeURIComponent(S.user.id):null;
-let cPend=[];            // 저장돼 있지만 장소(API)가 아직 다 안 올라와 복원 대기 중인 코스
-let cLast='';            // 마지막으로 저장한 내용 (바뀐 때만 다시 씀)
-let placesFinal=false;   // 비짓서울 장소 받기가 정상 완료됐는지
-let courseDirty=false;   // 복원된 코스가 새로 생겼는지 (마이페이지 갱신용)
-function toRawCourse(c){const key=k=>favId(P[k]);return {...c,sel:c.sel.filter(k=>P[k]).map(key),stay:Object.fromEntries(Object.entries(c.stay||{}).filter(([k])=>P[k]).map(([k,v])=>[key(k),v]))}}
-function fromRawCourse(r,partial){
- const f=n=>P.findIndex(p=>favId(p)==n),names=Array.isArray(r.sel)?r.sel.filter(x=>typeof x=='string'):[],ids=names.map(f);
- if(!partial&&ids.some(k=>k<0))return null;   // 장소가 다 올라와야 복원 (아니면 대기)
- const stay={};Object.entries(r.stay||{}).forEach(([n,v])=>{const k=f(n);if(k>=0)stay[k]=v});
- return {...r,sel:ids.filter(k=>k>=0),stay}}
-function loadCourseNames(){cPend=[];cLast='';const k=courseKey();if(!k)return;try{const v=JSON.parse(localStorage.getItem(k));if(Array.isArray(v)){cLast=localStorage.getItem(k);cPend=v.filter(r=>r&&typeof r=='object'&&Number.isFinite(r.id)&&Array.isArray(r.sel)).slice(0,200)}}catch(e){}}
-function resolveCourses(final){
- if(!S.user||!cPend.length)return;
- cPend=cPend.filter(r=>{
-  if(S.courses.some(x=>x.id==r.id))return false;
-  const c=fromRawCourse(r,final);
-  if(!c)return true;                                  // 아직 장소가 덜 올라옴 → 계속 대기
-  if(c.sel.length){S.courses.push(c);courseDirty=true}  // 장소 받기가 끝났는데도 없는 장소는 빼고 복원
-  return false});
- S.courses.sort((a,b)=>a.id-b.id)}
-function saveCourses(){const k=courseKey();if(!k)return;try{const s=JSON.stringify([...S.courses.map(toRawCourse),...cPend]);if(s!==cLast){localStorage.setItem(k,s);cLast=s}}catch(e){}}
-function resetCourses(){S.courses=[];S.cid=null;S.editId=null;S.curId=null;loadCourseNames();resolveCourses(placesFinal)}
-function placesDone(complete){placesFinal=!!complete;if(complete&&cPend.length){resolveCourses(true);if(S.i==='my'||S.i==='home')draw()}}   // 장소 받기가 끝났을 때 (API 코드가 호출)
-loadCourseNames();   // 새로고침 후에도 '로그인 상태 유지'면 그 계정의 코스를 읽어옴
+/* ---------- 계정별 저장: 관심 공간 · 내 코스 (localStorage) ----------
+ *   관심 공간 키: 0cha:favs:<로그인방식>:<아이디>    값: ["장소키", ...]
+ *   내 코스  키: 0cha:courses:<로그인방식>:<아이디> 값: [{id, sel:["장소키"...], stay:{"장소키":분}, wait, rest, area, loc, date, review}, ...]
+ *   장소키 = "카테고리|장소명|위도|경도" (같은 이름의 체인 지점도 구분). 예전에 저장한 "카테고리|장소명" 도 그대로 읽음
+ *   장소 ID(P의 순번)는 데이터가 올라오는 순서에 따라 바뀌어서 장소키로 저장하고, 불러올 때 현재 ID로 되돌린다
+ *   로그아웃: 화면(메모리)에서만 지우고 저장소는 그대로 → 같은 계정으로 다시 로그인하면 그대로 다시 나옴
+ *   장소가 아직 안 올라온 코스는 원본(_raw)을 그대로 보관 → 늦게 올라와도, 끝내 못 찾아도 저장된 내용이 지워지지 않음 */
+const FAVP='0cha:favs:',COURSEP='0cha:courses:';
+const acctKey=pre=>S.user?pre+(S.user.via||'id')+':'+encodeURIComponent(S.user.id):null;
+const pkey=p=>p.c+'|'+p.n+'|'+(+p.lat).toFixed(5)+'|'+(+p.lng).toFixed(5);
+const PIDX=new Map();   // 장소키 · 예전 키(카테고리|장소명) → 장소 ID
+function indexPlace(k){const p=P[k],a=pkey(p),b=p.c+'|'+p.n;if(!PIDX.has(a))PIDX.set(a,k);if(!PIDX.has(b))PIDX.set(b,k)}
+const findKey=s=>PIDX.has(s)?PIDX.get(s):-1;
+const readJSON=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+let jsonDone=false,apiDone=false,placesFinal=false;   // 장소 받기(JSON 파일 + 비짓서울 API)가 모두 끝났는지
+let courseDirty=false;   // 늦게 올라온 장소로 코스가 채워졌는지 (마이페이지 다시 그리기용)
+
+// 관심 공간
+let favMiss=[];   // 저장돼 있지만 아직 장소 목록에 안 올라온 장소키
+function resolveFavs(){if(!favMiss.length)return;favMiss=favMiss.filter(s=>{const k=findKey(s);if(k<0)return true;if(!S.favs.includes(k))S.favs.push(k);return false})}
+function loadFavs(){S.favs=[];favMiss=[];const k=acctKey(FAVP);if(!k)return;const v=readJSON(k);if(Array.isArray(v))favMiss=v.filter(x=>typeof x=='string').slice(0,500);resolveFavs()}
+function saveFavs(){const k=acctKey(FAVP);if(!k)return;try{localStorage.setItem(k,JSON.stringify([...S.favs.filter(i=>P[i]).map(i=>pkey(P[i])),...favMiss]))}catch(e){}}
+
+// 내 코스
+let cLast='';   // 마지막으로 저장한 내용 (바뀐 때만 다시 씀)
+function hydrate(r){   // 저장 형태 → 화면용 (장소키 → 장소 ID)
+ const names=(Array.isArray(r.sel)?r.sel:[]).filter(x=>typeof x=='string'),sel=names.map(findKey).filter(k=>k>=0),stay={};
+ Object.entries(r.stay&&typeof r.stay=='object'?r.stay:{}).forEach(([n,v])=>{const k=findKey(n);if(k>=0&&Number.isFinite(v))stay[k]=v});
+ const {_raw,_miss,...c}={...r,sel,stay},miss=names.length-sel.length;
+ return miss?{...c,_raw:r,_miss:miss}:c}
+function toRaw(c){   // 화면용 → 저장 형태. 장소가 덜 올라온 코스는 원본을 그대로 저장
+ if(c._raw)return c._raw;
+ const {_raw,_miss,...o}=c;
+ return {...o,sel:c.sel.filter(k=>P[k]).map(k=>pkey(P[k])),stay:Object.fromEntries(Object.entries(c.stay||{}).filter(([k])=>P[k]).map(([k,v])=>[pkey(P[k]),v]))}}
+function loadCourses(){S.courses=[];cLast='';const k=acctKey(COURSEP);if(!k)return;const v=readJSON(k);if(!Array.isArray(v))return;
+ S.courses=v.filter(r=>r&&typeof r=='object'&&Number.isFinite(r.id)&&Array.isArray(r.sel)&&r.sel.length).slice(0,200).map(hydrate);
+ cLast=JSON.stringify(S.courses.map(toRaw))}
+function rehydrateCourses(){let ch=false;S.courses=S.courses.map(c=>{if(!c._miss)return c;const n=hydrate(c._raw);if((n._miss||0)!==c._miss)ch=true;return n});return ch}
+function saveCourses(){const k=acctKey(COURSEP);if(!k)return;try{const s=JSON.stringify(S.courses.map(toRaw));if(s!==cLast){localStorage.setItem(k,s);cLast=s}}catch(e){}}
+
+// 로그인 · 로그아웃 · 장소 받기 완료
+function loadAccount(){loadFavs();loadCourses()}
+function clearAccount(){S.favs=[];favMiss=[];S.courses=[];cLast=''}
+function checkFinal(){if(jsonDone&&apiDone&&!placesFinal){placesFinal=true;if(['my','mc'].includes(S.i))draw()}}
+function placesDone(){apiDone=true;checkFinal()}   // 비짓서울 API 코드가 받기를 마치면 호출 (성공·실패 상관없이)
+loadAccount();   // 새로고침 후에도 '로그인 상태 유지'면 그 계정의 관심 공간·코스를 읽어옴
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -247,7 +266,8 @@ function restore(){
 async function loadPlaces(){
  const res=await Promise.allSettled(SOURCES.map(async s=>{const r=await fetch(s.url);if(!r.ok)throw new Error(r.status+' '+s.url);return s.pick(await r.json()).map(s.map)}));
  res.forEach(r=>{if(r.status=='fulfilled')addPlaces(r.value,true);else{loadError=true;console.error(r.reason)}});
- restore();   // 저장된 것이 없으면 내 코스·관심 공간은 빈 상태로 시작
+ restore();
+ jsonDone=true;checkFinal();
  draw();
 }
 
@@ -599,7 +619,7 @@ function mountKakaoMap(){
 // 장소 상세 (행을 누르면 아래로 펼침): 주소 · 전화 · 운영/휴무(공휴일 포함) · 도보 시간(참고)
 const vrow=(t,v)=>v?`<div><dt>${t}</dt><dd>${esc(v)}</dd></div>`:'';
 const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='도서관'?p.closed:(p.closedTxt||''),su=safeUrl(p.site);
- return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('기간',p.period)}${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}${vrow('영업일',p.bizDays)}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${su?`<div><dt>홈페이지</dt><dd><a href="${esc(su)}" target="_blank" rel="noopener noreferrer">${esc(su.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,''))}</a></dd></div>`:''}${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',p.desc)}${vrow('태그',p.tags)}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
+ return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('분류',p.sub)}${vrow('기간',p.period)}${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}${vrow('영업일',p.bizDays)}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${su?`<div><dt>홈페이지</dt><dd><a href="${esc(su)}" target="_blank" rel="noopener noreferrer">${esc(su.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,''))}</a></dd></div>`:''}${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',p.desc)}${vrow('태그',p.tags)}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
 // 관심 공간 하트 버튼 (마이페이지 '관심 공간'에 저장/해제)
 const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${fv?'♥':'♡'}</button>`};
 const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cb(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">도보 ${tt(k)}분${!S.sel.includes(k)&&!fit(k)?' · 시간 부족':''}</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
@@ -736,7 +756,8 @@ const cRow=()=>`<div class="flt"><input class="in" id="cq" type="search" placeho
 <div class="flt" role="group" aria-label="코스 필터"><select class="srt l" id="cperiod" aria-label="기간">${[['all','전체 기간'],['today','오늘'],['7','최근 7일'],['30','최근 30일']].map(([v,t])=>`<option value="${v}" ${S.cdate==v?'selected':''}>${t}</option>`).join('')}</select><select class="srt" id="csort" aria-label="정렬">${[['new','최신순'],['old','오래된 순'],['wait','대기 긴 순']].map(([v,t])=>`<option value="${v}" ${S.csort==v?'selected':''}>${t}</option>`).join('')}</select></div>`;
 const ccard=c=>{const vis=c.sel.slice(0,4),more=c.sel.length-vis.length;
  return `<button class="cc2" data-cid="${c.id}" aria-label="${esc(ctitle(c))} 코스 상세 보기"><span class="cc2-ring">${cring(c)}</span><span class="cc2-info"><b class="cc2-t">${esc(ctitle(c))}</b><span class="sub">${cdate(c)} · ${esc(c.area||'성수동')}</span><span class="sub">대기 ${fm(c.wait)} · ${c.sel.length}곳</span></span>`+
- `<span class="cc2-pl">${vis.map((k,j)=>`<span class="cc2-p"><i class="dot sm" style="background:${colr(j)}">${j+1}</i><span class="nm">${esc(P[k].n)}</span></span>`).join('')}${more>0?`<span class="sub cc2-m">외 ${more}곳</span>`:''}</span></button>`};
+ `<span class="cc2-pl">${vis.map((k,j)=>`<span class="cc2-p"><i class="dot sm" style="background:${colr(j)}">${j+1}</i><span class="nm">${esc(P[k].n)}</span></span>`).join('')}${more>0?`<span class="sub cc2-m">외 ${more}곳</span>`:''}${missTxt(c)?`<span class="sub cc2-m">${missTxt(c)}</span>`:''}</span></button>`};
+const missTxt=c=>c._miss?(placesFinal?`장소 ${c._miss}곳을 찾지 못했어요`:`장소 ${c._miss}곳 불러오는 중`):'';
 // 관심 공간: 간략 주소(구 + 도로명 + 번호) · 필터는 지도 아래 필터와 같은 형태 (상태는 지도와 별도)
 const shortAddr=a=>String(a||'').replace(/\([^)]*\)/g,'').replace(/^서울(특별시|시)?\s*/,'').trim().split(/\s+/).slice(0,3).join(' ');
 const favList=()=>{const b=S.favs.filter(k=>(!S.fcats.length||S.fcats.includes(P[k].c))&&(!S.fonow||isOpen(k)===true));
@@ -749,12 +770,12 @@ const favRow=()=>`<div class="flt" role="group" aria-label="관심 공간 필터
 ${S.fcatOpen?`<div class="catp"><div class="row cats" role="group" aria-label="장소 카테고리 (여러 개 선택 가능)"><button class="chip ${S.fcats.length?'':'on'}" aria-pressed="${!S.fcats.length}" data-fcat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.fcats.includes(c)?'on':''}" aria-pressed="${S.fcats.includes(c)}" data-fcat="${c}">${CE[c]} ${c}</button>`).join('')}</div></div>`:''}`;
 const favItem=k=>{const ad=shortAddr(P[k].addr);return `<div class="pc">${cb(P[k].c)}<div><h3>${esc(P[k].n)}</h3><p class="sub">${esc(P[k].c)}${ad?' · '+esc(ad):''}</p></div><button class="add ci del" data-fav="${k}" aria-label="${esc(P[k].n)} 관심 공간에서 삭제" title="삭제">${svg('<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>')}</button></div>`};
 const my=()=>frame(`${ttl('마이페이지','안내','만든 코스와 하트(♡)로 저장한 공간을 모아봐요. 코스를 눌러 수정하거나 다시 시작할 수 있어요.')}<p class="sub">내가 만든 코스와 저장한 공간</p><div class="seg"><button class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
-(S.seg=='c'?(S.courses.length?cRow()+`<div class="clist"><div class="dc" id="cl">${clistHtml()}</div><button class="cc2 new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><span class="cc2-info"><b class="cc2-t">새 코스 만들기</b><span class="sub">웨이팅 등록하기</span></span></button></div>`:'<div class="box sub c">'+(cPend.length?`저장한 코스 ${cPend.length}개의 장소를 불러오는 중이에요.<br>잠시만 기다려 주세요.`:'보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.')+'</div>')
-:(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>'))+
+(S.seg=='c'?(S.courses.length?cRow()+`<div class="clist"><div class="dc" id="cl">${clistHtml()}</div><button class="cc2 new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><span class="cc2-info"><b class="cc2-t">새 코스 만들기</b><span class="sub">웨이팅 등록하기</span></span></button></div>`:'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
+:(favMiss.length&&!placesFinal?`<p class="sub c mt">저장한 관심 공간 ${favMiss.length}곳을 불러오는 중이에요</p>`:'')+(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>'))+
 (S.user?`<div class="lo"><span class="sub">${esc(S.user.id)} 님으로 로그인 중</span><button class="dl" data-logout="1">로그아웃</button></div>`:''));
 // 코스 상세: 하단은 '다시 시작(주) + 장소 바꾸기' 한 줄. 삭제는 자주 쓰지 않으므로 본문 맨 아래로
 const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,locOf(c),c.wait);
- return frame(`${ttl(esc(ctitle(c)),'참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.',{back:backBtn('my','내 코스')})}<p class="cs-r">${title(c)}</p><p class="sub">${cdate(c)} · ${esc(c.area||'성수동')}</p>
+ return frame(`${ttl(esc(ctitle(c)),'참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.',{back:backBtn('my','내 코스')})}<p class="cs-r">${title(c)}</p><p class="sub">${cdate(c)} · ${esc(c.area||'성수동')}</p>${missTxt(c)?`<p class="sub err mt">${missTxt(c)}${placesFinal?' (데이터에서 빠진 장소예요. 수정하면 그 장소는 코스에서 빠져요)':' · 잠시 후 다시 확인해주세요'}</p>`:''}
 <div class="row nowrap"><div class="box mini"><span class="sub">대기</span><br><b>${fm(c.wait)}</b></div><div class="box mini"><span class="sub">코스</span><br><b>${fm(ctot(c))}</b></div><div class="box mini"><span class="sub">도보 왕복</span><br><b>${fm(cwalk(c))}</b></div></div>${h}<button class="dl" data-del="${c.id}">이 코스 삭제</button>`,
  `<div class="duo w32"><button class="btn" data-redo="${c.id}">이 코스로 다시 시작</button><button class="btn g" data-edit="${c.id}">장소 바꾸기</button></div>`)};
 
@@ -804,11 +825,16 @@ ${S.jerr?`<p class="lg-err" id="jgerr" role="alert">${esc(S.jerr)}</p>`:''}
 </div></div>${toastH()}`;
 const SNS={apple:'Apple',google:'Google',naver:'네이버'};
 function signIn(id,via){
- S.user={id,via};S.lpw='';S.lerr='';resetFavs();resetCourses();
+ S.user={id,via};S.lpw='';S.lerr='';loadAccount();   // 이 계정의 관심 공간 · 코스 불러오기
  try{if(S.lkeep)localStorage.setItem(AUTH,JSON.stringify(S.user));else localStorage.removeItem(AUTH)}catch(e){}
  S.i=S.after&&S.after!='login'?S.after:'home';S.after=null;
  toast(`${id}님, 환영해요`);draw()}
-function signOut(){S.user=null;S.lid='';S.lpw='';S.favs=[];favPend=[];S.courses=[];cPend=[];cLast='';S.cid=null;S.editId=null;S.curId=null;try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
+function signOut(){
+ saveFavs();saveCourses();   // 마지막 상태를 계정 저장소에 남긴 뒤
+ S.user=null;S.lid='';S.lpw='';clearAccount();   // 화면에서만 지움 (다시 로그인하면 그대로 나옴)
+ S.active=false;S.start=null;S.sel=[];S.stay={};S.focus=null;S.cid=null;S.editId=null;S.curId=null;S.fin=null;   // 진행·작성 중이던 코스도 정리
+ S.nfired={};S.nlog=[];S.unread=0;S.nopen=false;S.rsheet=false;S.wadj=false;S.picked=false;S.wq='';S.sugg=[];S.res=[];S.rstat='';S.sgst='';S.seg='c';
+ try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
 
 /* ---------- 렌더 ---------- */
 const SC={home,reg,map,confirm:confirmScr,prog,done,my,mc,login,join:joinScr};
@@ -889,7 +915,9 @@ document.addEventListener('click',e=>{
  else if(has('logout'))signOut();
  else if(has('seg'))S.seg=d.seg;
  else if(has('redo')||has('edit')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}
-  const c=S.courses.find(x=>x.id==+(d.redo??d.edit));if(!c)return;loadCourse(c);S.mback=null;S.i=has('edit')?'map':'confirm'}   // 시작 → 코스 확인 / 장소 바꾸기 → 지도
+  const c=S.courses.find(x=>x.id==+(d.redo??d.edit));if(!c)return;
+  if(c._miss&&!placesFinal){toast('코스 장소를 아직 불러오는 중이에요. 잠시 후 다시 눌러주세요');draw();return}
+  loadCourse(c);S.mback=null;S.i=has('edit')?'map':'confirm'}   // 시작 → 코스 확인 / 장소 바꾸기 → 지도
  else if(has('del')){if(!confirm('이 코스를 삭제할까요?'))return;S.courses=S.courses.filter(x=>x.id!=+d.del);S.i='my'}
  else return;
  draw()});
@@ -1000,7 +1028,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
 /* ===== 비짓서울 API 연동 (v15) =====
  * 앱을 열면 비짓서울 API에서 장소를 받아 addPlaces()로 목록에 추가합니다 (JSON 파일 없음).
  * 받아온 장소는 서점·도서관·공원과 똑같이 지도 핀 · 장소 이름 검색 · 카테고리 버튼 · 담기에 쓰입니다.
- *   버튼: 카페 · 쇼핑 · 체험관광 · 전시회(전시회+행사) · 미술관(미술관/화랑) · 박물관
+ *   API로 받는 버튼: 카페 · 체험관광(공예체험·전통체험) · 전시회(Exhibitions) — 박물관·미술관·쇼핑은 data/*.json
  * 순서: 카테고리 목록 → 카테고리별 콘텐츠 목록(좌표 없음) → 장소마다 상세 조회(좌표·주소·전화·시간 등) → 추가
  * 결과는 localStorage에 24시간 캐시 (카테고리 구성을 바꾸면 VS_CKEY 의 숫자를 올리세요)
  */
@@ -1016,12 +1044,10 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   // ※ 경로가 한글인지 영어인지 확실치 않아 둘 다 맞게 써둠. 콘솔의 '[비짓서울] 선택된 카테고리' 로그를 보고 조정
   const CULT = /문화관광|culture/i, EXH = /전시시설|exhibition/i, FEST = /축제|공연|행사|festival|event/i;
   const PICK = [   // 카테고리 코드는 비짓서울 category/list 에서 확인한 값. 작은 카테고리부터 받아서 바로 뭔가 보이게 함
-    { c: '미술관', codes: ['Ct9t6m8'], max: 500 },                                             // Culture > Cultural Facilities > Art Museums/Galleries
-    { c: '박물관', codes: ['Cr0q2v2'], max: 500 },                                             // Culture > Cultural Facilities > Museums
-    { c: '체험관광', codes: ['Cc9i5o2'], max: 500 },                                           // Experience Programs
+    // 박물관(Cr0q2v2)·미술관(Ct9t6m8)·쇼핑(전문매장·쇼핑몰/아울렛·전통시장·백화점)은 data/*.json 에서 읽음 (SOURCES 참고) · 마트/창고형(Ct1z4k9)은 안 씀
+    { c: '체험관광', codes: ['Cq3m6s6', 'Cd0m9o0'], max: 500 },                               // Experience Programs > Craft Workshops(공예체험) · Traditional Experience(전통체험)
+    { c: '전시회', codes: ['Cu9u5z7'], max: 500 },                                            // Festivals/Events/Performances > Events > Exhibitions (전시회만)
     { c: '카페', codes: ['Cx0t8m5'], max: 1000 },                                              // Cuisine > Cafes & Tea Shops
-    { c: '쇼핑', codes: ['Cn0t1e0', 'Cy4k5t1', 'Cn7z1h7', 'Cs3j7y4', 'Ct1z4k9'], max: 1000 },   // Shopping > Specialty Shops & Stores · Shopping Malls & Outlets · Traditional Markets · Department Stores · Supermarkets & Warehouses
-    { c: '전시회', codes: ['Cf9q1q4'], max: 1500 },                                           // Festivals/Events/Performances > Events (전시회+행사)
   ];
 
   const H = { 'Accept': 'application/json;charset=UTF-8', 'Content-Type': 'application/json;charset=UTF-8', 'VISITSEOUL-API-KEY': API_KEY };
@@ -1099,7 +1125,9 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   // 카테고리별 캐시 (24시간). 받는 도중에도 주기적으로 저장 → 새로고침해도 받은 곳까지는 남고, 이어서 받음
   const ckey = c => VS_CKEY + ':' + c;
   const sigOf = p => p.codes.join(',');
-  const OLD_OK = new Set(['미술관', '박물관', '체험관광']);   // sig 없이 저장된 예전 캐시는 코드가 안 바뀐 카테고리만 인정
+  const OLD_OK = new Set();   // sig 없이 저장된 예전 캐시는 쓰지 않음 (체험관광·전시회 코드가 바뀜)
+  // JSON으로 옮긴 카테고리(미술관·박물관·쇼핑)의 예전 API 캐시는 지워서 저장 공간 확보
+  try { ['미술관', '박물관', '쇼핑'].forEach(c => localStorage.removeItem(VS_CKEY + ':' + c)); } catch (e) {}
   const readCache = p => { try { const v = JSON.parse(localStorage.getItem(ckey(p.c))); if (!v || Date.now() - v.t >= TTL || !Array.isArray(v.places)) return null; if (v.sig ? v.sig !== sigOf(p) : !OLD_OK.has(p.c)) return null; return { places: v.places, done: Array.isArray(v.done) ? v.done : [], complete: v.complete !== false }; } catch (e) { return null; } };
   const writeCache = (p, places, done, complete) => { try { localStorage.setItem(ckey(p.c), JSON.stringify({ t: Date.now(), sig: sigOf(p), places, done, complete })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
 
@@ -1174,5 +1202,6 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   run().catch(e => {
     console.error('[비짓서울]', e);
     if (typeof liveToast === 'function') liveToast('비짓서울 장소를 불러오지 못했어요');
+    if (typeof placesDone === 'function') placesDone(false);
   });
 })();
