@@ -507,7 +507,9 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .tipb b{display:inline-block;margin:0 6px 2px 0;padding:0 8px;border-radius:99px;border:1px solid currentColor;font-size:11px;font-weight:800;line-height:1.6;opacity:.85}
 .mapw{position:relative;margin:2px 0 0}
 .mapw .mapx{margin:0}
-.mcats{position:absolute;left:8px;right:8px;top:8px;z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:none;padding:2px 2px 8px}
+.mcats{position:absolute;left:8px;right:8px;top:8px;z-index:5;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;pointer-events:none;padding:2px 2px 8px;touch-action:pan-x;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;user-select:none;-webkit-user-select:none}
+.mcats .chip{cursor:grab}
+.mcats.drg .chip{cursor:grabbing}
 .mcats::-webkit-scrollbar{display:none}
 .mcats .chip{flex:none;min-height:34px;padding:0 12px;font-size:13px;white-space:nowrap;pointer-events:auto;box-shadow:0 1px 5px rgba(0,0,0,.28)}
 .sheet .in{margin-bottom:8px}
