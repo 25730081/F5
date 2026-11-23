@@ -866,20 +866,20 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const API_KEY = '4f825688-9ac1-4d47-b040-38c7a4aadc07';
   const BASE = 'https://api-call.visitseoul.net/api/v1';
   const TTL = 24 * 3600 * 1000;
-  const VS_CKEY = 'vs:places:v3';
+  const VS_CKEY = 'vs:places:v5';
   const CONC = 2;                    // 상세 조회 동시 호출 수 (호출 제한에 걸리면 더 줄이세요)
 
   // c = 앱 버튼 이름 / codes = 코드 직접 지정 / under·mid·name = 카테고리 경로(예: "문화관광 > 전시시설 > 박물관")에서
   // 최상위 이름이 under, (선택) 두 번째 이름이 mid, 마지막 이름이 name 에 맞는 카테고리를 자동 선택 / not = 제외 / max = 최대 개수(최신순)
   // ※ 경로가 한글인지 영어인지 확실치 않아 둘 다 맞게 써둠. 콘솔의 '[비짓서울] 선택된 카테고리' 로그를 보고 조정
   const CULT = /문화관광|culture/i, EXH = /전시시설|exhibition/i, FEST = /축제|공연|행사|festival|event/i;
-  const PICK = [
-    { c: '쇼핑', codes: ['Cu8e6t5'], max: 600 },
-    { c: '체험관광', codes: ['Cc9i5o2'], max: 300 },
-    { c: '카페', re: /(음식|맛집|식음료|먹거리|food|dining|restaurant)[\s\S]*(카페|cafe|coffee|커피|찻집)/i, max: 600 },   // 음식 > 카페
-    { c: '전시회', under: FEST, name: /전시|exhibition|^행사$|^events?$/i, max: 400 },   // 전시회와 행사를 '전시회' 하나로 통일
-    { c: '미술관', re: /(문화관광|culture)[\s\S]*(전시시설|exhibition)[\s\S]*(미술관|화랑|gallery|\bart\b)/i, max: 300 },   // 문화관광 > 전시시설 > 미술관/화랑
-    { c: '박물관', re: /(문화관광|culture)[\s\S]*(전시시설|exhibition)[\s\S]*(박물관|museum)/i, not: /미술관|화랑|gallery|\bart\b/i, max: 300 },   // 문화관광 > 전시시설 > 박물관
+  const PICK = [   // 카테고리 코드는 비짓서울 category/list 에서 확인한 값 (이름 매칭 없이 코드로 직접 지정)
+    { c: '쇼핑', codes: ['Cu8e6t5'], max: 1000 },                                              // Shopping
+    { c: '체험관광', codes: ['Cc9i5o2'], max: 500 },                                           // Experience Programs
+    { c: '카페', codes: ['Cx0t8m5'], max: 1000 },                                              // Cuisine > Cafes & Tea Shops
+    { c: '전시회', codes: ['Cu9u5z7', 'Cu6j1f4', 'Cw7q1x8', 'Cf9q1q4'], max: 1500 },          // Events > Exhibitions · Expos · Other Events · Events (전시회+행사 통일)
+    { c: '미술관', codes: ['Ct9t6m8'], max: 500 },                                             // Culture > Cultural Facilities > Art Museums/Galleries
+    { c: '박물관', codes: ['Cr0q2v2'], max: 500 },                                             // Culture > Cultural Facilities > Museums
   ];
 
   const H = { 'Accept': 'application/json;charset=UTF-8', 'Content-Type': 'application/json;charset=UTF-8', 'VISITSEOUL-API-KEY': API_KEY };
@@ -977,7 +977,8 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     const todo = [];
     for (const p of PICK) { const c = readCache(p.c); if (c) add(c); else todo.push(p); }   // 캐시된 카테고리는 바로 표시
     if (!todo.length) return;
-    const cats = (await call('/category/list', { method: 'GET' })).data;
+    let cats = [];   // 코드를 직접 지정했으므로 카테고리 목록은 참고용 (실패해도 계속 진행)
+    try { cats = (await call('/category/list', { method: 'GET' })).data || []; } catch (e) { console.warn('[비짓서울] 카테고리 목록 조회 실패 (코드 직접 지정이라 계속 진행):', e.message); }
     // 목록이 중첩(children)돼 있어도 모두 펼치고, 경로는 ctgry_path 전체 문자열로 비교
     const flat = [];
     (function walk(a) { (a || []).forEach(x => { if (!x || typeof x !== 'object') return; flat.push(x); Object.values(x).forEach(v => { if (Array.isArray(v) && v.length && typeof v[0] === 'object') walk(v); }); }); })(cats);
@@ -1000,13 +1001,14 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
         throw new Error('카테고리 없음');
       }
       let items = [];
-      for (const code of [...new Set(codes)]) items.push(...await listAll(code, p.max - items.length));
+      for (const code of [...new Set(codes)]) { const got = await listAll(code, p.max - items.length); console.info('[비짓서울] 코드', code, '목록', got.length, '건'); items.push(...got); }
       items = items.filter(x => !seen.has(x.cid)); items.forEach(x => seen.add(x.cid));
       const f0 = VS_FAIL.length;
       const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)),
         async it => toPlace(p.c, (await call('/contents/info?cid=' + encodeURIComponent(it.cid), { method: 'GET', r500: false })).data));
       add(batch);
       const nf = VS_FAIL.length - f0;
+      console.info(`[비짓서울] ${p.c}: 목록 ${items.length}건 → 표시 ${batch.length}건 (상세 조회 실패 ${nf}건, 좌표 없음·이미 끝난 행사 등 제외 ${Math.max(0, items.length - batch.length - nf)}건)`);
       if (batch.length && nf <= items.length * 0.3) writeCache(p.c, batch);   // 상세 조회가 많이 실패한 카테고리는 저장하지 않음 → 다음에 다시 시도
       else console.warn(`[비짓서울] ${p.c}: 상세 조회 실패 ${nf}건 / 전체 ${items.length}건 → 캐시하지 않음`);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
     } catch (e) {
