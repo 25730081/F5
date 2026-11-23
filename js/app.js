@@ -867,11 +867,11 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   async function call(path, o) {
-    const { method = 'POST', body } = o || {};
+    const { method = 'POST', body, r500 = true } = o || {};
     for (let t = 0; t < 3; t++) {
       const r = await fetch(BASE + path, { method, headers: H, body: body && JSON.stringify(body) });
       if (r.ok) return r.json();
-      if (r.status === 429 || r.status >= 500) { await sleep(800 * (t + 1)); continue; }   // 호출 제한/서버 오류는 재시도
+      if (r.status === 429 || (r500 && r.status >= 500)) { await sleep(800 * (t + 1)); continue; }   // 호출 제한(429)은 재시도. 상세 조회의 500은 그 콘텐츠 자체 오류라 재시도 안 함
       const e = new Error(r.status + ' ' + method + ' ' + path); e.status = r.status; throw e;
     }
     throw new Error('재시도 초과 ' + path);
@@ -889,7 +889,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
 
   // 문서에 상세 조회가 POST/GET 으로 섞여 표기돼 있어 POST 먼저, 안 되면 GET
   async function detail(cid) {
-    try { return (await call('/contents/info', { body: { cid } })).data; }
+    try { return (await call('/contents/info', { body: { cid }, r500: false })).data; }
     catch (e) {
       if (e.status === 405 || e.status === 404) return (await call('/contents/info?cid=' + encodeURIComponent(cid), { method: 'GET' })).data;
       throw e;
@@ -918,12 +918,13 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     };
   }
 
+  const VS_FAIL = [];
   async function pool(items, fn) {
     const out = []; let i = 0;
     await Promise.all(Array.from({ length: CONC }, async () => {
       while (i < items.length) {
         const it = items[i++];
-        try { const r = await fn(it); if (r) out.push(r); } catch (e) { console.warn('[비짓서울] 상세 실패', it.cid, e.message); }
+        try { const r = await fn(it); if (r) out.push(r); } catch (e) { VS_FAIL.push(it.cid); }   // 서버가 500을 주는 콘텐츠는 건너뜀 (마지막에 개수만 안내)
         await sleep(60);
       }
     }));
@@ -958,6 +959,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)));
       all.push(...batch); add(batch);          // 카테고리 하나가 끝날 때마다 바로 지도에 반영
     }
+    if (VS_FAIL.length) console.info(`[비짓서울] 상세 정보를 못 받아 건너뛴 콘텐츠 ${VS_FAIL.length}건 (서버 500 오류):`, VS_FAIL.join(', '));
     writeCache(all);
   }
 
