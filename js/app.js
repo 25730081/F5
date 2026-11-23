@@ -87,6 +87,11 @@
  *  - 모든 화면: ? 툴팁을 페이지 제목과 같은 행에 배치 · 상단 여백 축소
  *  - 진행 화면: 웨이팅 남은 시간 타이머 · '코스 종료' 버튼 삭제 → 대기시간이 끝나면 자동 종료 후 만족도 조사(좋아요/별로에요)
  *  - 미니 플레이어: 남은 시간(굵고 크게) + 옆에 'N시까지 복귀' + 아래에 이동해야 할 장소
+ *
+ * v16 변경 요약
+ *  - 로그인 화면 추가: 마이페이지 · 홈 '웨이팅 시간 등록하기' · 하단 등록 버튼(그 밖에 로그인이 필요한 화면 포함)은 로그인 전이면 로그인 화면으로
+ *  - 로그인 후 원래 가려던 화면으로 이동 · '로그인 상태 유지'를 켜면 새로고침해도 유지(localStorage '0cha:auth') · 마이페이지 맨 아래 로그아웃
+ *  - 지금은 서버 없이 화면 흐름만 동작 (아이디·비밀번호가 비어 있지 않으면 로그인, 간편 로그인도 데모 로그인)
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -159,7 +164,10 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{localStorage.removeItem(KEY)}catch(e){}return null})();   // 새로고침(F5)하면 저장값을 지우고 처음 상태(홈)로 시작
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],cq:'',cdate:'all',csort:'new',sat:''};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:''};
+// 로그인: '로그인 상태 유지'를 켜면 새로고침해도 유지 (코스 저장값과 별도 키)
+const AUTH='0cha:auth';
+S.user=(()=>{try{const v=JSON.parse(localStorage.getItem(AUTH));return v&&typeof v.id=='string'&&v.id?{id:v.id.slice(0,40),via:v.via||'id'}:null}catch(e){return null}})();
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -692,23 +700,63 @@ ${S.fcatOpen?`<div class="catp"><div class="row cats" role="group" aria-label="�
 const favItem=k=>{const ad=shortAddr(P[k].addr);return `<div class="pc">${cb(P[k].c)}<div><h3>${esc(P[k].n)}</h3><p class="sub">${esc(P[k].c)}${ad?' · '+esc(ad):''}</p></div><button class="add ci del" data-fav="${k}" aria-label="${esc(P[k].n)} 관심 공간에서 삭제" title="삭제">${svg('<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>')}</button></div>`};
 const my=()=>frame(`${ttl('마이페이지','안내','만든 코스와 하트(♡)로 저장한 공간을 모아봐요. 코스를 눌러 수정하거나 다시 시작할 수 있어요.')}<p class="sub">내가 만든 코스와 저장한 공간</p><div class="seg"><button class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
 (S.seg=='c'?(S.courses.length?cRow()+`<div class="clist"><div class="dc" id="cl">${clistHtml()}</div><button class="cc2 new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><span class="cc2-info"><b class="cc2-t">새 코스 만들기</b><span class="sub">웨이팅 등록하기</span></span></button></div>`:'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
-:(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>')));
+:(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>'))+
+(S.user?`<div class="lo"><span class="sub">${esc(S.user.id)} 님으로 로그인 중</span><button class="dl" data-logout="1">로그아웃</button></div>`:''));
 // 코스 상세: 하단은 '다시 시작(주) + 장소 바꾸기' 한 줄. 삭제는 자주 쓰지 않으므로 본문 맨 아래로
 const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,locOf(c),c.wait);
  return frame(`${ttl(esc(ctitle(c)),'참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.',{back:backBtn('my','내 코스')})}<p class="cs-r">${title(c)}</p><p class="sub">${cdate(c)} · ${esc(c.area||'성수동')}</p>
 <div class="row nowrap"><div class="box mini"><span class="sub">대기</span><br><b>${fm(c.wait)}</b></div><div class="box mini"><span class="sub">코스</span><br><b>${fm(ctot(c))}</b></div><div class="box mini"><span class="sub">도보 왕복</span><br><b>${fm(cwalk(c))}</b></div></div>${h}<button class="dl" data-del="${c.id}">이 코스 삭제</button>`,
  `<div class="duo w32"><button class="btn" data-redo="${c.id}">이 코스로 다시 시작</button><button class="btn g" data-edit="${c.id}">장소 바꾸기</button></div>`)};
 
+/* ---------- 로그인 ---------- */
+// 마이페이지 · 웨이팅 시간 등록(홈 버튼 · 하단 등록 버튼) 등 로그인이 필요한 화면은 로그인 후 원래 가려던 곳으로 이동
+const NEED_LOGIN=['reg','map','confirm','prog','my','mc'];
+const lsv=(p,w)=>`<svg viewBox="0 0 24 24" width="${w||22}" height="${w||22}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const LGI={
+ user:lsv('<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c0-3.6 3.4-5.5 7.5-5.5s7.5 1.9 7.5 5.5"/>'),
+ lock:lsv('<rect x="4.5" y="10.5" width="15" height="10.5" rx="2.8"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><path d="M12 14.6v2.4"/>'),
+ eye:lsv('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+ eyeOff:lsv('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.6 3.6M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5.1-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
+ check:lsv('<path d="m5.5 12.5 4 4 9-9"/>',14),
+ arrow:lsv('<path d="M5 12h14M13 6l6 6-6 6"/>',22),
+ apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#111" d="M16.37 12.62c-.03-2.7 2.2-4 2.3-4.06-1.26-1.83-3.2-2.08-3.89-2.11-1.65-.17-3.23.97-4.07.97-.85 0-2.14-.95-3.52-.92-1.8.03-3.47 1.05-4.4 2.67-1.88 3.26-.48 8.08 1.35 10.73.9 1.29 1.96 2.74 3.36 2.69 1.35-.05 1.86-.87 3.49-.87 1.63 0 2.09.87 3.51.84 1.45-.02 2.37-1.31 3.26-2.61 1.03-1.5 1.45-2.95 1.47-3.03-.03-.01-2.83-1.08-2.86-4.3zM13.7 4.71c.74-.9 1.24-2.15 1.1-3.4-1.07.04-2.36.71-3.13 1.61-.69.8-1.29 2.07-1.13 3.3 1.19.09 2.41-.61 3.16-1.51z"/></svg>',
+ google:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.53 5.53 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.62H1.29A11.99 11.99 0 0 0 0 12c0 1.94.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/></svg>',
+ naver:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#03C75A" d="M16.27 12.85 7.38 0H0v24h7.73V11.16L16.62 24H24V0h-7.73z"/></svg>'};
+const login=()=>`<div class="lg">
+<div class="lg-top"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button></div>
+<div class="lg-main">
+<h1 class="lg-brand" aria-label="0차">${LOGO}<span aria-hidden="true">차</span></h1>
+<p class="lg-cap">로그인하고 웨이팅 시간을 0차로 채워보세요</p>
+<form id="lgf" class="lg-form" novalidate>
+<div class="lg-f"><span class="lg-ic">${LGI.user}</span><input id="lid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="아이디를 입력해주세요" value="${esc(S.lid)}" aria-label="아이디"></div>
+<div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="lpw" type="password" autocomplete="current-password" placeholder="비밀번호를 입력해주세요" value="${esc(S.lpw)}" aria-label="비밀번호"><button type="button" class="lg-eye" data-lgeye="1" aria-pressed="false" aria-label="비밀번호 보기">${LGI.eyeOff}</button></div>
+${S.lerr?`<p class="lg-err" id="lgerr" role="alert">${esc(S.lerr)}</p>`:''}
+<label class="lg-keep"><input type="checkbox" id="lkeep" ${S.lkeep?'checked':''}><span class="lg-cb" aria-hidden="true">${LGI.check}</span>로그인 상태 유지</label>
+<button type="submit" class="lg-btn">로그인 ${LGI.arrow}</button>
+</form>
+<div class="lg-links"><button data-lnk="id">아이디 찾기</button><i aria-hidden="true"></i><button data-lnk="pw">비밀번호 찾기</button><i aria-hidden="true"></i><button class="em" data-lnk="join">회원가입</button></div>
+<div class="lg-or"><span>간편 로그인</span></div>
+<div class="lg-sns"><button data-sns="apple" aria-label="Apple로 로그인">${LGI.apple}</button><button data-sns="google" aria-label="Google로 로그인">${LGI.google}</button><button data-sns="naver" aria-label="네이버로 로그인">${LGI.naver}</button></div>
+</div></div>${toastH()}`;
+const SNS={apple:'Apple',google:'Google',naver:'네이버'};
+function signIn(id,via){
+ S.user={id,via};S.lpw='';S.lerr='';
+ try{if(S.lkeep)localStorage.setItem(AUTH,JSON.stringify(S.user));else localStorage.removeItem(AUTH)}catch(e){}
+ S.i=S.after&&S.after!='login'?S.after:'home';S.after=null;
+ toast(`${id}님, 환영해요`);draw()}
+function signOut(){S.user=null;S.lid='';S.lpw='';try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
+
 /* ---------- 렌더 ---------- */
-const SC={home,reg,map,confirm:confirmScr,prog,done,my,mc};
+const SC={home,reg,map,confirm:confirmScr,prog,done,my,mc,login};
 let lastScr=null;
 function draw(){
- const root=document.getElementById('phone'),sc=root.querySelector('.body,.sheet');
+ if(!S.user&&NEED_LOGIN.includes(S.i)){S.after=S.i;S.i='login';S.lerr=''}   // 로그인 전이면 로그인 화면으로 (로그인 후 원래 화면으로 이동)
+ const root=document.getElementById('phone'),sc=root.querySelector('.body,.sheet,.lg');
  const keep=S.i===lastScr&&sc?sc.scrollTop:0,jump=S.top;          // 버튼을 눌러도 스크롤 위치 유지 (기존엔 맨 위로 튐)
  const mc0=S.i===lastScr&&root.querySelector('.mcats'),mcL=mc0?mc0.scrollLeft:0;   // 칩을 눌러도 가로 스크롤 위치 유지
  root.innerHTML=SC[S.i]();if(S.i==='map')mountKakaoMap();
  {const mc=root.querySelector('.mcats');if(mc&&mcL)mc.scrollLeft=mcL}
- const n=root.querySelector('.body,.sheet');if(n)n.scrollTop=keep;
+ const n=root.querySelector('.body,.sheet,.lg');if(n)n.scrollTop=keep;
  if(S.i==='map'&&jump&&S.focus!=null){const r=root.querySelector('[data-row="'+S.focus+'"]');if(r)r.scrollIntoView({block:'nearest'})}
  if(S.i==='reg'&&S.swait){S.swait=false;const w=root.querySelector('#waitsec');if(w)w.scrollIntoView({block:'start',behavior:'smooth'})}   // 장소를 고르면 대기시간 입력이 보이게
  lastScr=S.i;S.top=0;save();
@@ -771,13 +819,24 @@ document.addEventListener('click',e=>{
   if(navigator.share)navigator.share({text:txt}).catch(()=>{});
   else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>{toast('코스를 복사했어요');draw()},()=>{});
   else toast('이 브라우저에서는 공유를 지원하지 않아요')}
+ else if(has('lgeye')){const i=document.getElementById('lpw');if(!i)return;const show=i.type=='password';i.type=show?'text':'password';t.innerHTML=show?LGI.eye:LGI.eyeOff;t.setAttribute('aria-pressed',show);t.setAttribute('aria-label',show?'비밀번호 숨기기':'비밀번호 보기');return}
+ else if(has('lnk'))toast({id:'아이디 찾기',pw:'비밀번호 찾기',join:'회원가입'}[d.lnk]+'은(는) 준비 중이에요');
+ else if(has('sns')){signIn(SNS[d.sns]+' 사용자',d.sns);return}
+ else if(has('logout'))signOut();
  else if(has('seg'))S.seg=d.seg;
  else if(has('redo')||has('edit')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}
   const c=S.courses.find(x=>x.id==+(d.redo??d.edit));if(!c)return;loadCourse(c);S.mback=null;S.i=has('edit')?'map':'confirm'}   // 시작 → 코스 확인 / 장소 바꾸기 → 지도
  else if(has('del')){if(!confirm('이 코스를 삭제할까요?'))return;S.courses=S.courses.filter(x=>x.id!=+d.del);S.i='my'}
  else return;
  draw()});
+document.addEventListener('submit',e=>{   // 로그인 (엔터 또는 로그인 버튼)
+ if(e.target.id!='lgf')return;e.preventDefault();
+ const id=S.lid.trim(),err=(m,f)=>{S.lerr=m;draw();const el=document.getElementById(f);if(el)el.focus()};
+ if(!id)return err('아이디를 입력해주세요','lid');
+ if(!S.lpw)return err('비밀번호를 입력해주세요','lpw');
+ signIn(id.slice(0,40),'id')});
 document.addEventListener('input',e=>{
+ if(e.target.id=='lid'||e.target.id=='lpw'){S[e.target.id]=e.target.value;if(S.lerr){S.lerr='';const el=document.getElementById('lgerr');if(el)el.remove()}}
  if(e.target.id=='q'){S.q=e.target.value;refreshSearch()}
  if(e.target.id=='cq'){S.cq=e.target.value;const el=document.getElementById('cl');if(el)el.innerHTML=clistHtml()}   // 입력창은 다시 그리지 않고 목록만 갱신
  if(e.target.id=='wq'){S.wq=e.target.value;if(S.res.length||S.rstat)clearRes();suggest()}   // 다시 입력하면 이전 검색 결과 마커를 지우고 관련 장소 목록으로
@@ -787,6 +846,7 @@ document.addEventListener('keydown',e=>{
  else if(e.key=='Escape'&&S.nopen){S.nopen=false;draw()}
 });
 document.addEventListener('change',e=>{   // 입력을 마치면 범위(5~240)에 맞춰 표시값 정리
+ if(e.target.id=='lkeep'){S.lkeep=e.target.checked;return}
  if(e.target.id=='sort'){S.sort=e.target.value;draw();return}
  if(e.target.id=='fsort'){S.fsort=e.target.value;draw();return}
  if(e.target.id=='cperiod'){S.cdate=e.target.value;draw();return}
