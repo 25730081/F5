@@ -168,7 +168,7 @@ const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'li
 // 로그인: '로그인 상태 유지'를 켜면 새로고침해도 유지 (코스 저장값과 별도 키)
 const AUTH='0cha:auth';
 // 회원정보 저장소: 구글 시트(member) ← Apps Script 웹앱 (컬럼: userId | password(해시) | createdate)
-const MEMBER_API='https://script.google.com/macros/s/AKfycbwI_SYv8pnkyX4ooXy_2yeEBy2tpuHlEd7lKN-0cA9Hcq_xFW0-8-UD0ldN5Jd31q49yA/exec';
+const MEMBER_API='https://script.google.com/macros/s/AKfycbyoKyI4dQK8vx73z06E0QxpaneA3qi429dzX4G8hO2js_bsdhsLsKmwJibgiC1B9ish/exec';
 async function memberApi(payload){
  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),15000);
  try{
