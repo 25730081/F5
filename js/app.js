@@ -94,19 +94,23 @@ const AREAS=[
  {n:'서울숲',lat:37.5444,lng:127.0374},
  {n:'홍대입구',lat:37.5572,lng:126.9245},
  {n:'강남역',lat:37.4979,lng:127.0276}];
-const CAT_ORDER=['서점','도서관','공원','카페','쇼핑'];
-const CE={서점:'📚',도서관:'🏛️',공원:'🌳',카페:'☕',쇼핑:'🛍️'};
+const CAT_ORDER=['서점','도서관','공원','카페','쇼핑','체험관광','전시회','미술관','박물관'];
+const CE={서점:'📚',도서관:'🏛️',공원:'🌳',카페:'☕',쇼핑:'🛍️',체험관광:'🎨',전시회:'🖼️',미술관:'🖌️',박물관:'🏺'};
 const BUF=10;             // 복귀 여유 시간(분)
 const DSTAY=10;           // 담을 때 가정하는 기본 체류 시간(분) — 시간 부족 계산에만 쓰고 STEP 2에는 표시하지 않음
 const COL=['#1a73e8','#1e8e3e','#c25e00','#8e24aa','#00838f','#c2185b','#5d4037','#6d4c41'];   // 선택 순서별 색 (흰 글자 대비 확보 · 웨이팅 장소 핀의 빨강과 겹치지 않게)
 const colr=j=>COL[j%COL.length];
-const CC={서점:'#4f6bed',도서관:'#8b5cf6',공원:'#16a56b',카페:'#e8803a',쇼핑:'#e5528a'};   // 카테고리 색
+const CC={서점:'#4f6bed',도서관:'#8b5cf6',공원:'#16a56b',카페:'#e8803a',쇼핑:'#e5528a',체험관광:'#d97706',전시회:'#0ea5e9',미술관:'#7c3aed',박물관:'#0f766e'};   // 카테고리 색
 const ICP={
  서점:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3M9 7.5h6"/>',
  도서관:'<path d="M3.5 9.5 12 4l8.5 5.5z"/><path d="M6 12v6M10 12v6M14 12v6M18 12v6M4 20.5h16"/>',
  공원:'<path d="M12 21v-6.5"/><path d="M12 14.5c-3.4 0-6-2.4-6-5.4 0-1.8 1-3.2 2.4-3.9C9 3.7 10.3 3 12 3s3 .7 3.6 2.2C17 5.9 18 7.3 18 9.1c0 3-2.6 5.4-6 5.4z"/>',
  카페:'<path d="M5 9h11v4.5A5.5 5.5 0 0 1 10.5 19 5.5 5.5 0 0 1 5 13.5z"/><path d="M16 10.5h1.5a2.3 2.3 0 0 1 0 4.6H16M8 3.5v2M12 3.5v2"/>',
  쇼핑:'<path d="M5.5 8h13l-1 12.5h-11z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/>',
+ 체험관광:'<path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>',
+ 전시회:'<rect x="4" y="5" width="16" height="12" rx="1.5"/><path d="M8 21h8M12 17v4"/>',
+ 미술관:'<path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-1.8 0-1.3-1.1-1.5-1.1-2.7 0-1 .8-1.5 1.8-1.5H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r=".9"/><circle cx="10.5" cy="7.2" r=".9"/><circle cx="15" cy="7.8" r=".9"/>',
+ 박물관:'<path d="M4 9.5 12 4l8 5.5"/><path d="M5.5 9.5h13M7 12v6M12 12v6M17 12v6M4 20.5h16"/>',
  기타:'<circle cx="12" cy="12" r="5"/>'};
 const ico=c=>`<svg class="ic2" viewBox="0 0 24 24" aria-hidden="true">${ICP[c]||ICP.기타}</svg>`;
 const cb=c=>`<span class="cb" style="--c:${CC[c]||'#667085'}">${ico(c)}</span>`;   // 테두리 있는 장소 배지
@@ -122,9 +126,8 @@ const SOURCES=[
  {url:'data/seoul_library_100.json',pick:d=>d.libraries,
   map:x=>({n:x.name,c:'도서관',e:CE.도서관,s:40,lat:x.coordinates&&x.coordinates.latitude,lng:x.coordinates&&x.coordinates.longitude,addr:x.address,tel:x.phone,url:x.website,closed:x.closedDays,hours:x.hours})},
  {url:'data/seoul_park_130.json',pick:d=>d.DATA,
-  map:x=>({n:x.park_nm,c:'공원',e:CE.공원,s:40,lat:num(x.ycrd),lng:num(x.xcrd),addr:x.park_addr,tel:x.telno,url:x.url})},
- {url:'data/sample_cafe_shop.json',pick:d=>d.places,
-  map:x=>({n:x.name,c:x.cat,e:CE[x.cat],s:x.cat=='카페'?40:50,lat:x.lat,lng:x.lng,addr:x.addr,sample:true})}];
+  map:x=>({n:x.park_nm,c:'공원',e:CE.공원,s:40,lat:num(x.ycrd),lng:num(x.xcrd),addr:x.park_addr,tel:x.telno,url:x.url})}];
+ // 카페·쇼핑·체험관광·전시회·미술관·박물관은 파일 맨 아래 비짓서울 API 코드가 직접 받아 addPlaces()로 추가
 
 function addPlaces(list,fromJson){
  list.forEach(p=>{
@@ -285,6 +288,7 @@ function todayHrs(p){
   return t&&t.open?mk(t):{t:'',st:'정보 없음',c:''};
  }
  if(p.c=='공원')return{t:'상시 개방',st:'',c:''};
+ if(p.hrsTxt)return{t:p.hrsTxt,st:'',c:''};   // 비짓서울 장소: 이용시간 원문(자유 텍스트) 그대로 표시
  return{t:'',st:'정보 없음',c:''};
 }
 function openState(p){
@@ -377,7 +381,7 @@ const ringSvg=()=>{const R=48,C=2*Math.PI*R,r=rem(),over=r<0;let acc=0;
 // STEP 3 여유 시간: 원형 타이머 모양 (선택 순서별 색 호 + 가운데 복귀 여유)
 const ringBar=()=>`<div class="rb">${ringSvg()}<div class="rbs"><div><span class="sub">대기시간</span><b>${fm(S.wait)}</b></div><div><span class="sub">코스 사용</span><b>${fm(total())}</b></div>${S.sel.length?`<div class="rbl">${S.sel.map((k,j)=>`<span class="dot sm" style="background:${colr(j)}">${j+1}</span>`).join('')}</div>`:''}</div></div>`;
 const cats=()=>CAT_ORDER.filter(c=>c=='카페'||P.some(p=>p.c==c));   // 카페는 API 연결 전이라도 항상 표시
-const CATS4=['서점','도서관','공원','카페'];
+const CATS4=['서점','도서관','공원','카페','쇼핑','체험관광','전시회','미술관','박물관'];   // 지도 안 칩 · 관심 공간 필터 (지도 칩은 가로 스크롤)
 // 장소 종류 필터: 지도 안(위쪽 칩). 누르면 그 종류만 표시, 같은 칩을 다시 누르거나 '전체'를 누르면 전체
 const mapCats=()=>`<div class="mcats" role="group" aria-label="장소 종류 (누르면 해당 장소만 지도에 표시)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div>`;
 // 목록 위: 장소 이름 검색창(예전 필터 자리) + 영업중 · 정렬
@@ -535,8 +539,9 @@ function mountKakaoMap(){
  }))kFail(ph0);
 }
 // 장소 상세 (행을 누르면 아래로 펼침): 주소 · 전화 · 운영/휴무(공휴일 포함) · 도보 시간(참고)
-const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='서점'?p.closedTxt:p.c=='도서관'?p.closed:'';
- return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div></dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
+const vrow=(t,v)=>v?`<div><dt>${t}</dt><dd>${esc(v)}</dd></div>`:'';
+const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='도서관'?p.closed:(p.closedTxt||''),su=safeUrl(p.site);
+ return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('기간',p.period)}${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}${vrow('영업일',p.bizDays)}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${su?`<div><dt>홈페이지</dt><dd><a href="${esc(su)}" target="_blank" rel="noopener noreferrer">${esc(su.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,''))}</a></dd></div>`:''}${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',p.desc)}${vrow('태그',p.tags)}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
 // 관심 공간 하트 버튼 (마이페이지 '관심 공간'에 저장/해제)
 const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${fv?'♥':'♡'}</button>`};
 const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cb(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">도보 ${tt(k)}분${!S.sel.includes(k)&&!fit(k)?' · 시간 부족':''}</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
@@ -830,3 +835,134 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
  else if(k=='st2')el.textContent=stageInfo().s;
  else if(k=='hero')el.className='nowc '+banner().c;
  else if(k=='banner'){const b=banner();el.className='bn '+b.c;el.textContent=b.t;el.hidden=b.c=='ok'}})},1000);
+
+/* ===== 비짓서울 API 연동 (v15) =====
+ * 앱을 열면 비짓서울 API에서 장소를 받아 addPlaces()로 목록에 추가합니다 (JSON 파일 없음).
+ * 받아온 장소는 서점·도서관·공원과 똑같이 지도 핀 · 장소 이름 검색 · 카테고리 버튼 · 담기에 쓰입니다.
+ *   버튼: 카페 · 쇼핑 · 체험관광 · 전시회(전시회+행사) · 미술관(미술관/화랑) · 박물관
+ * 순서: 카테고리 목록 → 카테고리별 콘텐츠 목록(좌표 없음) → 장소마다 상세 조회(좌표·주소·전화·시간 등) → 추가
+ * 결과는 localStorage에 24시간 캐시 (카테고리 구성을 바꾸면 VS_CKEY 의 숫자를 올리세요)
+ */
+(function () {
+  const API_KEY = '4f825688-9ac1-4d47-b040-38c7a4aadc07';
+  const BASE = 'https://api-call.visitseoul.net/api/v1';
+  const TTL = 24 * 3600 * 1000;
+  const VS_CKEY = 'vs:places:v3';
+  const CONC = 4;                    // 상세 조회 동시 호출 수
+
+  // c = 앱 버튼 이름 / codes = 코드 직접 지정 / under·mid·name = 카테고리 경로(예: "문화관광 > 전시시설 > 박물관")에서
+  // 최상위 이름이 under, (선택) 두 번째 이름이 mid, 마지막 이름이 name 에 맞는 카테고리를 자동 선택 / not = 제외 / max = 최대 개수(최신순)
+  // ※ 경로가 한글인지 영어인지 확실치 않아 둘 다 맞게 써둠. 콘솔의 '[비짓서울] 선택된 카테고리' 로그를 보고 조정
+  const CULT = /문화관광|culture/i, EXH = /전시시설|exhibition/i, FEST = /축제|공연|행사|festival|event/i;
+  const PICK = [
+    { c: '쇼핑', codes: ['Cu8e6t5'], max: 600 },
+    { c: '체험관광', codes: ['Cc9i5o2'], max: 300 },
+    { c: '카페', under: /음식|food/i, name: /카페|cafe|coffee/i, max: 600 },
+    { c: '전시회', under: FEST, name: /전시|exhibition|^행사$|^events?$/i, max: 400 },   // 전시회와 행사를 '전시회' 하나로 통일
+    { c: '미술관', under: CULT, mid: EXH, name: /미술관|화랑|gallery|\bart\b/i, max: 300 },
+    { c: '박물관', under: CULT, mid: EXH, name: /박물관|museum/i, not: /미술관|화랑|gallery|\bart\b/i, max: 300 },
+  ];
+
+  const H = { 'Accept': 'application/json;charset=UTF-8', 'Content-Type': 'application/json;charset=UTF-8', 'VISITSEOUL-API-KEY': API_KEY };
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function call(path, o) {
+    const { method = 'POST', body } = o || {};
+    for (let t = 0; t < 3; t++) {
+      const r = await fetch(BASE + path, { method, headers: H, body: body && JSON.stringify(body) });
+      if (r.ok) return r.json();
+      if (r.status === 429 || r.status >= 500) { await sleep(800 * (t + 1)); continue; }   // 호출 제한/서버 오류는 재시도
+      const e = new Error(r.status + ' ' + method + ' ' + path); e.status = r.status; throw e;
+    }
+    throw new Error('재시도 초과 ' + path);
+  }
+
+  async function listAll(code, limit) {
+    const out = [];
+    for (let p = 1; out.length < limit; p++) {
+      const d = await call('/contents/list', { body: { com_ctgry_sn: code, lang_code_id: 'ko', sort_type: 'latest', page_no: p } });
+      out.push(...d.data);
+      if (!d.data.length || out.length >= d.paging.total_count) break;
+    }
+    return out.slice(0, limit);
+  }
+
+  // 문서에 상세 조회가 POST/GET 으로 섞여 표기돼 있어 POST 먼저, 안 되면 GET
+  async function detail(cid) {
+    try { return (await call('/contents/info', { body: { cid } })).data; }
+    catch (e) {
+      if (e.status === 405 || e.status === 404) return (await call('/contents/info?cid=' + encodeURIComponent(cid), { method: 'GET' })).data;
+      throw e;
+    }
+  }
+
+  const today = () => new Date().toISOString().slice(0, 10).replace(/-/g, '.');   // 'YYYY.MM.DD'
+  const clean = (s, n) => String(s == null ? '' : s).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim().slice(0, n);
+  const lines = (s, n) => String(s == null ? '' : s).replace(/\r/g, '').split('\n').map(v => v.trim()).filter(Boolean).join(' / ').slice(0, n);
+
+  // 상세 응답 → 앱 장소 형식 (정보는 상세 패널에 전부 표시)
+  function toPlace(c, d) {
+    const x = d.extra || {}, t = d.traffic || {}, lat = +t.map_position_y, lng = +t.map_position_x;
+    if (!lat || !lng) return null;
+    if (d.schdul_info_endde && d.schdul_info_endde < today()) return null;   // 이미 끝난 전시/행사
+    const fee = x.trrsrt_use_chrge === 'F' ? '무료' : x.trrsrt_use_chrge === 'C' ? '유료' : '';
+    return {
+      n: d.post_sj, c, e: CE[c], lat, lng,
+      addr: t.new_adres || t.adres || '', tel: x.cmmn_telno || '', site: x.cmmn_hmpg_url || '',
+      hrsTxt: lines(x.cmmn_use_time, 200), closedTxt: lines(x.closed_days, 120), bizDays: lines(x.business_days, 80),
+      period: d.schdul_info_bgnde ? d.schdul_info_bgnde + (d.schdul_info_endde ? ' ~ ' + d.schdul_info_endde : '') : '',
+      fee: [fee, clean(x.trrsrt_use_chrge_guidance, 160)].filter(Boolean).join(' · '),
+      subway: clean(t.subway_info, 120), important: clean(x.cmmn_important, 160),
+      access: Array.isArray(x.disabled_facility) ? x.disabled_facility.join(', ') : '',
+      desc: clean(d.post_desc || d.sumry, 240), tags: Array.isArray(d.tag) ? d.tag.slice(0, 8).map(v => '#' + v).join(' ') : '',
+    };
+  }
+
+  async function pool(items, fn) {
+    const out = []; let i = 0;
+    await Promise.all(Array.from({ length: CONC }, async () => {
+      while (i < items.length) {
+        const it = items[i++];
+        try { const r = await fn(it); if (r) out.push(r); } catch (e) { console.warn('[비짓서울] 상세 실패', it.cid, e.message); }
+        await sleep(60);
+      }
+    }));
+    return out;
+  }
+
+  // 받은 장소를 앱에 추가. 입력창이 있는 화면은 다시 그리지 않음(타이핑 끊김 방지)
+  function add(list) {
+    if (!list.length) return;
+    addPlaces(list, false);
+    if (S.i === 'map') refreshMap(); else if (S.i === 'home') draw();
+  }
+
+  const readCache = () => { try { const v = JSON.parse(localStorage.getItem(VS_CKEY)); return v && Date.now() - v.t < TTL && Array.isArray(v.places) ? v.places : null; } catch (e) { return null; } };
+  const writeCache = places => { try { localStorage.setItem(VS_CKEY, JSON.stringify({ t: Date.now(), places })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
+
+  async function run() {
+    const cached = readCache();
+    if (cached) { add(cached); return; }
+    const cats = (await call('/category/list', { method: 'GET' })).data;
+    const all = [], seen = new Set();
+    for (const p of PICK) {
+      const codes = [...(p.codes || [])];
+      if (p.name) cats.forEach(x => {
+        const s = x.ctgry_path.split('>').map(v => v.trim()), last = s[s.length - 1];
+        if (s.length > 1 && p.under.test(s[0]) && (!p.mid || (s.length > 2 && p.mid.test(s[1]))) && p.name.test(last) && !(p.not && p.not.test(last))) codes.push(x.com_ctgry_sn);
+      });
+      console.info('[비짓서울] 선택된 카테고리', p.c, codes);
+      let items = [];
+      for (const code of [...new Set(codes)]) items.push(...await listAll(code, p.max - items.length));
+      items = items.filter(x => !seen.has(x.cid)); items.forEach(x => seen.add(x.cid));
+      const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)));
+      all.push(...batch); add(batch);          // 카테고리 하나가 끝날 때마다 바로 지도에 반영
+    }
+    writeCache(all);
+  }
+
+  run().catch(e => {
+    console.error('[비짓서울]', e);
+    if (typeof liveToast === 'function') liveToast('비짓서울 장소를 불러오지 못했어요');
+  });
+})();
