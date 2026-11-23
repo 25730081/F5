@@ -140,6 +140,7 @@ function addPlaces(list,fromJson){
   if(!p.n||p.lat==null||p.lng==null||p.lat<33||p.lat>39||p.lng<124||p.lng>132)return;   // 좌표 없거나 범위 밖이면 제외
   P.push({e:'📍',...p,s:DSTAY,j:!!fromJson});   // 출처별 s 값과 상관없이 기본 체류는 DSTAY
  });
+ resolveFavs();   // 저장해 둔 관심 공간 중 방금 올라온 장소가 있으면 복원
 }
 function addApiPlaces(list){addPlaces(list,false);draw()}
 
@@ -178,6 +179,17 @@ async function memberApi(payload){
  finally{clearTimeout(tm)}
 }
 S.user=(()=>{try{const v=JSON.parse(localStorage.getItem(AUTH));return v&&typeof v.id=='string'&&v.id?{id:v.id.slice(0,40),via:v.via||'id'}:null}catch(e){return null}})();
+// 관심 공간: 계정별 localStorage 저장 (같은 브라우저라도 로그인한 계정마다 키가 따로 생김)
+//   키: 0cha:favs:<로그인방식>:<아이디> / 값: ["카테고리|장소명", ...]  (장소 ID는 로드 순서에 따라 바뀔 수 있어 이름으로 저장)
+const FAVP='0cha:favs:';
+const favKey=()=>S.user?FAVP+(S.user.via||'id')+':'+encodeURIComponent(S.user.id):null;
+const favId=p=>p.c+'|'+p.n;
+let favPend=[];   // 저장은 돼 있지만 아직 장소 목록(API)에 안 올라온 항목 — 올라오면 자동 복원
+function loadFavNames(){favPend=[];const k=favKey();if(!k)return;try{const v=JSON.parse(localStorage.getItem(k));if(Array.isArray(v))favPend=v.filter(x=>typeof x=='string').slice(0,500)}catch(e){}}
+function resolveFavs(){if(!S.user||!favPend.length)return;const rest=[];favPend.forEach(s=>{const k=P.findIndex(p=>favId(p)==s);if(k>=0){if(!S.favs.includes(k))S.favs.push(k)}else rest.push(s)});favPend=rest}
+function saveFavs(){const k=favKey();if(!k)return;try{localStorage.setItem(k,JSON.stringify([...S.favs.map(i=>favId(P[i])),...favPend]))}catch(e){}}
+function resetFavs(){S.favs=[];loadFavNames();resolveFavs()}   // 계정이 바뀌거나 로그인/로그아웃할 때
+loadFavNames();   // 새로고침 후에도 '로그인 상태 유지'면 그 계정의 관심 공간을 읽어옴
 (function(){const v=SAVED;if(!v||typeof v!='object')return;
  if(Number.isFinite(v.wait))S.wait=Math.min(300,Math.max(10,v.wait));
  if(Array.isArray(v.cats))S.cats=v.cats.filter(c=>CAT_ORDER.includes(c));
@@ -194,13 +206,13 @@ S.user=(()=>{try{const v=JSON.parse(localStorage.getItem(AUTH));return v&&typeof
 })();
 const nm=a=>a.map(k=>P[k].n);
 const nmap=m=>Object.fromEntries(Object.entries(m).filter(([k])=>P[k]).map(([k,v])=>[P[k].n,v]));
-function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,view:S.view,sort:S.sort,onow:S.onow,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay),favs:nm(S.favs),courses:S.courses.map(c=>({...c,sel:nm(c.sel),stay:nmap(c.stay)}))}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({wait:S.wait,cats:S.cats,rest:S.rest,area:S.area,loc:S.loc,view:S.view,sort:S.sort,onow:S.onow,active:S.active,start:S.start,editId:S.editId,curId:S.curId,sel:nm(S.sel),stay:nmap(S.stay),courses:S.courses.map(c=>({...c,sel:nm(c.sel),stay:nmap(c.stay)}))}))}catch(e){}}
 // 저장된 장소 이름 → 현재 장소 ID (데이터 로드 후 복원)
 function restore(){
  const v=SAVED;if(!v||!Array.isArray(v.courses))return false;
  const ids=a=>(Array.isArray(a)?a:[]).map(n=>P.findIndex(p=>p.n==n)).filter(k=>k>=0);
  const sm=m=>Object.fromEntries(Object.entries(m||{}).map(([n,x])=>[P.findIndex(p=>p.n==n),x]).filter(([k])=>k>=0));
- S.sel=ids(v.sel);S.stay=sm(v.stay);S.favs=ids(v.favs);
+ S.sel=ids(v.sel);S.stay=sm(v.stay);
  S.courses=v.courses.map(c=>({...c,sel:ids(c.sel),stay:sm(c.stay)})).filter(c=>c.sel.length);
  return true;
 }
@@ -764,11 +776,11 @@ ${S.jerr?`<p class="lg-err" id="jgerr" role="alert">${esc(S.jerr)}</p>`:''}
 </div></div>${toastH()}`;
 const SNS={apple:'Apple',google:'Google',naver:'네이버'};
 function signIn(id,via){
- S.user={id,via};S.lpw='';S.lerr='';
+ S.user={id,via};S.lpw='';S.lerr='';resetFavs();
  try{if(S.lkeep)localStorage.setItem(AUTH,JSON.stringify(S.user));else localStorage.removeItem(AUTH)}catch(e){}
  S.i=S.after&&S.after!='login'?S.after:'home';S.after=null;
  toast(`${id}님, 환영해요`);draw()}
-function signOut(){S.user=null;S.lid='';S.lpw='';try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
+function signOut(){S.user=null;S.lid='';S.lpw='';S.favs=[];favPend=[];try{localStorage.removeItem(AUTH)}catch(e){}S.i='home';toast('로그아웃했어요')}
 
 /* ---------- 렌더 ---------- */
 const SC={home,reg,map,confirm:confirmScr,prog,done,my,mc,login,join:joinScr};
@@ -824,7 +836,7 @@ document.addEventListener('click',e=>{
  else if(has('wadj'))S.wadj=!S.wadj;
  else if(has('live')){S.wait=Math.min(300,Math.max(10,S.wait+ +d.live));toast(`대기시간을 ${d.live>0?'+':'−'}10분 조정했어요 · 복귀 ${backAt()}`)}
  else if(has('focus')){if(S.focus===+d.focus&&t.closest('.lr'))S.focus=null;else{S.focus=+d.focus;S.top=1;panNext=true}}   // 행을 다시 누르면 상세 접기
- else if(has('fav')){const k=+d.fav,had=S.favs.includes(k);S.favs=had?S.favs.filter(x=>x!=k):[...S.favs,k];toast(had?'관심 공간에서 삭제했어요':'관심 공간에 저장했어요 · 마이페이지에서 볼 수 있어요')}
+ else if(has('fav')){const k=+d.fav,had=S.favs.includes(k);S.favs=had?S.favs.filter(x=>x!=k):[...S.favs,k];saveFavs();toast(had?'관심 공간에서 삭제했어요':'관심 공간에 저장했어요 · 마이페이지에서 볼 수 있어요')}
  else if(has('st')){const[k,m]=d.st.split(':').map(Number);S.stay[k]=Math.min(240,Math.max(dstay(),stay(k)+m))}
  else if(has('rm'))S.sel=S.sel.filter(x=>x!=+d.rm);
  else if(has('start')){S.curId=saveCourse();S.active=true;S.start=Date.now();S.nfired={};S.nlog=[];S.i='prog'}
