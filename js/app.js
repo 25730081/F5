@@ -866,7 +866,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const API_KEY = '4f825688-9ac1-4d47-b040-38c7a4aadc07';
   const BASE = 'https://api-call.visitseoul.net/api/v1';
   const TTL = 24 * 3600 * 1000;
-  const VS_CKEY = 'vs:places:v4';
+  const VS_CKEY = 'vs:places:v3';
   const CONC = 2;                    // 상세 조회 동시 호출 수 (호출 제한에 걸리면 더 줄이세요)
 
   // c = 앱 버튼 이름 / codes = 코드 직접 지정 / under·mid·name = 카테고리 경로(예: "문화관광 > 전시시설 > 박물관")에서
@@ -892,6 +892,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       const r = await fetch(BASE + path, { method, headers: H, body: body && JSON.stringify(body) });
       if (r.ok) return r.json();
       last = r.status;
+      if (r.status >= 500 && !call.logged) { call.logged = 1; r.clone().text().then(t => console.warn('[비짓서울] 첫 서버 오류 응답:', r.status, path, t.slice(0, 300))).catch(() => {}); }   // 원인 확인용: 서버가 보낸 오류 내용을 1번만 출력
       if (r.status === 429 || (r500 && r.status >= 500)) {   // 호출 제한(429)·서버 오류는 점점 길게 쉬었다가 재시도. 상세 조회의 500은 그 콘텐츠 자체 오류라 재시도 안 함
         const ra = +r.headers.get('Retry-After');
         await sleep(ra > 0 ? Math.min(ra, 30) * 1000 : 1500 * 2 ** t);
@@ -993,9 +994,13 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
       let items = [];
       for (const code of [...new Set(codes)]) items.push(...await listAll(code, p.max - items.length));
       items = items.filter(x => !seen.has(x.cid)); items.forEach(x => seen.add(x.cid));
+      const f0 = VS_FAIL.length;
       const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)),
         async it => toPlace(p.c, (await call('/contents/info?cid=' + encodeURIComponent(it.cid), { method: 'GET', r500: false })).data));
-      add(batch); if (batch.length) writeCache(p.c, batch);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
+      add(batch);
+      const nf = VS_FAIL.length - f0;
+      if (batch.length && nf <= items.length * 0.3) writeCache(p.c, batch);   // 상세 조회가 많이 실패한 카테고리는 저장하지 않음 → 다음에 다시 시도
+      else console.warn(`[비짓서울] ${p.c}: 상세 조회 실패 ${nf}건 / 전체 ${items.length}건 → 캐시하지 않음`);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
     } catch (e) {
       failed.push(p.c);                        // 이 카테고리만 건너뛰고 나머지는 계속 (캐시 안 함 → 다음에 다시 시도)
       console.error('[비짓서울] 카테고리 실패:', p.c, e.message);
