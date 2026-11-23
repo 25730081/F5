@@ -705,7 +705,9 @@ let lastScr=null;
 function draw(){
  const root=document.getElementById('phone'),sc=root.querySelector('.body,.sheet');
  const keep=S.i===lastScr&&sc?sc.scrollTop:0,jump=S.top;          // 버튼을 눌러도 스크롤 위치 유지 (기존엔 맨 위로 튐)
+ const mc0=S.i===lastScr&&root.querySelector('.mcats'),mcL=mc0?mc0.scrollLeft:0;   // 칩을 눌러도 가로 스크롤 위치 유지
  root.innerHTML=SC[S.i]();if(S.i==='map')mountKakaoMap();
+ {const mc=root.querySelector('.mcats');if(mc&&mcL)mc.scrollLeft=mcL}
  const n=root.querySelector('.body,.sheet');if(n)n.scrollTop=keep;
  if(S.i==='map'&&jump&&S.focus!=null){const r=root.querySelector('[data-row="'+S.focus+'"]');if(r)r.scrollIntoView({block:'nearest'})}
  if(S.i==='reg'&&S.swait){S.swait=false;const w=root.querySelector('#waitsec');if(w)w.scrollIntoView({block:'start',behavior:'smooth'})}   // 장소를 고르면 대기시간 입력이 보이게
@@ -817,6 +819,23 @@ const dragEnd=e=>{
  else cards.forEach(c=>{c.style.transform='';c.classList.remove('drag','sh')});
 };
 document.addEventListener('pointerup',dragEnd);document.addEventListener('pointercancel',dragEnd);
+
+/* ---------- 지도 위 칩 줄: 마우스로 끌어서 좌우로 넘기기 (터치는 손가락으로 밀면 기본 동작) ---------- */
+const MC={el:null,x0:0,l0:0,id:null,moved:false};
+document.addEventListener('pointerdown',e=>{
+ if(e.pointerType!=='mouse'||e.button!==0)return;
+ const el=e.target.closest&&e.target.closest('.mcats');if(!el)return;
+ MC.el=el;MC.x0=e.clientX;MC.l0=el.scrollLeft;MC.id=e.pointerId;MC.moved=false;
+});
+document.addEventListener('pointermove',e=>{
+ if(!MC.el||e.pointerId!==MC.id)return;
+ const dx=e.clientX-MC.x0;
+ if(!MC.moved&&Math.abs(dx)<5)return;           // 5px 넘게 움직여야 드래그로 인정 (그 전엔 그냥 클릭)
+ MC.moved=true;MC.el.classList.add('drg');MC.el.scrollLeft=MC.l0-dx;
+});
+const mcEnd=e=>{if(!MC.el||e.pointerId!==MC.id)return;MC.el.classList.remove('drg');MC.el=null;setTimeout(()=>{MC.moved=false},0)};
+document.addEventListener('pointerup',mcEnd);document.addEventListener('pointercancel',mcEnd);
+document.addEventListener('click',e=>{if(MC.moved){e.stopPropagation();e.preventDefault();MC.moved=false}},true);   // 끌고 놓을 때 칩이 눌리지 않게
 document.addEventListener('keydown',e=>{   // 키보드: 핸들에서 ↑↓
  const h=e.target.closest&&e.target.closest('[data-drag]');if(!h||!['ArrowUp','ArrowDown'].includes(e.key))return;
  e.preventDefault();const j=+h.dataset.drag,n=j+(e.key=='ArrowUp'?-1:1);if(n<0||n>=S.sel.length)return;
@@ -847,7 +866,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const API_KEY = '4f825688-9ac1-4d47-b040-38c7a4aadc07';
   const BASE = 'https://api-call.visitseoul.net/api/v1';
   const TTL = 24 * 3600 * 1000;
-  const VS_CKEY = 'vs:places:v3';
+  const VS_CKEY = 'vs:places:v4';
   const CONC = 2;                    // 상세 조회 동시 호출 수 (호출 제한에 걸리면 더 줄이세요)
 
   // c = 앱 버튼 이름 / codes = 코드 직접 지정 / under·mid·name = 카테고리 경로(예: "문화관광 > 전시시설 > 박물관")에서
@@ -966,12 +985,17 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
         if (s.length > 1 && p.under.test(s[0]) && (!p.mid || (s.length > 2 && p.mid.test(s[1]))) && p.name.test(last) && !(p.not && p.not.test(last))) codes.push(x.com_ctgry_sn);
       });
       console.info('[비짓서울] 선택된 카테고리', p.c, codes);
+      if (![...new Set(codes)].length) {       // 카테고리를 하나도 못 찾으면 빈 결과를 캐시하지 않고 실패 처리 + 후보 경로를 콘솔에 출력
+        console.warn('[비짓서울] ' + p.c + ' 카테고리를 못 찾았어요. 아래 후보 경로를 보고 PICK 의 under/mid/name 을 조정하세요:',
+          cats.filter(x => /전시|박물|미술|화랑|축제|공연|행사|음식|카페|museum|gallery|exhibit|festival|event|food|cafe/i.test(x.ctgry_path)).map(x => x.com_ctgry_sn + '  ' + x.ctgry_path));
+        throw new Error('카테고리 없음');
+      }
       let items = [];
       for (const code of [...new Set(codes)]) items.push(...await listAll(code, p.max - items.length));
       items = items.filter(x => !seen.has(x.cid)); items.forEach(x => seen.add(x.cid));
       const batch = await pool(items, async it => toPlace(p.c, await detail(it.cid)),
         async it => toPlace(p.c, (await call('/contents/info?cid=' + encodeURIComponent(it.cid), { method: 'GET', r500: false })).data));
-      add(batch); writeCache(p.c, batch);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
+      add(batch); if (batch.length) writeCache(p.c, batch);      // 카테고리 하나가 끝날 때마다 바로 지도에 반영 + 저장
     } catch (e) {
       failed.push(p.c);                        // 이 카테고리만 건너뛰고 나머지는 계속 (캐시 안 함 → 다음에 다시 시도)
       console.error('[비짓서울] 카테고리 실패:', p.c, e.message);
