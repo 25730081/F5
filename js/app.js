@@ -95,7 +95,8 @@
  *
  * v17 변경 요약
  *  - 박물관·미술관·쇼핑은 data/seoul_museum.json · seoul_gallery.json · seoul_shopping.json 에서 읽음 (장소 상세에 '분류' 표시)
- *  - 비짓서울 API는 카페 · 체험관광(공예체험 Cq3m6s6 · 전통체험 Cd0m9o0) · 전시회(Exhibitions Cu9u5z7)만 호출 · 마트/창고형 제외
+ *  - 비짓서울 API는 카페 · 체험관광(공예체험 Cq3m6s6 · 전통체험 Cd0m9o0)만 호출 · 마트/창고형 제외
+ *  - 전시회 버튼·데이터 삭제 (비짓서울 전시회 데이터가 대부분 2022~2023년에 끝난 전시라 제외)
  *  - 계정별 저장 정리: 관심 공간·내 코스를 계정 키로 저장 · 로그아웃하면 화면에서만 지우고 다시 로그인하면 복원
  *    장소키에 좌표 포함(같은 이름 지점 구분) · 장소가 늦게 올라와도 저장된 코스가 잘리지 않음
  */
@@ -105,13 +106,13 @@ const AREAS=[
  {n:'서울숲',lat:37.5444,lng:127.0374},
  {n:'홍대입구',lat:37.5572,lng:126.9245},
  {n:'강남역',lat:37.4979,lng:127.0276}];
-const CAT_ORDER=['서점','도서관','공원','카페','쇼핑','체험관광','전시회','미술관','박물관'];
-const CE={서점:'📚',도서관:'🏛️',공원:'🌳',카페:'☕',쇼핑:'🛍️',체험관광:'🎨',전시회:'🖼️',미술관:'🖌️',박물관:'🏺'};
+const CAT_ORDER=['서점','도서관','공원','카페','쇼핑','체험관광','미술관','박물관'];
+const CE={서점:'📚',도서관:'🏛️',공원:'🌳',카페:'☕',쇼핑:'🛍️',체험관광:'🎨',미술관:'🖌️',박물관:'🏺'};
 const BUF=10;             // 복귀 여유 시간(분)
 const DSTAY=10;           // 담을 때 가정하는 기본 체류 시간(분) — 시간 부족 계산에만 쓰고 STEP 2에는 표시하지 않음
 const COL=['#1a73e8','#1e8e3e','#c25e00','#8e24aa','#00838f','#c2185b','#5d4037','#6d4c41'];   // 선택 순서별 색 (흰 글자 대비 확보 · 웨이팅 장소 핀의 빨강과 겹치지 않게)
 const colr=j=>COL[j%COL.length];
-const CC={서점:'#4f6bed',도서관:'#8b5cf6',공원:'#16a56b',카페:'#e8803a',쇼핑:'#e5528a',체험관광:'#d97706',전시회:'#0ea5e9',미술관:'#7c3aed',박물관:'#0f766e'};   // 카테고리 색
+const CC={서점:'#4f6bed',도서관:'#8b5cf6',공원:'#16a56b',카페:'#e8803a',쇼핑:'#e5528a',체험관광:'#d97706',미술관:'#7c3aed',박물관:'#0f766e'};   // 카테고리 색
 const ICP={
  서점:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3M9 7.5h6"/>',
  도서관:'<path d="M3.5 9.5 12 4l8.5 5.5z"/><path d="M6 12v6M10 12v6M14 12v6M18 12v6M4 20.5h16"/>',
@@ -119,7 +120,6 @@ const ICP={
  카페:'<path d="M5 9h11v4.5A5.5 5.5 0 0 1 10.5 19 5.5 5.5 0 0 1 5 13.5z"/><path d="M16 10.5h1.5a2.3 2.3 0 0 1 0 4.6H16M8 3.5v2M12 3.5v2"/>',
  쇼핑:'<path d="M5.5 8h13l-1 12.5h-11z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/>',
  체험관광:'<path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>',
- 전시회:'<rect x="4" y="5" width="16" height="12" rx="1.5"/><path d="M8 21h8M12 17v4"/>',
  미술관:'<path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-1.8 0-1.3-1.1-1.5-1.1-2.7 0-1 .8-1.5 1.8-1.5H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r=".9"/><circle cx="10.5" cy="7.2" r=".9"/><circle cx="15" cy="7.8" r=".9"/>',
  박물관:'<path d="M4 9.5 12 4l8 5.5"/><path d="M5.5 9.5h13M7 12v6M12 12v6M17 12v6M4 20.5h16"/>',
  기타:'<circle cx="12" cy="12" r="5"/>'};
@@ -143,7 +143,7 @@ const SOURCES=[
  {url:'data/seoul_museum.json',pick:vsRows,map:x=>({...x,c:'박물관',e:CE.박물관,lat:num(x.lat),lng:num(x.lng)})},
  {url:'data/seoul_gallery.json',pick:vsRows,map:x=>({...x,c:'미술관',e:CE.미술관,lat:num(x.lat),lng:num(x.lng)})},
  {url:'data/seoul_shopping.json',pick:vsRows,map:x=>({...x,c:'쇼핑',e:CE.쇼핑,lat:num(x.lat),lng:num(x.lng)})}];
- // 카페 · 체험관광(공예체험·전통체험) · 전시회는 파일 맨 아래 비짓서울 API 코드가 직접 받아 addPlaces()로 추가
+ // 카페 · 체험관광(공예체험·전통체험)은 파일 맨 아래 비짓서울 API 코드가 직접 받아 addPlaces()로 추가
 
 function addPlaces(list,fromJson){
  list.forEach(p=>{
@@ -459,7 +459,7 @@ const ringSvg=()=>{const R=48,C=2*Math.PI*R,r=rem(),over=r<0;let acc=0;
 // STEP 3 여유 시간: 원형 타이머 모양 (선택 순서별 색 호 + 가운데 복귀 여유)
 const ringBar=()=>`<div class="rb">${ringSvg()}<div class="rbs"><div><span class="sub">대기시간</span><b>${fm(S.wait)}</b></div><div><span class="sub">코스 사용</span><b>${fm(total())}</b></div>${S.sel.length?`<div class="rbl">${S.sel.map((k,j)=>`<span class="dot sm" style="background:${colr(j)}">${j+1}</span>`).join('')}</div>`:''}</div></div>`;
 const cats=()=>CAT_ORDER.filter(c=>c=='카페'||P.some(p=>p.c==c));   // 카페는 API 연결 전이라도 항상 표시
-const CATS4=['서점','도서관','공원','카페','쇼핑','체험관광','전시회','미술관','박물관'];   // 지도 안 칩 · 관심 공간 필터 (지도 칩은 가로 스크롤)
+const CATS4=['서점','도서관','공원','카페','쇼핑','체험관광','미술관','박물관'];   // 지도 안 칩 · 관심 공간 필터 (지도 칩은 가로 스크롤)
 // 장소 종류 필터: 지도 안(위쪽 칩). 누르면 그 종류만 표시, 같은 칩을 다시 누르거나 '전체'를 누르면 전체
 const mapCats=()=>`<div class="mcats" role="group" aria-label="장소 종류 (누르면 해당 장소만 지도에 표시)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div>`;
 // 목록 위: 장소 이름 검색창(예전 필터 자리) + 영업중 · 정렬
@@ -1028,7 +1028,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
 /* ===== 비짓서울 API 연동 (v15) =====
  * 앱을 열면 비짓서울 API에서 장소를 받아 addPlaces()로 목록에 추가합니다 (JSON 파일 없음).
  * 받아온 장소는 서점·도서관·공원과 똑같이 지도 핀 · 장소 이름 검색 · 카테고리 버튼 · 담기에 쓰입니다.
- *   API로 받는 버튼: 카페 · 체험관광(공예체험·전통체험) · 전시회(Exhibitions) — 박물관·미술관·쇼핑은 data/*.json
+ *   API로 받는 버튼: 카페 · 체험관광(공예체험·전통체험) — 박물관·미술관·쇼핑은 data/*.json (전시회는 삭제)
  * 순서: 카테고리 목록 → 카테고리별 콘텐츠 목록(좌표 없음) → 장소마다 상세 조회(좌표·주소·전화·시간 등) → 추가
  * 결과는 localStorage에 24시간 캐시 (카테고리 구성을 바꾸면 VS_CKEY 의 숫자를 올리세요)
  */
@@ -1046,7 +1046,6 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   const PICK = [   // 카테고리 코드는 비짓서울 category/list 에서 확인한 값. 작은 카테고리부터 받아서 바로 뭔가 보이게 함
     // 박물관(Cr0q2v2)·미술관(Ct9t6m8)·쇼핑(전문매장·쇼핑몰/아울렛·전통시장·백화점)은 data/*.json 에서 읽음 (SOURCES 참고) · 마트/창고형(Ct1z4k9)은 안 씀
     { c: '체험관광', codes: ['Cq3m6s6', 'Cd0m9o0'], max: 500 },                               // Experience Programs > Craft Workshops(공예체험) · Traditional Experience(전통체험)
-    { c: '전시회', codes: ['Cu9u5z7'], max: 500, ver: 2 },                                   // Festivals/Events/Performances > Events > Exhibitions (전시회만) · ver: 날짜·좌표 처리 수정 → 예전 캐시 버리고 다시 받기
     { c: '카페', codes: ['Cx0t8m5'], max: 1000 },                                              // Cuisine > Cafes & Tea Shops
   ];
 
@@ -1139,9 +1138,9 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
   // 카테고리별 캐시 (24시간). 받는 도중에도 주기적으로 저장 → 새로고침해도 받은 곳까지는 남고, 이어서 받음
   const ckey = c => VS_CKEY + ':' + c;
   const sigOf = p => p.codes.join(',') + (p.ver ? '#' + p.ver : '');
-  const OLD_OK = new Set();   // sig 없이 저장된 예전 캐시는 쓰지 않음 (체험관광·전시회 코드가 바뀜)
+  const OLD_OK = new Set();   // sig 없이 저장된 예전 캐시는 쓰지 않음 (체험관광 코드가 바뀜)
   // JSON으로 옮긴 카테고리(미술관·박물관·쇼핑)의 예전 API 캐시는 지워서 저장 공간 확보
-  try { ['미술관', '박물관', '쇼핑'].forEach(c => localStorage.removeItem(VS_CKEY + ':' + c)); } catch (e) {}
+  try { ['미술관', '박물관', '쇼핑', '전시회'].forEach(c => localStorage.removeItem(VS_CKEY + ':' + c)); } catch (e) {}
   const readCache = p => { try { const v = JSON.parse(localStorage.getItem(ckey(p.c))); if (!v || Date.now() - v.t >= TTL || !Array.isArray(v.places)) return null; if (v.sig ? v.sig !== sigOf(p) : !OLD_OK.has(p.c)) return null; return { places: v.places, done: Array.isArray(v.done) ? v.done : [], complete: v.complete !== false }; } catch (e) { return null; } };
   const writeCache = (p, places, done, complete) => { try { localStorage.setItem(ckey(p.c), JSON.stringify({ t: Date.now(), sig: sigOf(p), places, done, complete })); } catch (e) { /* 용량 초과면 캐시 생략 */ } };
 
