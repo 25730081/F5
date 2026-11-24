@@ -1,0 +1,550 @@
+/* ===== 0차 style.css (v9) =====
+ * 개선 포인트: 터치 영역 44px, 본문 14px+, 보조 텍스트 대비 강화, 상태 색 토큰(--ok/--warn/--err),
+ *             지도 화면 고정 영역 + 스크롤 시트, 비활성 버튼 가독성 */
+:root{--bg:#f1f1f1;--card:#fff;--ink:#111;--mut:#5c5c5c;--line:#cfcfcf;--fill:#ececec;--acc:#111;--acct:#fff;--ok:#16704f;--warn:#9a5a00;--err:#c0312b;--okbg:#e7f4ee;--warnbg:#fff3df;--errbg:#fdeaea}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#111;--card:#1b1b1b;--ink:#eee;--mut:#a8a8a8;--line:#3a3a3a;--fill:#262626;--acc:#eee;--acct:#111;--ok:#4fd1a1;--warn:#ffb74d;--err:#ff8a80;--okbg:#10291f;--warnbg:#2d2210;--errbg:#2e1514}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif;font-size:14px;line-height:1.45}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
+[hidden]{display:none!important}
+
+.app{position:relative;width:100%;max-width:430px;height:100vh;height:100dvh;background:var(--card);display:flex;flex-direction:column;overflow:hidden;margin:0 auto;box-shadow:0 0 20px rgba(0,0,0,.08)}
+.hd{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex:none}
+.logo{display:flex;align-items:center;gap:1px;min-height:44px;margin-left:-4px;padding:0 4px;border:0;background:none;font-weight:900;font-size:20px;letter-spacing:-1px;color:var(--ink)}
+.lg0{display:block;height:28px;width:28px}   /* v9: 숫자 0 = 코스가 채워지는 원형 타이머 */
+.lg0 circle{fill:none;stroke-width:6}
+.lg0 .tk{stroke:var(--line)}
+.pill{min-height:36px;font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:0 12px;font-weight:700}
+.body{flex:1;overflow-y:auto;padding:6px 16px 16px}
+.nav{height:64px;border-top:1px solid var(--line);display:flex;flex:none;align-items:center;background:var(--card)}
+.nav button{flex:1;height:100%;border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:700}
+.nav button.on{color:var(--ink)}
+.nav .reg{flex:none;width:64px;height:64px;margin-top:-22px;border-radius:50%;background:var(--acc);color:var(--acct);border:3px solid var(--card)}
+.nav .reg.on{color:var(--acct);outline:2px solid var(--ok)}
+.ft{padding:10px 16px 20px;border-top:1px solid var(--line);flex:none}   /* 아래 20px: 하단 메뉴 가운데 버튼(위로 11px 튀어나옴)과 겹치지 않게 */
+
+h2{font-size:22px;margin:0 0 6px;letter-spacing:-.5px;line-height:1.3}
+h3{font-size:15px;margin:0 0 4px;line-height:1.35}
+h3.sec{margin:20px 0 8px}
+.sub{font-size:13px;color:var(--mut);margin:0}
+.sub.c,.c{text-align:center}
+.sub.err{color:var(--err);font-weight:700}
+.sub.lg{margin:6px 0}
+.ink{color:var(--ink)}
+.mt{margin-top:8px}
+.gap{margin:10px 0}
+.grow{flex:1;min-width:0}
+.back{border:0;background:none;color:var(--mut);font-weight:700;font-size:14px;padding:8px 0;min-height:44px}
+
+.box{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+.btnbox{display:block;width:100%;text-align:left;background:var(--card)}
+.btnbox b{font-size:15px}
+.cur{border-color:var(--ok)!important}
+.errbox{border-color:var(--err);color:var(--err)}
+.box>p:last-child{margin-bottom:0}
+.mini{flex:1;margin:0;text-align:center;padding:10px}
+.ph{background:var(--fill);border-radius:8px;display:grid;place-items:center;font-size:12px;color:var(--mut)}
+
+.btn{display:block;width:100%;min-height:48px;border:1px solid var(--acc);background:var(--acc);color:var(--acct);border-radius:12px;padding:12px;font-weight:700;font-size:15px;text-align:center}
+.btn.g{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.sm{width:auto;flex:none;padding:0 16px;min-height:44px;font-size:14px}
+.btn[disabled]{background:var(--fill);border-color:var(--line);color:var(--mut);cursor:not-allowed}   /* opacity 대신 색으로 비활성 표시 → 문구가 읽힘 */
+
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.row.ctr{justify-content:center}
+.row.nowrap{flex-wrap:nowrap}
+.chip{min-height:40px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:0 14px;font-size:14px;font-weight:700}
+.chip.on{background:var(--acc);color:var(--acct);border-color:var(--acc)}
+.chip[disabled]{background:var(--fill);color:var(--mut);cursor:not-allowed}
+.in{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:16px;background:var(--card);color:var(--ink)}   /* 16px: iOS 확대 방지 */
+.lb{font-size:13px;font-weight:700;margin:16px 0 6px;display:block}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:8px 0}
+.seg button{flex:1;min-height:44px;border:0;background:var(--card);padding:0 10px;font-size:14px;font-weight:700;color:var(--mut)}
+.seg .on{background:var(--acc);color:var(--acct)}
+.seg.sm{margin:0;flex:none}.seg.sm button{min-height:40px;font-size:13px;padding:0 10px;white-space:nowrap;flex:none}
+.badge{font-size:11px;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--mut);font-weight:700;vertical-align:middle}
+
+.bar{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--fill);font-size:12px;font-weight:700}
+.bar i{display:grid;place-items:center;font-style:normal;background:var(--acc);color:var(--acct);border-right:1px solid var(--card);white-space:nowrap;overflow:hidden;padding:0 4px}
+.bar i:last-child{border-right:0}
+.bar i.m{background:var(--mut);color:#fff}
+.bar i.x{background:var(--err);color:#fff}
+.bar i.m,.bar i.x{flex:1 0 78px!important}
+
+.pc{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0}
+.pc .ph{height:56px;font-size:22px}
+.add{min-height:40px;min-width:76px;border:1px solid var(--acc);background:transparent;border-radius:10px;padding:0 12px;font-size:13px;font-weight:700;white-space:nowrap}
+.add.on{background:var(--acc);color:var(--acct)}
+.add[disabled]{border:1px dashed var(--line);color:var(--mut);background:transparent;cursor:not-allowed}
+
+.big{font-size:44px;font-weight:900;letter-spacing:-1px;text-align:center;margin:8px 0}
+.big2{font-size:34px;font-weight:900;text-align:center;letter-spacing:-1px}
+.big2.w150{min-width:150px}
+.big3{font-size:22px}
+.stp{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0}
+.stp button{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:22px;font-weight:800}
+.stats{justify-content:space-around;text-align:center;margin:0}
+
+.tl{border-left:2px dashed var(--line);margin:14px 0 12px 10px;padding-left:18px}
+.tl div{position:relative;margin-bottom:14px;font-size:14px}
+.tl div::before{content:"";position:absolute;left:-25px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--acc)}
+.tl .m::before{background:var(--card);border:2px solid var(--mut)}
+
+.alert{border:1px solid var(--ok);background:var(--okbg);color:var(--ok);border-radius:10px;padding:12px;font-size:13px;font-weight:700;margin:10px 0}
+.alert.warn{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
+.bn{border:1px solid var(--ok);background:var(--okbg);color:var(--ok);border-radius:10px;padding:12px;font-size:14px;font-weight:700;margin:12px 0}
+.bn.warn{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
+.bn.err{border-color:var(--err);background:var(--errbg);color:var(--err)}
+
+.lk{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:13px;font-weight:700;text-decoration:none}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.toast{position:absolute;left:16px;right:16px;top:60px;pointer-events:none;background:var(--ink);color:var(--bg);padding:12px 14px;border-radius:10px;font-size:14px;font-weight:700;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+
+/* 코스 확인: 장소 카드 */
+.pc2{border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px;margin:8px 0}
+.pc2 .r1,.pc2 .r2{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pc2 h3{margin:0}
+.st{display:flex;align-items:center;gap:8px}
+.ib{min-width:44px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:18px;font-weight:800}
+.pc2 .r1 .ib{border:0}
+.ib[disabled]{color:var(--mut);background:var(--fill);cursor:not-allowed}
+
+/* 지도 화면: 위(지도+막대)는 고정, 아래 시트만 스크롤 */
+.mapbody{flex:1;display:flex;flex-direction:column;min-height:0}
+.mtop{flex:none;padding:4px 16px 8px;border-bottom:1px solid var(--line)}
+.sheet{flex:1;overflow-y:auto;padding:12px 16px 16px}
+.mapx{position:relative;overflow:hidden;aspect-ratio:2/1;margin:8px 0 0;border-radius:12px;max-height:26dvh;width:100%}
+.mapx .ph,.mapx.ph{display:block}
+
+.hint{border:1px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--mut);font-size:13px;margin:0 0 10px}
+.dt{margin:0 0 12px}
+.dt1{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+.dt1 .ph{width:52px;height:52px;font-size:22px;flex:none}
+.sheet .in{margin-bottom:4px}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}
+.lr{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:6px 0}
+.lrn{flex:1;min-width:0;min-height:48px;display:flex;align-items:center;gap:10px;border:0;background:none;text-align:left;padding:0}
+.lrn .e{font-size:20px}
+.lrn .tx{display:flex;flex-direction:column;min-width:0}
+.lrn b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gc{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.lrn.v{flex-direction:column;align-items:stretch;gap:4px;min-height:0}
+.lrn.v .ph{height:56px;font-size:24px}
+.lrn.v b{white-space:normal}
+.rvr{display:flex;gap:8px;align-items:center}
+.rvr .in{flex:1}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .2s ease-out}@keyframes up{from{transform:translateY(-8px);opacity:0}}}
+
+/* ===== v3: 위치 지도 · 대기시간 동시 입력 · 체류 시간 입력 ===== */
+.locmap{position:relative;isolation:isolate;height:220px;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:6px 0 4px;background:var(--fill)}   /* isolate: 지도 레이어가 하단 메뉴/토스트 위로 올라오지 않게 */
+.locmap .hint{margin:0;height:100%;display:flex;align-items:center;justify-content:center;border:0}
+.lmap{width:100%;height:100%}
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+.dual .box{margin:0;padding:12px 8px;text-align:center}
+.dual .big2{font-size:26px;margin:4px 0}
+.dual .stp{margin:6px 0 0;gap:12px}
+.tools .sub{flex:1;min-width:0}
+.stin{width:84px;flex:none;text-align:center;padding:0 6px;margin:0!important}
+
+/* ===== v4: 대기시간 탭 · 이동 수단 선택(STEP 3) ===== */
+.seg button[disabled]{background:var(--fill);color:var(--mut);cursor:not-allowed}
+.seg button[role=tab]{font-size:14px}
+
+/* ===== v5: 위치/대기시간 페이지 분리 · 선택 순서별 색 ===== */
+.res .big2{font-size:40px}
+.dot{flex:none;width:26px;height:26px;border-radius:50%;color:#fff;font-size:13px;font-weight:800;display:inline-grid;place-items:center;line-height:1}
+.dot.sm{width:22px;height:22px;font-size:12px;vertical-align:middle}
+.lr.cl{border-left:4px solid var(--line);padding-left:8px}   /* 막대와 같은 색 (인라인으로 지정) */
+
+/* ===== v6: 홈 히어로 · 정사각 추천 코스 · 위치 지도 확대 · 시간 입력 확대 · STEP 2 지도 ===== */
+.hero{min-height:calc(50dvh - 68px);display:flex;flex-direction:column;justify-content:space-between;gap:24px;background:var(--acc);color:var(--acct);border-radius:20px;padding:24px 20px 20px}
+.hero-k{font-size:13px;font-weight:700;margin:0 0 12px;opacity:.85}
+.hero-h{font-size:36px;line-height:1.2;letter-spacing:-1.2px;font-weight:900;margin:0 0 12px}
+.hero-s{font-size:14px;margin:0;opacity:.85}
+.cta{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:64px;border:0;border-radius:16px;background:var(--card);color:var(--ink);padding:0 14px 0 20px;font-size:18px;font-weight:900;letter-spacing:-.3px;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.cta-a{flex:none;width:40px;height:40px;border-radius:50%;background:var(--ok);color:var(--acct);display:grid;place-items:center;font-size:20px;font-weight:800}
+.sqs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sq{aspect-ratio:1;display:flex;flex-direction:column;justify-content:space-between;text-align:left;border:1px solid var(--line);border-radius:16px;background:var(--card);padding:14px}
+.sq .ic{font-size:30px;line-height:1.2}
+.sq b{display:block;font-size:16px;letter-spacing:-.3px}
+.sq .sub{display:block;margin-top:4px}
+
+.locwrap{position:relative}
+.locwrap .locmap{height:min(440px,60dvh);margin:8px 0 4px}
+.locbtn{position:absolute;top:18px;right:10px;z-index:5;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.locbtn[disabled]{background:var(--fill);color:var(--mut);cursor:not-allowed}
+.rpin{background:none;border:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+
+.timebox{padding:32px 16px 28px;margin:14px 0}
+.timebox .stp{margin:32px 0;gap:12px}
+.timebox .stp button{flex:none;width:56px;height:56px;font-size:28px}
+.timebox .big2{flex:1;min-width:0;font-size:36px}
+.timebox .row{gap:6px;margin:0}
+.timebox .chip{min-height:36px;padding:0 12px;font-size:13px}
+
+.mapx{aspect-ratio:auto;max-height:none;height:clamp(200px,34dvh,380px)}
+.mtop .in{margin:0}
+.lr.f{background:var(--fill)}
+
+/* ===== v7: 카테고리 칩 축소 · 장소 상세 펼침 · 이동 수단 한 줄 · 드래그 순서 · 한 줄 장소 카드 ===== */
+.cats{gap:6px}
+.cats .chip{min-height:34px;padding:0 10px;font-size:13px}
+.dti{background:var(--fill);border-radius:10px;padding:10px 12px;margin:2px 0 8px;font-size:13px}
+.dti p{margin:0 0 6px;word-break:keep-all;overflow-wrap:anywhere}
+.dti a:not(.lk){color:var(--ink);font-weight:700}
+.dti .acts{margin-top:8px}
+.lr.f{background:var(--fill)}
+
+
+.pc2{display:flex;align-items:center;gap:6px;padding:6px;position:relative;background:var(--card);touch-action:pan-y}
+.pc2 .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc2 .st{flex:none;gap:2px}
+.pc2 .st b{min-width:36px;text-align:center;font-size:13px}
+.pc2 .dot{flex:none}
+.ib.sm{min-width:32px;width:32px;min-height:32px;height:32px;padding:0;font-size:15px;border-radius:8px;flex:none}
+.pc2 .ib.sm[data-rm]{border:0}
+.dh{border:0!important;color:var(--mut);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;letter-spacing:-2px;font-size:16px}
+.pc2.sh{transition:transform .15s ease}
+.pc2.drag{z-index:5;transition:none;box-shadow:0 6px 16px rgba(0,0,0,.25);border-color:var(--ok)}
+.pc2.drag .dh{cursor:grabbing}
+
+/* v7: STEP 3 원형 여유 시간 */
+.rb{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:16px;padding:12px 16px;margin:10px 0}
+.rbc{position:relative;flex:none;width:132px;height:132px}
+.rbc svg{width:100%;height:100%;display:block}
+.rbt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.2}
+.rbt b{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.rbt b.ov{color:var(--err)}
+.rbs{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.rbs>div{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rbs b{font-size:15px}
+.rbl{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start}
+
+/* v7: 위치 안내 · 가독성 있는 코스 타임라인 */
+.how{margin:10px 0}
+.how-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.how-h b{font-size:15px}
+.how ul{margin:0;padding-left:18px;font-size:13px;color:var(--mut)}
+.how li{margin:0 0 4px}
+.tl{margin-left:56px;padding-left:16px}
+.tl>div{display:block}
+.tl .tm{position:absolute;right:calc(100% + 28px);top:0;width:48px;text-align:right;font-size:14px;font-variant-numeric:tabular-nums}
+.tl .tx2{display:flex;flex-direction:column;gap:1px}
+.tl .tx2>b{font-size:15px}
+.tl>div::before{left:-23px}
+.tl .m .tx2>b{color:var(--mut)}
+
+/* v7: 필터 줄 · 홈(진행 중) 원형 · 마이페이지 코스 */
+.flt{display:flex;align-items:center;gap:6px;margin:0 0 8px}
+.flt .chip{min-height:34px;padding:0 12px;font-size:13px;flex:none;white-space:nowrap}
+.srt{margin-left:auto;min-height:34px;max-width:42%;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);font-size:13px;font-weight:700;padding:0 8px}
+.catp{margin:0 0 8px;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--fill)}
+.catp .row{margin:0}
+.rb.flat{border:0;padding:0;margin:8px 0 0}
+.rbs>.rbn{flex-direction:column;align-items:flex-start;gap:2px}
+.rbs .rbn b{font-size:16px;line-height:1.35}
+.rbp{margin:0;word-break:keep-all}
+.cs{padding:14px 16px}
+.cs-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.cs-h b{font-size:17px}
+.cs-r{margin:0 0 6px;font-size:15px;font-weight:700;line-height:1.4;word-break:keep-all}
+
+/* 카카오 지도 화면 */
+.mapx{isolation:isolate;background:var(--fill)}   /* isolate: 지도 레이어가 하단 메뉴/토스트 위로 올라오지 않게 */
+.mapx .hint{margin:0;height:100%;display:flex;align-items:center;justify-content:center;border:0}
+
+/* ===== v8: 페이지 안내 · 통일된 핀(반경 강조) · 하트 · 버튼 2열 ===== */
+.note{display:flex;align-items:flex-start;gap:8px;margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--mut);word-break:keep-all}
+.note b{flex:none;margin-top:1px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);background:var(--fill);color:var(--ink);font-size:11px;font-weight:800;line-height:1.5}
+.note.ref b{border-color:var(--ok);background:var(--okbg);color:var(--ok)}
+.note.warn b{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
+.mtop .note{margin:0 0 8px}
+.mtop .note+.in{margin-top:0}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.ft .duo{margin:0}
+.duo .btn{min-height:46px;padding:8px;font-size:14px;line-height:1.3}
+.cnt{margin:0 0 6px}
+.hb{flex:none;width:40px;min-height:40px;border:0;background:none;color:var(--mut);font-size:22px;line-height:1;padding:0}
+.hb.on{color:#d93025}
+
+/* 지도 핀: 웨이팅 장소 선택 핀(물방울)과 같은 모양. 반경 안=크고 진하게 / 반경 밖=작고 흐리게 / 담은 장소=순서 색 + 번호 */
+.kp{--w:34px;--pc:#2b2b2b;position:relative;display:block;width:var(--w);height:calc(var(--w)*1.4);margin:0;padding:0;border:0;background:none;cursor:pointer;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.kp svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+.kp path{fill:var(--pc);stroke:#fff;stroke-width:2}
+.kp circle{fill:#fff}
+.kp .pe{position:absolute;left:0;top:0;width:100%;height:71.4%;display:flex;align-items:center;justify-content:center;font-size:calc(var(--w)*.4);line-height:1;pointer-events:none}
+.kp .nb{position:absolute;top:-4px;right:-7px;min-width:18px;height:18px;padding:0 3px;border-radius:9px;border:2px solid #fff;background:var(--pc);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:1;display:grid;place-items:center}
+.kp.out{--w:22px;--pc:#9aa0a6;opacity:.6;filter:none}
+.kp.out::before{content:"";position:absolute;inset:-6px -6px 0}   /* 작은 핀도 누르기 쉽게 */
+.kp.on{--w:40px}
+.kp.off{--pc:#6b6f76}
+.kp.f{--w:48px}
+.kp.f::after,.kp.me::after{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);white-space:nowrap;max-width:60vw;overflow:hidden;text-overflow:ellipsis;padding:3px 8px;border-radius:6px;color:#fff;font-size:12px;font-weight:800;line-height:1.4;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.kp.f::after{content:attr(data-n);background:#111}
+/* 웨이팅 장소 핀: 가장 크고 빨갛게 + 바닥 파동 + 항상 라벨 */
+.kp.me{--w:52px;--pc:#d93025;cursor:default;pointer-events:none}
+.kp.me::after{content:"웨이팅 장소";background:#d93025}
+.kp.me::before{content:"";position:absolute;left:50%;bottom:-5px;width:34px;height:12px;margin-left:-17px;border-radius:50%;background:rgba(217,48,37,.35);z-index:-1}
+@media (prefers-reduced-motion:no-preference){.kp.me::before{animation:kpulse 1.8s ease-out infinite}@keyframes kpulse{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.7);opacity:0}}}
+
+/* ===== v9: 안내 문구(연한 회색·문장별 줄바꿈) · 필터 정리 · 코스 타임라인 · 진행 화면 ===== */
+:root{--mut2:#9b9b9b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--mut2:#808080}}
+.note{color:var(--mut2);line-height:1.6}
+.note b{color:var(--mut)}
+.flt2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+.flt2 .chip{min-height:34px;padding:0 12px;font-size:13px;flex:none}
+.lrn .tx .sub{font-size:12px;color:var(--mut2)}
+
+/* 코스 타임라인: 시간·장소 구간을 넉넉히 띄우고, 이동은 회색 연결 문구로 */
+.tl{margin-top:18px}
+.tl>div{margin-bottom:38px}
+.tl .tm{font-size:15px;font-weight:800}
+.tl .tx2>b{font-size:16px}
+.tl .tx2 .sub{margin-top:3px;color:var(--mut2);white-space:nowrap}
+.tl .pl::before{background:var(--pc)}   /* 장소 점 = 선택 순서 색 */
+.tl>div:last-child{margin-bottom:4px}
+.tl .hasgo{padding-right:84px;min-height:40px}
+.tl .go{position:absolute;right:0;top:50%;transform:translateY(-50%);min-height:36px;padding:0 12px}
+
+/* 진행 화면 */
+.adj{display:flex;align-items:center;justify-content:center;gap:6px;width:fit-content;max-width:100%;margin:10px auto;padding:3px;border:1px solid var(--line);border-radius:99px}
+.adj span{padding:0 8px;font-size:12px;font-weight:700;color:var(--mut)}
+.adj button{min-width:56px;min-height:30px;padding:0 10px;border:0;border-radius:99px;background:var(--fill);font-size:12px;font-weight:800}
+.now{display:flex;align-items:baseline;gap:8px;margin:14px 0 6px;padding:12px 14px;border:1px solid var(--ok);border-radius:12px}
+.now b{font-size:15px}
+
+/* 완료: 오늘의 코스 세로 목록 */
+.dcs{list-style:none;margin:10px 0 0;padding:0}
+.dcs li{display:flex;align-items:center;gap:12px;padding:12px 0;font-size:16px}
+.dcs li+li{border-top:1px dashed var(--line)}
+
+/* ===== v10: 장소 배지(깔끔한 테두리 아이콘) · 프리미엄 핀 · 코스 길찾기 ===== */
+.ic2{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.cb{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;color:var(--c);background:color-mix(in srgb,var(--c) 9%,#fff);border:1.5px solid color-mix(in srgb,var(--c) 28%,#fff)}
+.cb .ic2{width:20px;height:20px}
+.pc2 .cb{width:28px;height:28px;border-radius:9px}
+.pc2 .cb .ic2{width:16px;height:16px}
+.pc{grid-template-columns:auto 1fr auto}
+.pc .cb{width:48px;height:48px;border-radius:14px}
+.pc .cb .ic2{width:24px}
+.lrn .cb{margin-right:2px}
+
+/* 핀: 같은 물방울 모양 · 카테고리 색 · 흰 원 안 라인 아이콘 · 하이라이트와 부드러운 그림자 */
+.kp{filter:drop-shadow(0 3px 4px rgba(16,24,40,.30))}
+.kp>svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+.kp path.bd{fill:var(--pc);stroke:#fff;stroke-width:1.8}
+.kp path.hl{fill:none;stroke:#fff;stroke-opacity:.4;stroke-width:1.6;stroke-linecap:round}
+.kp circle.in{fill:#fff;stroke:rgba(16,24,40,.1);stroke-width:.8}
+.kp .pe{font-size:0}
+.kp .pe svg{position:static;width:calc(var(--w)*.4);height:calc(var(--w)*.4);color:var(--pc);stroke-width:2.2}
+.kp .pe path,.kp .pe circle{fill:none;stroke:currentColor}
+.kp .pe .tg circle:first-child{fill:currentColor;stroke:none}
+.kp.out .pe{display:none}
+.kp.out circle.in{r:5}
+.kp.out path.hl{display:none}
+.kp.me{--pc:#ef3b2d}
+.kp.me .pe svg{width:calc(var(--w)*.46);height:calc(var(--w)*.46)}
+.kp.f::after,.kp.me::after{border-radius:99px;padding:4px 11px;letter-spacing:-.2px}
+.kp.me::after{background:#ef3b2d}
+.kp .nb{border-width:2px;box-shadow:0 1px 3px rgba(16,24,40,.3)}
+
+/* 진행 화면: 코스 헤더 + 길찾기 1개 */
+.rth{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 0}
+.rth h3{margin:0;font-size:16px}
+.btn.route{width:auto;min-height:40px;padding:0 16px;font-size:14px;display:inline-flex;align-items:center;gap:6px;border-radius:99px}
+
+/* ===== v9: 길찾기 앱 선택 시트 ===== */
+
+.rs{position:absolute;inset:0;z-index:30;display:flex;align-items:flex-end}
+.rs-bg{position:absolute;inset:0;border:0;background:rgba(0,0,0,.45);cursor:default}
+.rs-p{position:relative;width:100%;padding:20px 16px 16px;background:var(--card);border-radius:20px 20px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.2)}
+.rs-p h3{font-size:18px;margin:0 0 6px}
+.rs-p>.sub{margin:0 0 14px;line-height:1.6;word-break:keep-all}
+.rs-o{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:60px;margin:0 0 8px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);text-align:left;text-decoration:none}
+.rs-o b{font-size:16px}
+a.rs-o{border-color:var(--ok);background:var(--okbg)}
+@media (prefers-reduced-motion:no-preference){.rs-p{animation:rsup .2s ease-out}@keyframes rsup{from{transform:translateY(24px);opacity:0}}}
+
+/* ===== v10: 헤더 하트 · 마이페이지 코스 카드/관심 공간 · 코스 상세 하단 버튼 ===== */
+
+.clist{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+.cc2{display:flex;align-items:center;gap:12px;width:100%;min-width:0;padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);text-align:left}
+.cc2:active{background:var(--fill)}
+.cc2-ring{flex:none;display:block}
+.cc2 .rbc{width:60px;height:60px}
+.cc2 .rbt .sub{font-size:9px}
+.cc2 .rbt b{font-size:14px}
+.cc2 .rbt b small{font-size:9px;margin-left:1px}
+.cc2-info{flex:0 0 100px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cc2-info .sub{word-break:keep-all}
+.cc2-t{font-size:16px;letter-spacing:-.3px}
+.cc2-pl{flex:1;min-width:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:6px;padding-left:12px;border-left:1px dashed var(--line)}
+.cc2-p{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;font-weight:700}
+.cc2-p .nm{flex:1;min-width:0;line-height:1.3;word-break:keep-all}
+.cc2-m{display:block;padding-left:30px}
+.cc2.new{padding:14px;border-style:dashed;background:transparent;color:var(--mut)}
+.cc2.new .nw{flex:none;display:grid;place-items:center;width:44px;height:44px;border:2px dashed var(--line);border-radius:50%;font-size:26px;font-weight:300;line-height:1}
+
+.duo.w32{grid-template-columns:3fr 2fr}
+.duo.w32 .btn:first-child{font-size:15px}
+.dl{display:block;margin:4px auto 0;min-height:44px;padding:0 12px;border:0;background:none;color:var(--err);font-size:13px;font-weight:700;text-decoration:underline}
+
+/* 코스 종료: 오늘의 코스 가운데 정렬 / 관심 공간 목록 */
+.dcs li{justify-content:center}
+.pc>div{min-width:0}
+.pc .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- 진행 화면: 타이머를 줄이고 '지금' 카드와 복귀 여유(숫자)를 중심으로 ---------- */
+.rtop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px}
+.rt{margin:0;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.rt1{font-size:17px;font-weight:900}
+.rt2{font-size:15px;color:var(--mut)}
+.rtop .chipb{flex:none;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);font-size:13px;font-weight:600}
+.rtop .chipb[aria-expanded=true]{background:var(--fill)}
+.nowc{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding:16px;border:1.5px solid var(--ok);border-radius:20px;background:var(--okbg)}
+.nowc.warn{border-color:var(--warn);background:var(--warnbg)}
+.nowc.err{border-color:var(--err);background:var(--errbg)}
+.nowc .nk{font-size:13px;font-weight:800;color:var(--ok)}
+.nowc.warn .nk{color:var(--warn)}
+.nowc.err .nk{color:var(--err)}
+.nowc .nt{font-size:24px;font-weight:900;line-height:1.3;letter-spacing:-.5px;word-break:keep-all}
+.nowc .ns{font-size:15px;color:var(--mut)}
+.nowc .rbtn{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:14px}
+.slk{display:flex;align-items:baseline;justify-content:space-between;margin:14px 2px 0;font-size:14px;font-weight:700}
+.slk b{font-size:22px;font-weight:900;color:var(--ok)}
+.slk b.err{color:var(--err);font-size:16px}
+.nowc .rbp{margin:6px 0 0;word-break:keep-all}
+.body>.rt{margin:8px 0 0}
+
+/* ---------- 미니 플레이어(진행 중 코스 배너) ---------- */
+.body.hasmp{padding-bottom:124px}
+.mp{position:absolute;left:12px;right:12px;bottom:92px;z-index:10;display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 14px 10px 12px;border:1.5px solid var(--ok);border-radius:16px;background:var(--card);color:var(--ink);text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.mp.warn{border-color:var(--warn)}
+.mp.err{border-color:var(--err)}
+.mp-ic{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--okbg);color:var(--ok)}
+.mp.warn .mp-ic{background:var(--warnbg);color:var(--warn)}
+.mp.err .mp-ic{background:var(--errbg);color:var(--err)}
+.mp-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.mp-k{font-size:12px;font-weight:700;color:var(--ok)}
+.mp.warn .mp-k{color:var(--warn)}
+.mp.err .mp-k{color:var(--err)}
+.mp-t{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-s{font-size:13px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-go{flex:none;font-size:26px;line-height:1;color:var(--mut)}
+
+/* 장소 담는 화면: 왼쪽 상단 뒤로가기 */
+.mtop .back.mb{display:block;min-height:36px;padding:0 0 6px;margin:0;text-align:left;color:var(--ink);font-size:15px}
+
+.fvb{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:99px;background:var(--card)}
+.fvb .fh{font-size:17px;line-height:1;color:#d93025}
+.fvb.on{border-color:#d93025}
+.inf{margin:0}
+.inf>div{display:flex;gap:10px;padding:4px 0;align-items:baseline}
+.inf dt{flex:none;width:84px;color:var(--mut);font-weight:700}
+.inf dd{margin:0;flex:1;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.inf dd b{font-variant-numeric:tabular-nums}
+.inf .st{margin-left:8px;font-weight:800;color:var(--mut)}
+.inf .st.ok{color:var(--ok)}
+.inf .st.err{color:var(--err)}
+
+/* ===== v11: 헤더 알림 · 웨이팅 장소 검색 ===== */
+.hr{display:flex;align-items:center;gap:8px}
+.bellb{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;padding:0 8px;border:1px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink)}
+.bellb.on{border-color:var(--ink)}
+.bdg{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;border:2px solid var(--card);background:#d93025;color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:1;display:grid;place-items:center}
+
+/* 알림 시트 (길찾기 시트 .rs 재사용) */
+.ns .rs-p{max-height:78%;display:flex;flex-direction:column}
+.ns-h{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
+.ns-h h3{margin:0}
+.ns-b{overflow-y:auto;min-height:0;flex:1}
+.ns-s{margin:0 0 14px}
+.ns-s h4{margin:0 0 6px;font-size:14px;display:flex;align-items:baseline;gap:8px}
+.nl{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.nl li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}
+.nl li:first-child{border-top:0}
+.nl .tm{flex:none;min-width:52px;font-variant-numeric:tabular-nums;font-size:14px}
+.nl .tx2{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;word-break:keep-all}
+.nl .tx2 b{font-size:14px}
+.nl em{flex:none;font-style:normal;font-size:12px;font-weight:800;color:var(--ok)}
+.nl li.done{background:var(--fill)}
+.nl li.done .tx2,.nl li.done .tm{color:var(--mut)}
+.nl li.done em{color:var(--mut)}
+
+/* 웨이팅 장소 검색 */
+.srch{margin:0 0 4px}
+.srch .in{margin:0}
+.sgbox:empty{display:none}
+.sgbox{margin:6px 0 0}
+.sgi{padding:2px 2px}
+.sg{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sg-h{padding:8px 12px;background:var(--fill)}
+.sg ul{list-style:none;margin:0;padding:0}
+.sg li{border-top:1px solid var(--line)}   /* 목록에서 눌러 바로 선택 */
+.sgb{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;min-height:48px;padding:9px 12px;border:0;background:var(--card);color:var(--ink);text-align:left}
+.sgb b{font-size:14px}
+.sgb .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sg-h+ul li:first-child{border-top:0}
+
+
+
+/* ===== v12: < 뒤로가기 · ? 툴팁 · 지도 안 장소 필터 · 카트 담기 ===== */
+.tb{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:0 0 6px}
+.tb .tipw{margin-left:auto}
+.back{width:44px;height:44px;min-height:44px;display:grid;place-items:center;padding:0;margin:0 0 0 -10px;border:0;background:none;color:var(--ink)}
+.tipw{position:relative}
+.tipq{width:44px;height:44px;display:grid;place-items:center;padding:0;margin:0 -10px 0 0;border:0;background:none}
+.tipq>span{width:24px;height:24px;border:1.5px solid var(--mut);border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;line-height:1;color:var(--mut)}
+.tipq.warn>span{border-color:var(--warn);color:var(--warn)}
+.tipw.open .tipq>span{background:var(--acc);border-color:var(--acc);color:var(--acct)}
+.tipb{display:none;position:absolute;right:10px;top:calc(100% - 2px);z-index:60;width:min(280px,calc(100vw - 32px));padding:10px 12px;border-radius:12px;background:var(--acc);color:var(--acct);font-size:13px;line-height:1.6;word-break:keep-all;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.tipw.open .tipb{display:block}
+.tipb b{display:inline-block;margin:0 6px 2px 0;padding:0 8px;border-radius:99px;border:1px solid currentColor;font-size:11px;font-weight:800;line-height:1.6;opacity:.85}
+.mapw{position:relative;margin:2px 0 0}
+.mapw .mapx{margin:0}
+.mcats{position:absolute;left:8px;right:8px;top:8px;z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:none;padding:2px 2px 8px}
+.mcats::-webkit-scrollbar{display:none}
+.mcats .chip{flex:none;min-height:34px;padding:0 12px;font-size:13px;white-space:nowrap;pointer-events:auto;box-shadow:0 1px 5px rgba(0,0,0,.28)}
+.sheet .in{margin-bottom:8px}
+.add.ci{min-width:40px;width:40px;padding:0;display:inline-grid;place-items:center}
+.add.ci svg{display:block}
+
+
+/* ===== v13: 코스 확인 ＋ · 시작/저장 좌우 · 실시간 카운트 · 장소 검색창 같은 행 ===== */
+.h2r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
+.h2r h2{margin:0}
+.h2r .ib{flex:none;display:grid;place-items:center;padding:0}
+.ftr{display:flex;align-items:center;gap:8px}
+.ftr .btn:first-child{flex:1;width:auto;min-width:0}
+.ftr .btn.sv{flex:none;width:auto;min-height:48px;padding:0 18px;font-size:14px}
+.cdt{display:flex;flex-direction:column;align-items:center;gap:2px;margin:12px 0 4px}
+.cdt b{font-size:44px;font-weight:900;letter-spacing:-1px;line-height:1.1;font-variant-numeric:tabular-nums}
+.flt .in{flex:1;min-width:0;width:auto;height:34px;min-height:34px;margin:0;padding:0 12px;border-radius:99px;font-size:16px}
+
+
+/* ===== v14: 제목 행(제목 + ?) · 홈 ? · 미니 플레이어 · 만족도 · 코스 필터 · 관심 공간 삭제 ===== */
+.tb{margin:0 0 4px}
+.tb.th{gap:6px}
+.tb.th h2{margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb.th .ib{flex:none;display:grid;place-items:center;padding:0}
+.hero{position:relative}
+.hero-tip{position:absolute;top:6px;right:6px;z-index:3}
+.hero-tip .tipq{margin:0}
+.hero-tip .tipb{right:0;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.hero .tipq>span{border-color:var(--acct);color:var(--acct)}
+.hero .tipw.open .tipq>span{background:var(--acct);border-color:var(--acct);color:var(--acc)}
+.mp-r1{display:flex;align-items:baseline;gap:8px;min-width:0}
+.mp-big{flex:none;font-size:26px;font-weight:900;letter-spacing:-1px;line-height:1.15;white-space:nowrap}
+.mp-ret{min-width:0;font-size:13px;font-weight:700;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-t{font-size:14px;font-weight:700}
+.satr{display:flex;gap:10px;margin-top:10px}
+.sbtn{flex:1;min-height:52px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-size:15px;font-weight:800}
+.sbtn.on{background:var(--acc);color:var(--acct);border-color:var(--acc)}
+.dc{display:contents}
+.srt.l{margin-left:0}
+.add.del{color:var(--err);border-color:var(--err)}
