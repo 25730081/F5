@@ -97,6 +97,7 @@
  *  - 박물관·미술관·쇼핑은 data/seoul_museum.json · seoul_gallery.json · seoul_shopping.json 에서 읽음 (장소 상세에 '분류' 표시)
  *  - 비짓서울 API는 카페 · 체험관광(공예체험 Cq3m6s6 · 전통체험 Cd0m9o0)만 호출 · 마트/창고형 제외
  *  - 전시회 버튼·데이터 삭제 (비짓서울 전시회 데이터가 대부분 2022~2023년에 끝난 전시라 제외)
+ *  - 홈 리디자인(v17): 스톱워치 히어로 · 안내 문구 3장 · 인기 있는 공간 · 추천 코스 카드 · 떠 있는 하단 메뉴 (사진 자리는 네모 박스)
  *  - 계정별 저장 정리: 관심 공간·내 코스를 계정 키로 저장 · 로그아웃하면 화면에서만 지우고 다시 로그인하면 복원
  *    장소키에 좌표 포함(같은 이름 지점 구분) · 장소가 늦게 올라와도 저장된 코스가 잘리지 않음
  */
@@ -178,7 +179,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{localStorage.removeItem(KEY)}catch(e){}return null})();   // 새로고침(F5)하면 저장값을 지우고 처음 상태(홈)로 시작
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:'',lbusy:false,jid:'',jpw:'',jpw2:'',jerr:''};
+const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],hs:0,cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:'',lbusy:false,jid:'',jpw:'',jpw2:'',jerr:''};
 // 로그인: '로그인 상태 유지'를 켜면 새로고침해도 유지 (코스 저장값과 별도 키)
 const AUTH='0cha:auth';
 // 회원정보 저장소: 구글 시트(member) ← Apps Script 웹앱 (컬럼: userId | password(해시) | createdate)
@@ -423,8 +424,8 @@ const IC={home:svg('<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 
  route:svg('<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>'),
  user:svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>')};
 const tabOf=()=>{const i=S.i;if(i=='prog')return S.active?'reg':'home';return {home:'home',done:'home',reg:'reg',map:'reg',confirm:'reg',my:'my',mc:'my'}[i]};
-const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg';
- return `<nav class="nav" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home">${IC.home}<span>홈</span></button><button class="reg ${a=='reg'?'on':''}" data-go="${go}">${S.active?IC.route:IC.clock}<span>${S.active?'코스':'등록'}</span></button><button class="${a=='my'?'on':''}" data-go="my">${IC.user}<span>마이페이지</span></button></nav>`};
+const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg',h=S.i==='home';   // 홈에서는 떠 있는 둥근 메뉴(nav2) + 가운데 '코스'
+ return `<nav class="nav${h?' nav2':''}" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home">${IC.home}<span>홈</span></button><button class="reg ${a=='reg'?'on':''}" data-go="${go}">${S.active||h?IC.route:IC.clock}<span>${S.active||h?'코스':'등록'}</span></button><button class="${a=='my'?'on':''}" data-go="my">${IC.user}<span>마이페이지</span></button></nav>`};
 const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫자 0 = 코스가 채워지는 원형 타이머 (색은 코스 선택 순서 색, 남은 구간은 복귀 여유)
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
@@ -490,13 +491,69 @@ const saveCourse=()=>{const old=S.courses.find(x=>x.id==S.editId),c={id:S.editId
 const resetBuild=()=>{S.sel=[];S.stay={};S.editId=null;S.focus=null};
 
 /* ---------- 홈 ---------- */
-const home=()=>frame((
-`<section class="hero"><span class="hero-tip">${tip('안내','웨이팅 중 남은 시간 동안 다녀올 수 있는 주변 장소를 코스로 만들어드려요.')}</span><div><p class="hero-k">줄 서는 시간을 내 시간으로</p><h2 class="hero-h">웨이팅,<br>이제 0차로.</h2><p class="hero-s">남은 시간을 입력하면 갈 수 있는 곳을 지도로 보여드려요.</p></div>
-<button class="cta" data-go="reg"><span>웨이팅 시간 등록하기</span><span class="cta-a" aria-hidden="true">→</span></button></section>
-<h3 class="sec">이런 곳은 어때요</h3><div class="row">${cats().map(c=>`<button class="chip" data-hcat="${c}">${CE[c]} ${c}</button>`).join('')}</div>
-<h3 class="sec">추천 코스</h3>
-<div class="sqs"><button class="sq" data-pop="서점,공원|90"><span class="ic" aria-hidden="true">📚 🌳</span><span><b>서점 → 공원</b><span class="sub">90분 · 도보</span></span></button>
-<button class="sq" data-pop="공원,카페|60"><span class="ic" aria-hidden="true">🌳 ☕</span><span><b>공원 → 카페</b><span class="sub">60분 · 도보</span></span></button></div>`));
+// ===== v17 홈: 히어로(스톱워치 일러스트 · 안내 문구 3장) + 인기 있는 공간 + 추천 코스 =====
+// 컬러: 로얄 블루 #4169E1 · 라이트 블루 #E8EDFF · 네이비 #1F2D5B · 그레이 블루 #6B7A99 · 화이트 #F8FAFF (style.css v17 홈)
+const HS=[   // 히어로 안내 문구 (아래 점 3개로 넘김 · 5초마다 자동)
+ {t:'줄 서는 시간을 내 시간으로',s:'기다리는 동안,<br>더 알찬 시간을 보내세요!'},
+ {t:'남은 시간에 딱 맞는 코스',s:'대기시간만 입력하면<br>다녀올 수 있는 곳을 골라드려요.'},
+ {t:'복귀 시간은 0차가 챙겨요',s:'출발 · 웨이팅 차례 알림으로<br>내 순서를 놓치지 마세요.'}];
+const SWATCH=(()=>{   // 스톱워치 일러스트 (SVG 직접 그림 · 외부 이미지 없음)
+ const ticks=Array.from({length:12},(_,i)=>{const a=i*30*Math.PI/180,r1=i%3?47:44,r2=53,x=v=>(140+Math.sin(a)*v).toFixed(1),y=v=>(138-Math.cos(a)*v).toFixed(1);return `<line x1="${x(r1)}" y1="${y(r1)}" x2="${x(r2)}" y2="${y(r2)}"/>`}).join('');
+ const orbit='<ellipse cx="135" cy="150" rx="124" ry="34" transform="rotate(-14 135 150)" fill="none" stroke="url(#swRing)" stroke-width="2.6"/>';
+ return `<svg class="sw" viewBox="0 0 260 240" aria-hidden="true"><defs>
+<radialGradient id="swBody" cx="36%" cy="28%" r="78%"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#eef2fc"/><stop offset="1" stop-color="#bccbef"/></radialGradient>
+<radialGradient id="swFace" cx="42%" cy="36%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#eaf0fc"/></radialGradient>
+<linearGradient id="swBlue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7698ff"/><stop offset="1" stop-color="#2f56d6"/></linearGradient>
+<linearGradient id="swRing" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4169E1" stop-opacity="0"/><stop offset=".45" stop-color="#8aa6ff" stop-opacity=".95"/><stop offset="1" stop-color="#4169E1" stop-opacity=".05"/></linearGradient>
+<clipPath id="swFront"><rect x="-20" y="150" width="300" height="120" transform="rotate(-14 135 150)"/></clipPath>
+<filter id="swSh" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#4169E1" flood-opacity=".28"/></filter><filter id="swBlur" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="6"/></filter></defs>
+<ellipse cx="140" cy="226" rx="70" ry="8" fill="#4169E1" opacity=".22" filter="url(#swBlur)"/>
+${orbit}
+<g filter="url(#swSh)"><circle cx="140" cy="30" r="15" fill="none" stroke="#e2e8f7" stroke-width="8"/><path d="M127 24a15 15 0 0 1 27-3" fill="none" stroke="#4169E1" stroke-width="4.5" stroke-linecap="round"/>
+<rect x="128" y="42" width="24" height="22" rx="5" fill="url(#swBody)" stroke="#dbe2f4"/>
+<rect x="196" y="62" width="20" height="16" rx="4" transform="rotate(42 206 70)" fill="url(#swBody)" stroke="#dbe2f4"/>
+<circle cx="140" cy="138" r="78" fill="url(#swBody)" stroke="#d2dcf5" stroke-width="2"/></g><path d="M86 104a62 62 0 0 1 58-44" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+<circle cx="140" cy="138" r="66" fill="none" stroke="#dfe6f8" stroke-width="5"/><circle cx="140" cy="138" r="63" fill="url(#swFace)" stroke="#d6dff5" stroke-width="1.5"/>
+<g stroke="#4169E1" stroke-width="3" stroke-linecap="round">${ticks}</g>
+<g class="sw-hand"><path d="M140 86 147 136a7 7 0 0 1-14 0z" fill="url(#swBlue)"/></g>
+<circle cx="140" cy="138" r="11" fill="url(#swBlue)"/><circle cx="137" cy="135" r="3" fill="#fff" opacity=".55"/>
+<g clip-path="url(#swFront)">${orbit}</g>
+<g stroke="#4169E1" stroke-width="6" stroke-linecap="round"><path d="M26 50l15 17"/><path d="M47 37l9 22"/><path d="M70 31l3 22"/></g>
+<g class="sw-pin"><path d="M224 146c-13 0-23 10-23 23 0 17 23 40 23 40s23-23 23-40c0-13-10-23-23-23z" fill="url(#swBlue)"/><circle cx="224" cy="169" r="8.5" fill="#fff"/></g></svg>`})();
+const HI={   // 홈 아이콘
+ clock:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5.2l3.4 2"/></svg>',
+ arrow:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></svg>',
+ more:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
+ heart:on=>`<svg viewBox="0 0 24 24" width="20" height="20" fill="${on?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.6 3.9 4.5 7.2 4.5c2 0 3.5 1.1 4.8 2.8 1.3-1.7 2.8-2.8 4.8-2.8 3.3 0 5.6 3.1 4.4 6.6-1.7 4.8-9.2 9.4-9.2 9.4z"/></svg>`,
+ pin:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>',
+ walk:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4.5" r="1.8"/><path d="m9 21 2.5-6.5L14 17v4M7.5 12l2.5-4.5h4l2.5 4M11.5 14.5 12 7.5"/></svg>'};
+// 인기 있는 공간: 웨이팅 기준 위치에서 가장 가까운 곳을 카테고리별 1곳씩 (최대 3곳) — 평점 데이터가 없어 '도보 N분'으로 표시
+const homePicks=()=>{const out=[];
+ for(const c of ['카페','미술관','공원','서점','박물관','쇼핑','도서관','체험관광']){if(out.length>=3)break;
+  let b=-1,bw=1e9;P.forEach((p,k)=>{if(p.c!==c)return;const w=tt(k);if(w<bw){bw=w;b=k}});if(b>=0)out.push(b)}
+ return out};
+const ppCard=k=>{const p=P[k],fv=S.favs.includes(k);
+ return `<div class="pp"><button class="pp-b" data-hcat="${esc(p.c)}" aria-label="${esc(p.n)} · ${esc(p.c)} 둘러보기"><span class="pp-ph" style="--c:${CC[p.c]||'#4169E1'}">${ico(p.c)}</span><span class="pp-tx"><b>${esc(p.n)}</b><span>${HI.walk}${esc(p.c)} · ${tt(k)}분</span></span></button><button class="pp-hb${fv?' on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(p.n)} 관심 공간 ${fv?'해제':'저장'}">${HI.heart(fv)}</button></div>`};
+const RC=[{pop:'서점,공원|90',t:'서점 → 공원',n:2,c:['서점','공원']},{pop:'공원,카페|60',t:'공원 → 카페',n:2,c:['공원','카페']}];
+const rcCard=r=>{const w=+r.pop.split('|')[1];
+ return `<button class="rc" data-pop="${r.pop}" aria-label="${r.t} 코스 · 웨이팅 ${fm(w)} 기준 · 이 코스로 시작"><span class="rc-ph" aria-hidden="true">${r.c.map(c=>`<i style="--c:${CC[c]}">${ico(c)}</i>`).join('')}</span><span class="rc-chip">${HI.clock.replace(/width="30" height="30"/,'width="18" height="18"')}${fm(w)} 남았을 때</span><b class="rc-t">${r.t} 코스</b><span class="rc-m">${HI.pin}${r.n}곳<i aria-hidden="true"></i>도보</span><span class="rc-go" aria-hidden="true">${HI.arrow}</span></button>`};
+const home=()=>{const hs=HS[S.hs||0],pk=homePicks();
+ return frame(`<section class="hero2" aria-label="0차 소개">
+<div class="h2-art">${SWATCH}</div>
+<div class="h2-copy"><p class="h2-tag" data-hs="t">${hs.t}</p><h2 class="h2-h">웨이팅,<br>이제 <em>0차</em>로.</h2><p class="h2-s" data-hs="s">${hs.s}</p></div>
+<button class="cta2" data-go="reg"><span class="cta2-ic">${HI.clock}</span><span class="cta2-bar" aria-hidden="true"></span><span class="cta2-t">웨이팅 정보 등록하기</span><span class="cta2-go" aria-hidden="true">${HI.arrow}</span></button>
+<div class="h2-dots" role="group" aria-label="안내 문구">${HS.map((_,i)=>`<button data-hslide="${i}" aria-label="안내 ${i+1}/${HS.length}" aria-current="${(S.hs||0)==i}"><i></i></button>`).join('')}</div>
+</section>
+<div class="sec2"><h3>인기 있는 공간</h3><button class="more" data-go="reg">더보기 ${HI.more}</button></div>
+<div class="pps">${pk.length?pk.map(ppCard).join(''):'<div class="pp sk"></div><div class="pp sk"></div><div class="pp sk"></div>'}</div>
+<div class="sec2"><h3>추천 코스</h3><button class="more" data-go="reg">더보기 ${HI.more}</button></div>
+<div class="rcs">${RC.map(rcCard).join('')}</div>`)};
+// 히어로 안내 문구 바꾸기 (화면 전체를 다시 그리지 않음)
+function setHs(i){S.hs=i;const h=HS[i],t=document.querySelector('[data-hs=t]'),sb=document.querySelector('[data-hs=s]');if(!t||!sb)return;
+ [t,sb].forEach(el=>{el.classList.remove('fade');void el.offsetWidth;el.classList.add('fade')});t.innerHTML=h.t;sb.innerHTML=h.s;
+ document.querySelectorAll('[data-hslide]').forEach(b=>b.setAttribute('aria-current',+b.dataset.hslide===i))}
+setInterval(()=>{if(S.i!=='home'||document.hidden)return;const h=document.querySelector('.hero2');if(!h||h.matches(':hover')||h.contains(document.activeElement))return;
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;setHs(((S.hs||0)+1)%HS.length)},5000);
 
 /* ---------- 등록 ---------- */
 /* ---------- 카카오지도 공통 ---------- */
@@ -844,6 +901,7 @@ function draw(){
  const root=document.getElementById('phone'),sc=root.querySelector('.body,.sheet,.lg');
  const keep=S.i===lastScr&&sc?sc.scrollTop:0,jump=S.top;          // 버튼을 눌러도 스크롤 위치 유지 (기존엔 맨 위로 튐)
  const mc0=S.i===lastScr&&root.querySelector('.mcats'),mcL=mc0?mc0.scrollLeft:0;   // 칩을 눌러도 가로 스크롤 위치 유지
+ root.dataset.scr=S.i;   // 화면별 스타일 (홈 전용 디자인 등)
  root.innerHTML=SC[S.i]();if(S.i==='map')mountKakaoMap();
  {const mc=root.querySelector('.mcats');if(mc&&mcL)mc.scrollLeft=mcL}
  const n=root.querySelector('.body,.sheet,.lg');if(n)n.scrollTop=keep;
@@ -890,6 +948,7 @@ document.addEventListener('click',e=>{
  else if(has('wadj'))S.wadj=!S.wadj;
  else if(has('live')){S.wait=Math.min(300,Math.max(10,S.wait+ +d.live));toast(`대기시간을 ${d.live>0?'+':'−'}10분 조정했어요 · 복귀 ${backAt()}`)}
  else if(has('focus')){if(S.focus===+d.focus&&t.closest('.lr'))S.focus=null;else{S.focus=+d.focus;S.top=1;panNext=true}}   // 행을 다시 누르면 상세 접기
+ else if(has('fav')&&!S.user){S.after=S.i;S.i='login';toast('로그인하면 관심 공간에 저장할 수 있어요')}   // 홈 하트 등 로그인 전
  else if(has('fav')){const k=+d.fav,had=S.favs.includes(k);S.favs=had?S.favs.filter(x=>x!=k):[...S.favs,k];saveFavs();toast(had?'관심 공간에서 삭제했어요':'관심 공간에 저장했어요 · 마이페이지에서 볼 수 있어요')}
  else if(has('st')){const[k,m]=d.st.split(':').map(Number);S.stay[k]=Math.min(240,Math.max(dstay(),stay(k)+m))}
  else if(has('rm'))S.sel=S.sel.filter(x=>x!=+d.rm);
@@ -913,6 +972,7 @@ document.addEventListener('click',e=>{
  else if(has('lnk')){if(d.lnk=='join'){S.i='join';S.jerr='';S.jpw='';S.jpw2=''}else if(d.lnk=='login'){S.i='login';S.lerr=''}else toast({id:'아이디 찾기',pw:'비밀번호 찾기'}[d.lnk]+'은(는) 준비 중이에요')}
  else if(has('sns')){signIn(SNS[d.sns]+' 사용자',d.sns);return}
  else if(has('logout'))signOut();
+ else if(has('hslide')){setHs(+d.hslide);return}
  else if(has('seg'))S.seg=d.seg;
  else if(has('redo')||has('edit')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}
   const c=S.courses.find(x=>x.id==+(d.redo??d.edit));if(!c)return;
