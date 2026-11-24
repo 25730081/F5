@@ -593,3 +593,95 @@ a.rs-o{border-color:var(--ok);background:var(--okbg)}
 .lo .dl{margin:0;color:var(--mut)}
 .lg-btn:disabled{opacity:.6;box-shadow:none}   /* 로그인·회원가입 요청 중 */
 .lg-links .em{min-height:48px}
+
+/* ===== v17: 홈 리디자인 (로얄 블루 #4169E1 · 라이트 블루 #E8EDFF · 네이비 #1F2D5B · 그레이 블루 #6B7A99 · 화이트 #F8FAFF) ===== */
+.app[data-scr=home]{--rb:#4169E1;--lb:#E8EDFF;--nv:#1F2D5B;--gb:#6B7A99;--wb:#F8FAFF;color-scheme:light;color:var(--nv);
+ background:radial-gradient(75% 30% at 100% 0%,#dde6ff 0,rgba(232,237,255,0) 70%),radial-gradient(60% 22% at 0% 0%,rgba(232,237,255,.9) 0,rgba(232,237,255,0) 70%),var(--wb)}
+.app[data-scr=home] .hd{height:64px;padding:0 20px;border:0;background:transparent}
+.app[data-scr=home] .logo{color:var(--nv);font-size:23px}
+.app[data-scr=home] .lg0{width:32px;height:32px}
+.app[data-scr=home] .lg0 .tk{stroke:#d5ddf2}
+.app[data-scr=home] .bellb{width:48px;height:48px;padding:0;border:0;background:#fff;color:var(--nv);box-shadow:0 6px 18px rgba(31,45,91,.10)}
+.app[data-scr=home] .bdg{top:-3px;right:-3px;background:var(--rb);border-color:#fff}
+.app[data-scr=home] .body{padding:0 20px 28px}
+.app[data-scr=home] .body.hasmp{padding-bottom:110px}
+.app[data-scr=home] :focus-visible{outline-color:var(--rb)}
+
+/* 히어로 */
+.hero2{position:relative;margin:0 -20px;padding:22px 20px 8px;isolation:isolate}
+.hero2::before{content:"";position:absolute;z-index:-1;left:-10%;right:-10%;top:47%;height:150px;border-radius:50%;background:radial-gradient(closest-side,#dfe7ff 0,rgba(232,237,255,.6) 60%,rgba(232,237,255,0) 100%)}   /* 버튼 뒤 은은한 빛 */
+.hero2::after{content:"";position:absolute;z-index:-1;right:-30%;top:-18%;width:95%;aspect-ratio:1;border-radius:50%;border:28px solid rgba(232,237,255,.75);border-left-color:transparent;border-bottom-color:transparent;transform:rotate(10deg)}   /* 오른쪽 위 곡선 장식 */
+.h2-art{position:absolute;z-index:0;right:-12px;top:6px;width:min(60%,250px);pointer-events:none}
+.sw{display:block;width:100%;height:auto;overflow:visible}
+.sw-hand{transform-box:view-box;transform-origin:140px 138px;transform:rotate(42deg)}
+.sw-pin{transform-box:view-box}
+@media (prefers-reduced-motion:no-preference){
+ .sw-hand{animation:swHand 7s ease-in-out infinite}
+ .sw-pin{animation:swPin 3.2s ease-in-out infinite}
+ @keyframes swHand{0%,100%{transform:rotate(38deg)}50%{transform:rotate(58deg)}}
+ @keyframes swPin{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+ .h2-tag.fade,.h2-s.fade{animation:hsFade .45s ease-out}
+ @keyframes hsFade{from{opacity:0;transform:translateY(4px)}}}
+.h2-copy{position:relative;z-index:1;padding-top:34px;min-height:236px}
+.h2-tag{display:inline-block;position:relative;margin:0 0 18px;padding-bottom:8px;font-size:15px;font-weight:600;color:var(--nv);letter-spacing:-.3px;border-bottom:1.5px solid #cfd8f1}
+.h2-tag::after{content:"";position:absolute;left:0;bottom:-2.5px;width:26px;height:3.5px;border-radius:2px;background:var(--rb)}
+.h2-h{margin:0;font-size:46px;line-height:1.16;font-weight:900;letter-spacing:-2.2px;color:var(--nv)}
+.h2-h em{font-style:normal;color:var(--rb)}
+.h2-s{margin:18px 0 0;font-size:16px;line-height:1.6;color:#3d4a70;letter-spacing:-.3px}
+@media (max-width:370px){.h2-h{font-size:40px}.h2-art{width:56%}}
+
+/* 등록 버튼 */
+.cta2{position:relative;z-index:1;display:flex;align-items:center;gap:14px;width:100%;height:78px;margin:30px 0 0;padding:0 11px 0 26px;border:1px solid rgba(65,105,225,.08);border-radius:99px;background:#fff;color:var(--nv);text-align:left;box-shadow:0 16px 36px rgba(65,105,225,.16),0 2px 6px rgba(31,45,91,.05);transition:transform .15s,box-shadow .15s}
+.cta2:active{transform:scale(.985);box-shadow:0 8px 20px rgba(65,105,225,.18)}
+.cta2-ic{flex:none;display:grid;place-items:center;color:var(--rb)}
+.cta2-bar{flex:none;width:1.5px;height:28px;background:#cdd6ef}
+.cta2-t{flex:1;min-width:0;font-size:19px;font-weight:800;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cta2-go{flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#5f86f7,#3058d8);box-shadow:0 8px 18px rgba(65,105,225,.38)}
+.h2-dots{display:flex;justify-content:center;gap:2px;margin:12px 0 0}
+.h2-dots button{width:26px;height:32px;display:grid;place-items:center;padding:0;border:0;background:none}
+.h2-dots i{width:10px;height:10px;border-radius:50%;background:#cbd2e4;transition:background .2s,transform .2s}
+.h2-dots [aria-current=true] i{background:var(--rb);transform:scale(1.1)}
+
+/* 섹션 제목 */
+.sec2{display:flex;align-items:center;justify-content:space-between;margin:26px 0 12px}
+.sec2 h3{display:flex;align-items:center;gap:10px;margin:0;font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--nv)}
+.sec2 h3::before{content:"";width:4px;height:20px;border-radius:2px;background:var(--rb)}
+.sec2 .more{display:inline-flex;align-items:center;gap:2px;min-height:44px;margin-right:-6px;padding:0 6px;border:0;background:none;font-size:14px;font-weight:600;color:var(--gb)}
+
+/* 인기 있는 공간: 사진 자리는 네모 박스 */
+.pps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pp{position:relative;aspect-ratio:1/1.05;border-radius:18px;overflow:hidden;background:var(--lb);box-shadow:0 8px 20px rgba(31,45,91,.08)}
+.pp.sk{background:linear-gradient(100deg,#eef2fd 30%,#f6f8ff 50%,#eef2fd 70%);background-size:300% 100%}
+@media (prefers-reduced-motion:no-preference){.pp.sk{animation:sk 1.4s linear infinite}@keyframes sk{to{background-position:-150% 0}}}
+.pp-b{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;width:100%;padding:0;border:0;background:none;color:var(--nv);text-align:left}
+.pp-ph{position:absolute;inset:0;display:grid;place-items:center;padding-bottom:30%;color:var(--c);background:linear-gradient(160deg,#f3f6ff 0%,color-mix(in srgb,var(--c) 14%,#eef2ff) 100%)}   /* 사진 자리(네모 박스) */
+.pp-ph .ic2{width:38%;height:auto;opacity:.75;stroke-width:1.6}
+.pp-tx{position:relative;display:flex;flex-direction:column;gap:3px;padding:10px 10px 11px;background:linear-gradient(to top,rgba(255,255,255,.96) 55%,rgba(255,255,255,0))}
+.pp-tx b{font-size:13.5px;font-weight:800;letter-spacing:-.3px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-tx>span{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:600;color:var(--gb);white-space:nowrap;overflow:hidden}
+.pp-tx>span svg{flex:none}
+.pp-hb{position:absolute;top:6px;right:6px;width:36px;height:36px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.85);color:var(--gb);box-shadow:0 2px 6px rgba(31,45,91,.1)}
+.pp-hb.on{color:var(--rb)}
+
+/* 추천 코스: 사진 자리는 네모 박스 · 가로로 넘기기 */
+.rcs{display:grid;grid-auto-flow:column;grid-auto-columns:100%;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -20px;padding:0 20px 14px;scroll-padding:0 20px}
+.rcs::-webkit-scrollbar{display:none}
+.rcs:has(.rc+.rc){grid-auto-columns:88%}
+.rc{position:relative;scroll-snap-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:158px;padding:16px 18px;border:0;border-radius:22px;overflow:hidden;background:linear-gradient(120deg,#eef2ff 0%,#e2e9ff 60%,#d6e0ff 100%);color:var(--nv);text-align:left;box-shadow:0 10px 24px rgba(31,45,91,.09)}
+.rc-ph{position:absolute;right:-8px;top:-6px;bottom:-6px;width:46%;display:flex;align-items:flex-start;justify-content:center;gap:6px;padding-top:30px;background:rgba(255,255,255,.45);border-radius:20px 0 0 20px}   /* 사진 자리(네모 박스) */
+.rc-ph i{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:#fff;color:var(--c);box-shadow:0 4px 10px rgba(31,45,91,.08)}
+.rc-ph .ic2{width:24px;height:24px}
+.rc-chip{position:relative;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px 0 10px;border-radius:99px;background:#fff;color:var(--rb);font-size:14px;font-weight:800;box-shadow:0 4px 12px rgba(65,105,225,.12)}
+.rc-t{position:relative;max-width:58%;margin-top:4px;font-size:22px;font-weight:900;letter-spacing:-.8px}
+.rc-m{position:relative;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--gb)}
+.rc-m i{width:1px;height:12px;background:#b9c3dc}
+.rc-go{position:absolute;right:14px;bottom:14px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--nv);box-shadow:0 6px 16px rgba(31,45,91,.14)}
+
+/* 홈 하단 메뉴: 떠 있는 둥근 바 + 가운데 큰 원 */
+.nav.nav2{position:relative;height:72px;margin:0 14px 12px;border:0;border-radius:26px;background:#fff;box-shadow:0 10px 30px rgba(31,45,91,.12)}
+.nav.nav2 button{color:var(--gb);font-size:13px}
+.nav.nav2 button.on{color:var(--nv)}
+.nav.nav2 .reg{width:84px;height:84px;margin-top:-30px;gap:3px;border:5px solid var(--wb);background:linear-gradient(140deg,#5f86f7,#3058d8);color:#fff;font-size:14px;box-shadow:0 10px 24px rgba(65,105,225,.38)}
+.nav.nav2 .reg svg{width:26px;height:26px}
+.nav.nav2 .reg.on{outline:0;color:#fff}
+.app[data-scr=home] .mp{bottom:100px}
