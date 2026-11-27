@@ -125,7 +125,7 @@ const BUF=10;             // 복귀 여유 시간(분)
 const DSTAY=10;           // 담을 때 가정하는 기본 체류 시간(분) — 시간 부족 계산에만 쓰고 STEP 2에는 표시하지 않음
 const COL=['#4169E1','#2E9E5B','#E07B2E','#8B5CF6','#0E8FA3','#D9467F','#5B6B8C','#A15C1F'];   // v18: 선택 순서별 색 (1 로얄 블루 · 2 초록 · 3 주황 …, 흰 글자 대비 확보)
 const colr=j=>COL[j%COL.length];
-const CC={서점:'#4f6bed',도서관:'#8b5cf6',공원:'#16a56b',카페:'#e8803a',쇼핑:'#e5528a',체험관광:'#d97706',미술관:'#7c3aed',박물관:'#0f766e'};   // 카테고리 색
+const CC={서점:'#4f6bed',도서관:'#8b5cf6',공원:'#16a56b',카페:'#8B5A2B',쇼핑:'#e5528a',체험관광:'#E8831F',미술관:'#3F4652',박물관:'#0f766e'};   // v18.3: 카페 갈색 · 미술관 회흑색 (체험관광 주황·도서관 보라와 구분)   // 카테고리 색
 const ICP={
  서점:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3M9 7.5h6"/>',
  도서관:'<path d="M3.5 9.5 12 4l8.5 5.5z"/><path d="M6 12v6M10 12v6M14 12v6M18 12v6M4 20.5h16"/>',
@@ -182,7 +182,7 @@ function geo(k,R){
   const p=P[k],r=Math.PI/180,cos=Math.cos(R.lat*r),dx=(p.lng-R.lng)*cos,dy=p.lat-R.lat;
   const a=Math.sin((p.lat-R.lat)*r/2)**2+cos*Math.cos(p.lat*r)*Math.sin((p.lng-R.lng)*r/2)**2;
   const km=12742*Math.asin(Math.sqrt(a));
-  g={w:Math.max(1,Math.round(km*1.3/4.8*60)),a:Math.atan2(-dy,dx)/r};   // 직선거리×1.3 ÷ 도보 4.8km/h
+  g={w:Math.max(1,Math.round(km*1.3/4.5*60)),a:Math.atan2(-dy,dx)/r};   // 직선거리×1.3 ÷ 도보 4.5km/h (v18.3: 사람 평균 걷는 속도)
   GC.set(key,g);
  }
  return g;
@@ -466,7 +466,7 @@ const distTxt=(k,ar)=>{const m=dkm(ar||S.loc,P[k])*1000*1.3;return m<1000?Math.r
 // 시각 표시: 오후 3시 30분
 const ampm=m=>{m=((m%1440)+1440)%1440;const h=Math.floor(m/60),mi=m%60,h12=h%12||12;return `${h<12?'오전':'오후'} ${h12}시${mi?' '+mi+'분':''}`};
 const tabOf=()=>{const i=S.i;if(i=='prog')return S.active?'reg':'home';return {home:'home',done:'home',reg:'reg',map:'reg',confirm:'reg',my:'my',mc:'my'}[i]};
-const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg';   // v18.1: 모든 화면 같은 모양 — 가운데 큰 원 '코스'
+const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):S.sel.length?'map':'reg';   // v18.3: 담던 장소가 있으면 지도로 이어서   // v18.1: 모든 화면 같은 모양 — 가운데 큰 원 '코스'
  return `<nav class="nav nav2" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home"${a=='home'?' aria-current="page"':''}>${IC.home}<span>홈</span></button><button class="big ${a=='reg'?'on':''}" data-go="${go}"${a=='reg'?' aria-current="page"':''}>${IC.route}<span>코스</span></button><button class="${a=='my'?'on':''}" data-go="my"${a=='my'?' aria-current="page"':''}>${IC.user}<span>마이페이지</span></button></nav>`};
 const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫자 0 = 코스가 채워지는 원형 타이머 (색은 코스 선택 순서 색, 남은 구간은 복귀 여유)
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
@@ -674,11 +674,12 @@ let panNext=false;
 const mkey=()=>S.loc.lat+','+S.loc.lng+'|'+S.wait;
 const PIN='<svg viewBox="0 0 30 42" aria-hidden="true"><path class="bd" d="M15 1.2C7.4 1.2 1.2 7.3 1.2 14.9c0 10.2 13.8 25.9 13.8 25.9s13.8-15.7 13.8-25.9C28.8 7.3 22.6 1.2 15 1.2z"/><path class="hl" d="M6.2 11.5C7.4 6.9 11 4.4 15 4.4"/><circle class="in" cx="15" cy="15" r="9.6"/></svg>';
 function kpin(k){
- const p=P[k],i=S.sel.indexOf(k),on=i>=0,ri=inRad(k),o=!on&&ri&&!fit(k),b=document.createElement('button');
- b.className='kp '+(on?'on':ri?'in':'out')+(o?' off':'')+(S.focus===k?' f':'');
- if(on)b.style.setProperty('--pc',colr(i));else b.style.setProperty('--pc',CC[p.c]||'#6B7A99');   // v18.1: 핀 색 = 카테고리 색 (서점 파랑 · 도서관 보라 · 공원 초록 · 카페 주황 …). 반경 밖·시간 부족은 흐리게(CSS)
+ const p=P[k],i=S.sel.indexOf(k),on=i>=0,ok=on||fit(k),b=document.createElement('button');
+ // v18.3: 다녀올 수 있는 곳(왕복 도보 4.5km/h + 체류 + 복귀 여유 ≤ 남은 대기시간) = 카테고리 색 / 못 다녀오는 곳 = 작고 흐린 회색 핀
+ b.className='kp '+(on?'on':ok?'in':'out')+(S.focus===k?' f':'');
+ if(on)b.style.setProperty('--pc',colr(i));else if(ok)b.style.setProperty('--pc',CC[p.c]||'#6B7A99');
  b.dataset.n=p.n;b.dataset.focus=k;
- b.setAttribute('aria-label',p.c+' '+p.n+' 도보 '+tt(k)+'분'+(on?' 담음':o?' 시간 부족':ri?'':' 반경 밖'));
+ b.setAttribute('aria-label',p.c+' '+p.n+' 도보 '+tt(k)+'분'+(on?' 담음':ok?'':' 시간 안에 다녀올 수 없음'));
  b.innerHTML=PIN+`<span class="pe">${ico(p.c)}</span>`+(on?`<i class="nb">${i+1}</i>`:'');
  b.addEventListener('click',e=>{e.stopPropagation();S.focus=S.focus===k?null:k;S.top=1;if(S.focus!=null&&S.sheetX!=='e')S.sheetX='e';draw()});   // 같은 핀을 다시 누르면 설명 닫기
  return b}
@@ -691,7 +692,7 @@ function kLayers(){
   KM.line=new kakao.maps.Polyline({path:[c,...S.sel.map(k=>kLL(P[k].lat,P[k].lng)),c],strokeWeight:3,strokeColor:'#222',strokeOpacity:.8,strokeStyle:'shortdash'});
   KM.line.setMap(KM.map)}
  const add=(el,pos,z,ya)=>{const o=new kakao.maps.CustomOverlay({position:pos,content:el,xAnchor:.5,yAnchor:ya??1,zIndex:z,clickable:true});o.setMap(KM.map);KM.ov.push(o)};   // 핀 끝(아래 가운데)이 좌표
- list().forEach(k=>add(kpin(k),kLL(P[k].lat,P[k].lng),S.focus===k?9:S.sel.includes(k)?7:inRad(k)?5:3));
+ list().forEach(k=>add(kpin(k),kLL(P[k].lat,P[k].lng),S.focus===k?9:S.sel.includes(k)?7:fit(k)?5:3));
  const me=document.createElement('div');me.className='kme';me.innerHTML='<i></i>';me.setAttribute('role','img');me.setAttribute('aria-label','웨이팅 장소');   // v18: 웨이팅 장소 = 파란 점 + 퍼지는 원
  add(me,c,20,.5);
 }
@@ -725,7 +726,7 @@ function mountKakaoMap(){
 // 장소 상세 (행을 누르면 아래로 펼침): 주소 · 전화 · 운영/휴무(공휴일 포함) · 도보 시간(참고)
 const vrow=(t,v)=>v?`<div><dt>${t}</dt><dd>${esc(v)}</dd></div>`:'';
 const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='도서관'?p.closed:(p.closedTxt||'');   // v18.2: 홈페이지 링크 삭제
- return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('분류',p.sub)}${vrow('기간',p.period)}${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}${vrow('영업일',p.bizDays)}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',descLine(p))}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
+ return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('기간',p.period)}${vrow('영업일',[p.bizDays,cl?'휴무 '+cl:''].filter(Boolean).join(' · '))}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',descLine(p))}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
 // v18.1 소개 한 줄: 비짓서울 본문에 섞인 CSS 코드(.se-contents{…})를 지우고 첫 문장만. 한국어 소개가 없으면 분류 + 태그 단어로 한 줄 만듦
 const descLine=p=>{let d=String(p.desc||'').replace(/<style[\s\S]*?<\/style>/gi,' ');
  if(d.includes('{')||d.includes('}'))d=d.replace(/^[\s\S]*\}/,'').replace(/^[^가-힣]*$/,'');   // 마지막 } 까지는 CSS
