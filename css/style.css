@@ -1112,3 +1112,17 @@ a.rs-o{border-color:#AFC0F2;background:var(--lb)}
 /* ===== v18.3: 장소 설명 맨 아래가 하단 메뉴 큰 원(코스)에 가리지 않게 ===== */
 .bsheet .sheet{padding-bottom:48px}
 .kp.out{--w:22px;--pc:#A9B4CF;opacity:.55;filter:none}   /* 시간 안에 못 다녀오는 곳: 작고 흐린 회색 */
+
+/* ===== v18.4: 지도 화면 '영업중' 토글 버튼 · 장소 목록과 하단 메뉴가 겹치지 않게 ===== */
+.onb{flex:none;display:inline-flex;align-items:center;gap:4px;height:42px;padding:0 14px;border:1px solid transparent;border-radius:99px;background:#fff;color:var(--nv);font-size:13.5px;font-weight:700;white-space:nowrap;box-shadow:0 3px 10px rgba(31,45,91,.06)}
+.onb.on{background:var(--rb);color:#fff;box-shadow:0 4px 12px rgba(65,105,225,.3)}
+.mapbody+.nav.nav2{margin-top:30px}   /* 하단 메뉴 큰 원(위로 22px)이 목록을 가리지 않도록 위에 빈 공간 */
+.bsheet .sheet{padding-bottom:16px}
+
+/* ===== v18.5: 하단 메뉴 — 가운데 '코스' 원이 바에 파인 홈(노치)에 들어앉은 모양 ===== */
+.nav.nav2{isolation:isolate}
+.nav.nav2::before{content:"";position:absolute;z-index:0;left:50%;top:-30px;width:88px;height:88px;margin-left:-44px;border-radius:50%;
+ background:var(--wb);box-shadow:inset 0 5px 8px rgba(31,45,91,.13),inset 0 -1px 0 rgba(255,255,255,.6);clip-path:inset(30px -2px -2px -2px)}   /* 원 모양으로 파인 부분 + 안쪽 그림자 (바 위로는 안 보이게 잘라냄) */
+.nav.nav2 button{position:relative;z-index:1}
+.nav.nav2 .big{box-shadow:0 8px 18px rgba(65,105,225,.35),0 2px 4px rgba(31,45,91,.12)}
+.nav.nav2::before{top:-32px;width:92px;height:92px;margin-left:-46px;background:#EDF1FB;box-shadow:inset 0 6px 10px rgba(31,45,91,.20),inset 0 1px 2px rgba(31,45,91,.12);clip-path:inset(32px -2px -2px -2px)}   /* 파인 홈을 조금 더 깊게 */
