@@ -191,7 +191,7 @@ function geo(k,R){
 /* ---------- 상태 + 저장 ---------- */
 const KEY='0cha:v2';
 const SAVED=(()=>{try{localStorage.removeItem(KEY)}catch(e){}return null})();   // 새로고침(F5)하면 저장값을 지우고 처음 상태(홈)로 시작
-const S={i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],hs:0,cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:'',lbusy:false,jid:'',jpw:'',jpw2:'',jerr:''};
+const S={sheetX:'c',i:'home',from:'map',wait:120,cats:[],sel:[],stay:{},focus:null,view:'list',q:'',start:null,rest:'웨이팅 중인 식당',area:'성수동',loc:{lat:AREAS[0].lat,lng:AREAS[0].lng},fin:null,editId:null,active:false,curId:null,seg:'c',cid:null,sort:'near',onow:false,catOpen:false,favs:[],courses:[],toast:'',top:0,rsheet:false,fcats:[],fcatOpen:false,fonow:false,fsort:'def',wadj:false,mback:null,picked:false,wq:'',sugg:[],sgst:'',res:[],rstat:'',cand:null,swait:false,nopen:false,unread:0,nfired:{},nlog:[],hs:0,cq:'',cdate:'all',csort:'new',sat:'',user:null,after:null,lid:'',lpw:'',lkeep:true,lerr:'',lbusy:false,jid:'',jpw:'',jpw2:'',jerr:''};
 // 로그인: '로그인 상태 유지'를 켜면 새로고침해도 유지 (코스 저장값과 별도 키)
 const AUTH='0cha:auth';
 // 회원정보 저장소: 구글 시트(member) ← Apps Script 웹앱 (컬럼: userId | password(해시) | createdate)
@@ -466,9 +466,8 @@ const distTxt=(k,ar)=>{const m=dkm(ar||S.loc,P[k])*1000*1.3;return m<1000?Math.r
 // 시각 표시: 오후 3시 30분
 const ampm=m=>{m=((m%1440)+1440)%1440;const h=Math.floor(m/60),mi=m%60,h12=h%12||12;return `${h<12?'오전':'오후'} ${h12}시${mi?' '+mi+'분':''}`};
 const tabOf=()=>{const i=S.i;if(i=='prog')return S.active?'reg':'home';return {home:'home',done:'home',reg:'reg',map:'reg',confirm:'reg',my:'my',mc:'my'}[i]};
-// v18: 모든 화면에서 떠 있는 둥근 메뉴(nav2). 큰 원은 가운데(등록/코스) — 마이페이지에서는 마이페이지 버튼이 큰 원
-const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg',my=a=='my',lbl=S.active||S.i=='home'||my?'코스':'등록';
- return `<nav class="nav nav2" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home"${a=='home'?' aria-current="page"':''}>${IC.home}<span>홈</span></button><button class="${my?'':'big '}${a=='reg'?'on':''}" data-go="${go}"${a=='reg'?' aria-current="page"':''}>${IC.route}<span>${lbl}</span></button><button class="${my?'big on':''}" data-go="my"${my?' aria-current="page"':''}>${my?IC.userF:IC.user}<span>마이페이지</span></button></nav>`};
+const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg';   // v18.1: 모든 화면 같은 모양 — 가운데 큰 원 '코스'
+ return `<nav class="nav nav2" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home"${a=='home'?' aria-current="page"':''}>${IC.home}<span>홈</span></button><button class="big ${a=='reg'?'on':''}" data-go="${go}"${a=='reg'?' aria-current="page"':''}>${IC.route}<span>코스</span></button><button class="${a=='my'?'on':''}" data-go="my"${a=='my'?' aria-current="page"':''}>${IC.user}<span>마이페이지</span></button></nav>`};
 const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫자 0 = 코스가 채워지는 원형 타이머 (색은 코스 선택 순서 색, 남은 구간은 복귀 여유)
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
@@ -493,7 +492,8 @@ const mpLeft=()=>remSec()<=0?'0분':fm(Math.ceil(remSec()/60));
 const miniPlayer=()=>{if(!mpOn())return '';   // 남은 시간(크고 굵게) + 몇 시까지 복귀 + 아래에 이동해야 할 장소
  return `<button class="mp ${banner().c}" data-cd="mpc" data-go="prog" aria-label="진행 중인 코스 보기"><span class="mp-ic" aria-hidden="true"><svg class="ic2" viewBox="0 0 24 24" width="22" height="22"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M6 15.8V10a4 4 0 0 1 4-4h5.8"/></svg></span><span class="mp-tx"><span class="mp-r1"><b class="mp-big" data-cd="mpbig">${mpLeft()}</b><span class="mp-ret" data-cd="mpret">${backAt()}까지 복귀</span></span><span class="mp-t" data-cd="mpd">${esc(mpDest())}</span></span><span class="mp-go" aria-hidden="true">›</span></button>`};
 const frame=(b,f)=>`${hd()}<main class="body${mpOn()?' hasmp':''}">${b}</main>${f?`<div class="ft">${f}</div>`:''}${miniPlayer()}${nav()}${toastH()}${routeSheet()}${notifSheet()}`;
-const frameM=(top,sheet,f)=>`${hd()}<main class="mapbody"><div class="mtop">${top}</div><div class="sheet" id="sheet">${sheet}</div></main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}${notifSheet()}`;
+// v18.1 지도 화면: 지도는 남는 높이를 모두 쓰고, 장소 목록은 아래에서 올라오는 시트(손잡이를 끌어 올리면 커지고 내리면 작아짐 · 네이버지도 장소검색처럼)
+const frameM=(top,sheet,f)=>`${hd()}<main class="mapbody"><div class="mtop">${top}</div><section class="bsheet${S.sheetX==='e'?' ex':''}" id="bsheet" aria-label="장소 목록"><button class="sh-h" data-shh="1" aria-label="장소 목록 ${S.sheetX==='e'?'줄이기':'크게 보기'} (위아래로 끌어서 조절)" aria-expanded="${S.sheetX==='e'}"><i></i></button><div class="sheet" id="sheet">${sheet}</div></section></main>${f?`<div class="ft">${f}</div>`:''}${nav()}${toastH()}${notifSheet()}`;
 const bar=()=>{let h='';S.sel.forEach((k,j)=>h+=`<i style="width:${cost(k)/S.wait*100}%;background:${colr(j)};color:#fff">${j+1} ${P[k].e} ${cost(k)}′</i>`);const r=rem();
  return `<div class="bar" role="img" aria-label="${r<0?'대기시간 '+fm(-r)+' 초과':'복귀 여유 '+fm(r)}">${h}<i class="${r<0?'x':'m'}" style="flex:1">${r<0?'⚠ '+fm(-r)+' 초과':'여유 '+fm(r)}</i></div>`};
 // STEP 3 여유 시간: 원형 타이머 모양 (선택 순서별 색 호 + 가운데 복귀 여유)
@@ -501,7 +501,7 @@ const ringSvg=()=>{const R=48,C=2*Math.PI*R,r=rem(),over=r<0;let acc=0;
  const segs=over?`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--err)" stroke-width="12"/>`:S.sel.map((k,j)=>{const len=Math.min(cost(k)/S.wait*C,C-acc),g=len>4?1.5:0,o=-acc;acc+=len;return `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${colr(j)}" stroke-width="12" stroke-dasharray="${Math.max(len-g,0)} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<div class="rbc" role="img" aria-label="${over?'대기시간 '+fm(-r)+' 초과':'대기시간 '+fm(S.wait)+' 중 복귀 여유 '+fm(r)}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/><g transform="rotate(-90 60 60)">${segs}</g></svg><div class="rbt"><span class="sub">${over?'초과':'복귀 여유'}</span><b class="${over?'ov':''}">${fm(Math.abs(r))}</b></div></div>`};
 // STEP 3 여유 시간: 원형 타이머 모양 (선택 순서별 색 호 + 가운데 복귀 여유)
-const ringBar=()=>`<div class="rb">${ringSvg()}<div class="rbs"><div><span class="sub">대기시간</span><b>${fm(S.wait)}</b></div><div><span class="sub">코스 사용</span><b>${fm(total())}</b></div>${S.sel.length?`<div class="rbl">${S.sel.map((k,j)=>`<span class="dot sm" style="background:${colr(j)}">${j+1}</span>`).join('')}</div>`:''}</div></div>`;
+const ringBar=x=>`<div class="rb${x?' hasx':''}">${ringSvg()}<div class="rbs"><div><span class="sub">대기시간</span><b>${fm(S.wait)}</b></div><div><span class="sub">코스 사용</span><b>${fm(total())}</b></div></div>${x||''}</div>`;   // v18.1: 번호 점 삭제 · 우측 상단에 + (장소 더 담기)
 const cats=()=>CAT_ORDER.filter(c=>c=='카페'||P.some(p=>p.c==c));   // 카페는 API 연결 전이라도 항상 표시
 const CATS4=['서점','도서관','공원','카페','쇼핑','체험관광','미술관','박물관'];   // 지도 안 칩 · 관심 공간 필터 (지도 칩은 가로 스크롤)
 // 장소 종류 필터: 지도 안(위쪽 칩). 누르면 그 종류만 표시, 같은 칩을 다시 누르거나 '전체'를 누르면 전체
@@ -539,10 +539,8 @@ const resetBuild=()=>{S.sel=[];S.stay={};S.editId=null;S.focus=null};
 /* ---------- 홈 ---------- */
 // ===== v17 홈: 히어로(스톱워치 일러스트 · 안내 문구 3장) + 인기 있는 공간 + 추천 코스 =====
 // 컬러: 로얄 블루 #4169E1 · 라이트 블루 #E8EDFF · 네이비 #1F2D5B · 그레이 블루 #6B7A99 · 화이트 #F8FAFF (style.css v17 홈)
-const HS=[   // 히어로 안내 문구 (아래 점 3개로 넘김 · 5초마다 자동)
- {t:'줄 서는 시간을 내 시간으로',s:'기다리는 동안,<br>더 알찬 시간을 보내세요!'},
- {t:'남은 시간에 딱 맞는 코스',s:'대기시간만 입력하면<br>다녀올 수 있는 곳을 골라드려요.'},
- {t:'복귀 시간은 0차가 챙겨요',s:'출발 · 웨이팅 차례 알림으로<br>내 순서를 놓치지 마세요.'}];
+const HS=[   // v18.2: 히어로 문구 1개 고정 (넘김·자동 전환 없음)
+ {t:'줄 서는 시간도 내 시간으로',s:'대기시간만 입력하면<br>다녀올 수 있는 곳을 알려드려요.'}];
 const SWATCH=(()=>{   // 스톱워치 일러스트 (SVG 직접 그림 · 외부 이미지 없음)
  const ticks=Array.from({length:12},(_,i)=>{const a=i*30*Math.PI/180,r1=i%3?47:44,r2=53,x=v=>(140+Math.sin(a)*v).toFixed(1),y=v=>(138-Math.cos(a)*v).toFixed(1);return `<line x1="${x(r1)}" y1="${y(r1)}" x2="${x(r2)}" y2="${y(r2)}"/>`}).join('');
  const orbit='<ellipse cx="135" cy="150" rx="124" ry="34" transform="rotate(-14 135 150)" fill="none" stroke="url(#swRing)" stroke-width="2.6"/>';
@@ -583,23 +581,17 @@ const ppCard=k=>{const p=P[k],fv=S.favs.includes(k);
 const RC=[{pop:'서점,공원|90',t:'서점 → 공원',n:2,c:['서점','공원']},{pop:'공원,카페|60',t:'공원 → 카페',n:2,c:['공원','카페']}];
 const rcCard=r=>{const w=+r.pop.split('|')[1];
  return `<button class="rc" data-pop="${r.pop}" aria-label="${r.t} 코스 · 웨이팅 ${fm(w)} 기준 · 이 코스로 시작"><span class="rc-ph" aria-hidden="true">${r.c.map(c=>`<i style="--c:${CC[c]}">${ico(c)}</i>`).join('')}</span><span class="rc-chip">${HI.clock.replace(/width="30" height="30"/,'width="18" height="18"')}${fm(w)} 남음</span><b class="rc-t">${r.t} 코스</b><span class="rc-m">${HI.pin}${r.n}곳<i aria-hidden="true"></i>도보</span><span class="rc-go" aria-hidden="true">${HI.arrow}</span></button>`};
-const home=()=>{const hs=HS[S.hs||0],pk=homePicks();
+const home=()=>{const hs=HS[0],pk=homePicks();
  return frame(`<section class="hero2" aria-label="0차 소개">
 <div class="h2-art">${SWATCH}</div>
 <div class="h2-copy"><p class="h2-tag" data-hs="t">${hs.t}</p><h2 class="h2-h">웨이팅,<br>이제 <em>0차</em>로.</h2><p class="h2-s" data-hs="s">${hs.s}</p></div>
 <button class="cta2" data-go="reg"><span class="cta2-ic">${HI.clock}</span><span class="cta2-bar" aria-hidden="true"></span><span class="cta2-t">웨이팅 정보 등록하기</span><span class="cta2-go" aria-hidden="true">${HI.arrow}</span></button>
-<div class="h2-dots" role="group" aria-label="안내 문구">${HS.map((_,i)=>`<button data-hslide="${i}" aria-label="안내 ${i+1}/${HS.length}" aria-current="${(S.hs||0)==i}"><i></i></button>`).join('')}</div>
 </section>
 <div class="sec2"><h3>인기 있는 공간</h3><button class="more" data-go="reg">더보기 ${HI.more}</button></div>
 <div class="pps">${pk.length?pk.map(ppCard).join(''):'<div class="pp sk"></div><div class="pp sk"></div><div class="pp sk"></div>'}</div>
 <div class="sec2"><h3>추천 코스</h3><button class="more" data-go="reg">더보기 ${HI.more}</button></div>
 <div class="rcs">${RC.map(rcCard).join('')}</div>`)};
-// 히어로 안내 문구 바꾸기 (화면 전체를 다시 그리지 않음)
-function setHs(i){S.hs=i;const h=HS[i],t=document.querySelector('[data-hs=t]'),sb=document.querySelector('[data-hs=s]');if(!t||!sb)return;
- [t,sb].forEach(el=>{el.classList.remove('fade');void el.offsetWidth;el.classList.add('fade')});t.innerHTML=h.t;sb.innerHTML=h.s;
- document.querySelectorAll('[data-hslide]').forEach(b=>b.setAttribute('aria-current',+b.dataset.hslide===i))}
-setInterval(()=>{if(S.i!=='home'||document.hidden)return;const h=document.querySelector('.hero2');if(!h||h.matches(':hover')||h.contains(document.activeElement))return;
- if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;setHs(((S.hs||0)+1)%HS.length)},5000);
+
 
 /* ---------- 등록 ---------- */
 /* ---------- 카카오지도 공통 ---------- */
@@ -684,11 +676,11 @@ const PIN='<svg viewBox="0 0 30 42" aria-hidden="true"><path class="bd" d="M15 1
 function kpin(k){
  const p=P[k],i=S.sel.indexOf(k),on=i>=0,ri=inRad(k),o=!on&&ri&&!fit(k),b=document.createElement('button');
  b.className='kp '+(on?'on':ri?'in':'out')+(o?' off':'')+(S.focus===k?' f':'');
- if(on)b.style.setProperty('--pc',colr(i));else if(ri&&!o)b.style.setProperty('--pc','#4169E1');   // v18: 반경 안 = 로얄 블루 · 밖 = 그레이 블루(CSS)
+ if(on)b.style.setProperty('--pc',colr(i));else b.style.setProperty('--pc',CC[p.c]||'#6B7A99');   // v18.1: 핀 색 = 카테고리 색 (서점 파랑 · 도서관 보라 · 공원 초록 · 카페 주황 …). 반경 밖·시간 부족은 흐리게(CSS)
  b.dataset.n=p.n;b.dataset.focus=k;
  b.setAttribute('aria-label',p.c+' '+p.n+' 도보 '+tt(k)+'분'+(on?' 담음':o?' 시간 부족':ri?'':' 반경 밖'));
  b.innerHTML=PIN+`<span class="pe">${ico(p.c)}</span>`+(on?`<i class="nb">${i+1}</i>`:'');
- b.addEventListener('click',e=>{e.stopPropagation();S.focus=k;S.top=1;draw()});
+ b.addEventListener('click',e=>{e.stopPropagation();S.focus=S.focus===k?null:k;S.top=1;if(S.focus!=null&&S.sheetX!=='e')S.sheetX='e';draw()});   // 같은 핀을 다시 누르면 설명 닫기
  return b}
 function kLayers(){
  if(!KM.map)return;
@@ -732,8 +724,15 @@ function mountKakaoMap(){
 }
 // 장소 상세 (행을 누르면 아래로 펼침): 주소 · 전화 · 운영/휴무(공휴일 포함) · 도보 시간(참고)
 const vrow=(t,v)=>v?`<div><dt>${t}</dt><dd>${esc(v)}</dd></div>`:'';
-const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='도서관'?p.closed:(p.closedTxt||''),su=safeUrl(p.site);
- return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('분류',p.sub)}${vrow('기간',p.period)}${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}${vrow('영업일',p.bizDays)}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${su?`<div><dt>홈페이지</dt><dd><a href="${esc(su)}" target="_blank" rel="noopener noreferrer">${esc(su.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,''))}</a></dd></div>`:''}${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',p.desc)}${vrow('태그',p.tags)}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
+const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='도서관'?p.closed:(p.closedTxt||'');   // v18.2: 홈페이지 링크 삭제
+ return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('분류',p.sub)}${vrow('기간',p.period)}${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}${vrow('영업일',p.bizDays)}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',descLine(p))}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
+// v18.1 소개 한 줄: 비짓서울 본문에 섞인 CSS 코드(.se-contents{…})를 지우고 첫 문장만. 한국어 소개가 없으면 분류 + 태그 단어로 한 줄 만듦
+const descLine=p=>{let d=String(p.desc||'').replace(/<style[\s\S]*?<\/style>/gi,' ');
+ if(d.includes('{')||d.includes('}'))d=d.replace(/^[\s\S]*\}/,'').replace(/^[^가-힣]*$/,'');   // 마지막 } 까지는 CSS
+ d=d.replace(/\s+/g,' ').trim();
+ if(/[가-힣]/.test(d)){const m=/^.+?(?:[.!?。]|다\.|요\.)(?=\s|$)/.exec(d);d=(m?m[0]:d);return d.length>70?d.slice(0,68).trim()+'…':d}
+ const w=String(p.tags||'').split('#').map(x=>x.trim()).filter(x=>x&&/[가-힣]/.test(x)&&!/서울|쇼핑|관광|여행|명소|가볼만한/.test(x)&&x!==p.n).slice(0,3);
+ return w.length?`${p.sub||p.c} · ${w.join(', ')}`:''};
 // 관심 공간 하트 버튼 (마이페이지 '관심 공간'에 저장/해제)
 const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${HI.heart(fv).replace(/width="20" height="20"/,'width="26" height="26"').replace('stroke-width="2"','stroke-width="1.8"')}</button>`};
 // v18 장소 행: [카테고리 색 원 아이콘] 이름 / 📍 도보 N분 • 거리 ........ ♡ [담기]
@@ -831,12 +830,12 @@ const tline=(sel,stm,ar,w,o)=>{o=o||{};let t=base();
 const BK={prog:'진행 화면',mc:'코스 상세',map:'지도'};
 const confirmScr=()=>{const [h]=tline(S.sel,S.stay,S.loc,null,{card:'all'}),r=rem(),ed=editing(),dis=r<0||!S.sel.length?'disabled':'',
  bf=(S.from=='prog'&&S.active)||(S.from=='mc'&&ed&&!S.active)?S.from:'map';
- return frame(`${ttl('오늘의 0차 코스','참고','⋮⋮로 순서를 바꾸고 체류 시간을 조절하세요. 이동시간은 도보 기준 참고값이에요.',{back:backBtn(bf,BK[bf]),x:`<button class="ibx" data-go="map" aria-label="장소 더 담기 (지도)">${UI.plus.replace(/width="22" height="22"/,'width="28" height="28"')}</button>`})}${ringBar()}
+ return frame(`${ttl('오늘의 0차 코스','참고','⋮⋮로 순서를 바꾸고 체류 시간을 조절하세요. 이동시간은 도보 기준 참고값이에요.',{back:backBtn(bf,BK[bf]),})}${ringBar(`<button class="ibx rbx" data-go="map" aria-label="장소 더 담기 (지도)">${UI.plus}</button>`)}
 
 <div id="order">${S.sel.map((k,j)=>`<div class="pc2"><button class="dh" data-drag="${j}" aria-label="${esc(P[k].n)} 순서 변경 (끌어서 이동, 위·아래 방향키도 가능)"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></g></svg></button><span class="dot" style="background:${colr(j)}">${j+1}</span>${cic(P[k].c)}<h3 class="nm">${esc(P[k].n)}</h3><div class="st"><button class="sb m" data-st="${k}:-10" ${stay(k)<=dstay()?'disabled':''} aria-label="체류 10분 줄이기">${UI.minus}</button><b>${stay(k)}분</b><button class="sb p" data-st="${k}:10" ${stay(k)>=240?'disabled':''} aria-label="체류 10분 늘리기">${UI.plus}</button></div>${S.sel.length>1?`<button class="rmx" data-rm="${k}" aria-label="${esc(P[k].n)} 빼기">${UI.x.replace(/width="22" height="22"/,'width="18" height="18"')}</button>`:''}</div>`).join('')||'<div class="box sub">담은 장소가 없어요</div>'}</div>
 ${h}<div class="rmb${r<0?' err':''}"><span class="rmb-ic">${UI.flag}</span><span>${r<0?`코스가 <b>${fm(-r)}</b> 초과됐어요 · 체류를 줄이거나 장소를 빼주세요`:`복귀 여유 <b>${fm(r)}</b>`}</span></div>`,
  S.active?`<button class="btn" data-apply="1" ${dis}>수정 완료 · 진행 화면으로</button>`
- :`<div class="ftr"><button class="btn" data-start="1" ${dis}>코스 시작하기</button><button class="btn g sv" data-later="1" ${S.sel.length?'':'disabled'}>저장</button></div>`)};
+ :`<div class="ftr"><button class="btn" data-start="1" ${dis}>코스 시작하기</button><button class="btn g sv" data-later="1" ${S.sel.length?'':'disabled'} aria-label="코스 저장 (마이페이지 내 코스)" title="저장">${sv2('<path d="M6.5 3.5h11a1.5 1.5 0 0 1 1.5 1.5v15.5l-7-4.6-7 4.6V5a1.5 1.5 0 0 1 1.5-1.5z"/>',24,2)}</button></div>`)};   // v18.1: 저장 = 북마크 아이콘
 
 /* ---------- 진행 / 완료 ---------- */
 // v18 진행 화면: '지금' 카드의 사진 자리 (사진 데이터가 없어 단계에 맞는 카테고리 색 + 아이콘으로 표시)
@@ -1017,7 +1016,7 @@ document.addEventListener('click',e=>{
  else if(has('adj')){S.wait=clampWait(S.wait+ +d.adj);if(!S.active)prune()}
  else if(has('wadj'))S.wadj=!S.wadj;
  else if(has('live')){S.wait=Math.min(300,Math.max(10,S.wait+ +d.live));toast(`대기시간을 ${d.live>0?'+':'−'}10분 조정했어요 · 복귀 ${backAt()}`)}
- else if(has('focus')){if(S.focus===+d.focus&&t.closest('.lr'))S.focus=null;else{S.focus=+d.focus;S.top=1;panNext=true}}   // 행을 다시 누르면 상세 접기
+ else if(has('focus')){if(S.focus===+d.focus&&t.closest('.lr2'))S.focus=null;else{S.focus=+d.focus;S.top=1;panNext=true}}   // 행을 다시 누르면 상세 접기
  else if(has('fav')&&!S.user){S.after=S.i;S.i='login';toast('로그인하면 관심 공간에 저장할 수 있어요')}   // 홈 하트 등 로그인 전
  else if(has('fav')){const k=+d.fav,had=S.favs.includes(k);S.favs=had?S.favs.filter(x=>x!=k):[...S.favs,k];saveFavs();toast(had?'관심 공간에서 삭제했어요':'관심 공간에 저장했어요 · 마이페이지에서 볼 수 있어요')}
  else if(has('st')){const[k,m]=d.st.split(':').map(Number);S.stay[k]=Math.min(240,Math.max(dstay(),stay(k)+m))}
@@ -1042,7 +1041,7 @@ document.addEventListener('click',e=>{
  else if(has('lnk')){if(d.lnk=='join'){S.i='join';S.jerr='';S.jpw='';S.jpw2=''}else if(d.lnk=='login'){S.i='login';S.lerr=''}else toast({id:'아이디 찾기',pw:'비밀번호 찾기'}[d.lnk]+'은(는) 준비 중이에요')}
  else if(has('sns')){signIn(SNS[d.sns]+' 사용자',d.sns);return}
  else if(has('logout'))signOut();
- else if(has('hslide')){setHs(+d.hslide);return}
+ else if(has('shh')){if(e.detail===0)setSheet(S.sheetX==='e'?'c':'e');return}   // 키보드(Enter·Space)로 시트 전환 (마우스·터치는 pointerup에서 처리)
  else if(has('repick')){if(S.active)return;S.picked=false;S.wq='';S.sugg=[];S.sgst='';clearRes();draw();const i=document.getElementById('wq');if(i)i.focus();return}   // v18: 선택한 장소 카드 → 다시 검색
  else if(has('wqclr')){S.wq='';S.sugg=[];S.sgst='';clearRes();PL.seq++;draw();const i=document.getElementById('wq');if(i)i.focus();return}   // 검색어 지우기(✕)
  else if(has('mzoom')){if(KM.map)KM.map.setLevel(Math.min(14,Math.max(1,KM.map.getLevel()+ +d.mzoom)),{animate:true});return}   // 지도 확대·축소
@@ -1126,6 +1125,27 @@ const dragEnd=e=>{
  else cards.forEach(c=>{c.style.transform='';c.classList.remove('drag','sh')});
 };
 document.addEventListener('pointerup',dragEnd);document.addEventListener('pointercancel',dragEnd);
+
+/* ---------- v18.1 장소 목록 시트: 손잡이를 끌어 높이 조절 (놓으면 작게/크게 중 가까운 쪽으로) · 누르면 전환 ---------- */
+const SH={id:null,y0:0,h0:0,H:0,el:null,moved:false};
+function setSheet(x){S.sheetX=x;const el=document.getElementById('bsheet');if(!el)return;el.style.height='';el.classList.toggle('ex',x==='e');
+ const h=el.querySelector('.sh-h');if(h){h.setAttribute('aria-expanded',x==='e');h.setAttribute('aria-label',`장소 목록 ${x==='e'?'줄이기':'크게 보기'} (위아래로 끌어서 조절)`)}
+ setTimeout(()=>{if(KM.map&&document.getElementById('kmap')){const c=KM.map.getCenter();KM.map.relayout();KM.map.setCenter(c);readView();refreshMap()}},260)}   // 시트 높이가 바뀌면 지도 크기 다시 계산
+document.addEventListener('pointerdown',e=>{
+ const h=e.target.closest&&e.target.closest('[data-shh]');if(!h)return;
+ const el=document.getElementById('bsheet'),mb=el&&el.parentElement;if(!el)return;
+ e.preventDefault();SH.id=e.pointerId;SH.y0=e.clientY;SH.h0=el.getBoundingClientRect().height;SH.H=mb.getBoundingClientRect().height;SH.el=el;SH.moved=false;
+ el.classList.add('drg');try{h.setPointerCapture(e.pointerId)}catch(_){}});
+document.addEventListener('pointermove',e=>{
+ if(SH.id!==e.pointerId||!SH.el)return;const dy=e.clientY-SH.y0;if(!SH.moved&&Math.abs(dy)<4)return;SH.moved=true;
+ SH.el.style.height=Math.min(SH.H*.8,Math.max(SH.H*.22,SH.h0-dy))+'px'});
+const shEnd=e=>{
+ if(SH.id!==e.pointerId||!SH.el)return;const el=SH.el;SH.el=null;SH.id=null;el.classList.remove('drg');
+ if(!SH.moved){setSheet(S.sheetX==='e'?'c':'e');return}   // 그냥 누르면 전환
+ const r=el.getBoundingClientRect().height/SH.H;setSheet(r>.47?'e':'c')};   // 놓은 높이에 따라 가까운 쪽으로
+document.addEventListener('pointerup',shEnd);document.addEventListener('pointercancel',shEnd);
+document.addEventListener('keydown',e=>{const h=e.target.closest&&e.target.closest('[data-shh]');if(!h)return;
+ if(e.key==='ArrowUp'){e.preventDefault();setSheet('e')}else if(e.key==='ArrowDown'){e.preventDefault();setSheet('c')}});
 
 /* ---------- 지도 위 칩 줄: 마우스로 끌어서 좌우로 넘기기 (터치는 손가락으로 밀면 기본 동작) ---------- */
 const MC={el:null,x0:0,l0:0,id:null,moved:false};
@@ -1239,7 +1259,7 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
     });
     if (!ok) res(null);
   });
-  const clean = (s, n) => String(s == null ? '' : s).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim().slice(0, n);
+  const clean = (s, n) => String(s == null ? '' : s).replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim().slice(0, n);
   const lines = (s, n) => String(s == null ? '' : s).replace(/\r/g, '').split('\n').map(v => v.trim()).filter(Boolean).join(' / ').slice(0, n);
 
   // 상세 응답 → 앱 장소 형식 (정보는 상세 패널에 전부 표시)
