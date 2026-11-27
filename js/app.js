@@ -509,7 +509,7 @@ const CATS4=['서점','도서관','공원','카페','쇼핑','체험관광','미
 const mapCats=()=>`<div class="mcats" role="group" aria-label="장소 종류 (누르면 해당 장소만 지도에 표시)"><button class="mchip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="mchip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}" style="--c:${CC[c]}">${ico(c)}${c}</button>`).join('')}</div>`;
 // 목록 위: 장소 이름 검색 | 영업중 ▾ · 거리 가까운 순 ▾ (드롭다운)
 const dd=(id,label,opts,val)=>`<label class="dd"><select id="${id}" aria-label="${label}">${opts.map(([v,t])=>`<option value="${v}" ${val==v?'selected':''}>${t}</option>`).join('')}</select>${UI.down}</label>`;
-const mapFlt=()=>`<div class="flt3" role="group" aria-label="필터"><label class="fsr">${UI.searchS}<input id="q" type="search" placeholder="장소 이름 검색" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색"></label><i class="fbar" aria-hidden="true"></i>${dd('onow','영업 여부',[['all','전체'],['on','영업중']],S.onow?'on':'all')}${dd('sort','정렬',[['near','거리 가까운 순'],['def','기본순']],S.sort)}</div>`;
+const mapFlt=()=>`<div class="flt3" role="group" aria-label="필터"><label class="fsr">${UI.searchS}<input id="q" type="search" placeholder="장소 이름 검색" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색"></label><i class="fbar" aria-hidden="true"></i><button class="onb${S.onow?' on':''}" data-onow="1" aria-pressed="${S.onow}">${S.onow?sv2('<path d="m5 12.5 4.5 4.5L19 7.5"/>',16,2.6):''}영업중</button>${dd('sort','정렬',[['near','거리 가까운 순'],['def','기본순']],S.sort)}</div>`;
 
 /* ---------- 지도/목록 계산 ---------- */
 // 반경(km)은 웨이팅 시간에 비례 (30분 0.6km · 60분 1.2km · 120분 2.4km · 240분 4.8km). 지도에 원은 그리지 않고, 반경 안 핀을 더 크고 진하게 강조
