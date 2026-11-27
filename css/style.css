@@ -1108,3 +1108,7 @@ a.rs-o{border-color:#AFC0F2;background:var(--lb)}
 .mp.err{border-color:var(--err)}
 .mp.warn .mp-ic{background:var(--warnbg);color:var(--warn)}
 .mp.err .mp-ic{background:var(--errbg);color:var(--err)}
+
+/* ===== v18.3: 장소 설명 맨 아래가 하단 메뉴 큰 원(코스)에 가리지 않게 ===== */
+.bsheet .sheet{padding-bottom:48px}
+.kp.out{--w:22px;--pc:#A9B4CF;opacity:.55;filter:none}   /* 시간 안에 못 다녀오는 곳: 작고 흐린 회색 */
