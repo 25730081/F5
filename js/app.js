@@ -100,6 +100,18 @@
  *  - 홈 리디자인(v17): 스톱워치 히어로 · 안내 문구 3장 · 인기 있는 공간 · 추천 코스 카드 · 떠 있는 하단 메뉴 (사진 자리는 네모 박스)
  *  - 계정별 저장 정리: 관심 공간·내 코스를 계정 키로 저장 · 로그아웃하면 화면에서만 지우고 다시 로그인하면 복원
  *    장소키에 좌표 포함(같은 이름 지점 구분) · 장소가 늦게 올라와도 저장된 코스가 잘리지 않음
+ *
+ * v18 변경 요약 (디자인 시안 반영 · 세룰리안 블루 테마)
+ *  - 전체 화면 컬러 통일: 로얄 블루 #4169E1 · 라이트 블루 #E8EDFF · 네이비 #1F2D5B · 그레이 블루 #6B7A99 · 화이트 #F8FAFF
+ *  - 헤더: 로고 + 흰 원형 알림 버튼 / 하단 메뉴: 떠 있는 둥근 바 + 큰 원(마이페이지에서는 마이페이지가 큰 원)
+ *  - 로그인·회원가입: 상단 [로그인 | 회원가입] 탭 · 로그인 상태 유지 + 비밀번호 찾기 한 줄 · 하단 '아직 회원이 아니신가요?'
+ *  - 웨이팅 장소: 검색 결과를 흰 카드 목록(이름 / 분류 | 주소 / >)으로 · 입력 지우기(✕)
+ *  - 웨이팅 정보: 선택한 장소 카드 · 대기시간 카드(10분·30분·1시간·2시간·3시간) · '오후 3시 30분에 대기 완료 예정' 안내 · 등록하기
+ *  - 지도: 카테고리 칩을 지도 위 줄로 · 확대/축소·웨이팅 장소·코스 길찾기 버튼 · 웨이팅 장소는 파란 점
+ *    장소 목록: 카테고리 아이콘 원 · '도보 N분 • 거리' · 하트 · 담기 알약 버튼 / 영업중·정렬은 드롭다운
+ *  - 코스 확인: 원형 여유 카드 · 한 줄 장소 카드(⋮⋮ · 번호 · 아이콘 · −/+) · 타임라인 장소 카드 · 복귀 여유 깃발 박스
+ *  - 진행: '식당 > 동네' 경로 · '지금' 카드(사진 자리 + 길찾기) · 복귀 여유 초록 알약 · 현재 장소 강조 타임라인
+ *  - 마이페이지: 프로필 카드(아이디 · 일반 회원 · 로그아웃) · 코스 카드(총 N분 링 · 장소 번호 목록 · >) · 관심 공간 카드(휴지통)
  */
 const AREAS=[
  {n:'성수동',lat:37.5446,lng:127.0557},
@@ -111,7 +123,7 @@ const CAT_ORDER=['서점','도서관','공원','카페','쇼핑','체험관광',
 const CE={서점:'📚',도서관:'🏛️',공원:'🌳',카페:'☕',쇼핑:'🛍️',체험관광:'🎨',미술관:'🖌️',박물관:'🏺'};
 const BUF=10;             // 복귀 여유 시간(분)
 const DSTAY=10;           // 담을 때 가정하는 기본 체류 시간(분) — 시간 부족 계산에만 쓰고 STEP 2에는 표시하지 않음
-const COL=['#1a73e8','#1e8e3e','#c25e00','#8e24aa','#00838f','#c2185b','#5d4037','#6d4c41'];   // 선택 순서별 색 (흰 글자 대비 확보 · 웨이팅 장소 핀의 빨강과 겹치지 않게)
+const COL=['#4169E1','#2E9E5B','#E07B2E','#8B5CF6','#0E8FA3','#D9467F','#5B6B8C','#A15C1F'];   // v18: 선택 순서별 색 (1 로얄 블루 · 2 초록 · 3 주황 …, 흰 글자 대비 확보)
 const colr=j=>COL[j%COL.length];
 const CC={서점:'#4f6bed',도서관:'#8b5cf6',공원:'#16a56b',카페:'#e8803a',쇼핑:'#e5528a',체험관광:'#d97706',미술관:'#7c3aed',박물관:'#0f766e'};   // 카테고리 색
 const ICP={
@@ -422,10 +434,41 @@ const svg=p=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke
 const IC={home:svg('<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'),
  clock:svg('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>'),
  route:svg('<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>'),
- user:svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>')};
+ user:svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'),
+ userF:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7.6" r="4.4"/><path d="M3.6 21c0-4.4 3.9-7 8.4-7s8.4 2.6 8.4 7z"/></svg>'};
+// v18 디자인 공통 아이콘
+const sv2=(p,w,sw)=>`<svg viewBox="0 0 24 24" width="${w||20}" height="${w||20}" fill="none" stroke="currentColor" stroke-width="${sw||2}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const UI={
+ chev:sv2('<path d="m9 6 6 6-6 6"/>',22,2.2),
+ chevS:sv2('<path d="m9 6 6 6-6 6"/>',16,2.4),
+ down:sv2('<path d="m6 9 6 6 6-6"/>',18,2.4),
+ search:sv2('<circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.5-4.5"/>',26,2),
+ searchS:sv2('<circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.5-4.5"/>',20,2),
+ x:sv2('<path d="M6 6l12 12M18 6 6 18"/>',22,2),
+ info:sv2('<circle cx="12" cy="12" r="9.5"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.6" r=".6" fill="currentColor"/>',22,1.9),
+ clock:sv2('<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.3 2"/>',18,2),
+ cal:sv2('<rect x="3.5" y="5" width="15" height="14.5" rx="3"/><path d="M3.5 10h15M8 3v4M14 3v4"/><circle cx="18" cy="18" r="3.6" fill="#fff"/><path d="M18 16.6v1.6l1 .7"/>',46,1.6),
+ flag:sv2('<path d="M6 21V4"/><path d="M6 4h11l-2.5 4L17 12H6"/>',22,1.9),
+ plane:'<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M21.4 2.6a1 1 0 0 0-1.1-.2L2.9 9.7a1 1 0 0 0 .1 1.9l7 2.3 2.3 7a1 1 0 0 0 1.9.1l7.3-17.4a1 1 0 0 0-.1-1z"/></svg>',
+ planeO:sv2('<path d="M21 3 3 10.5l7.2 2.6L13 21z"/><path d="m10.2 13.1 4-4"/>',22,2),
+ pin:'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/></svg>',
+ feet:'<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="currentColor"><ellipse cx="8" cy="7.5" rx="3.2" ry="4.6"/><ellipse cx="8" cy="15.6" rx="2.2" ry="1.8"/><ellipse cx="16" cy="11.5" rx="3.2" ry="4.6"/><ellipse cx="16" cy="19.6" rx="2.2" ry="1.8"/></g></svg>',
+ trash:sv2('<path d="M4 6.5h16M9 6.5V4.8A1.3 1.3 0 0 1 10.3 3.5h3.4A1.3 1.3 0 0 1 15 4.8v1.7M6.2 6.5l.9 12.6a2 2 0 0 0 2 1.9h5.8a2 2 0 0 0 2-1.9l.9-12.6M10 10.5v6M14 10.5v6"/>',24,1.9),
+ crown:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#F5A623" d="M3 8.5l4.5 3.5L12 5l4.5 7L21 8.5 19.3 18H4.7z"/><rect x="4.7" y="18.6" width="14.6" height="2" rx="1" fill="#E8931A"/></svg>',
+ plus:sv2('<path d="M12 5v14M5 12h14"/>',22,2.2),
+ minus:sv2('<path d="M5 12h14"/>',22,2.2),
+ shoe:'<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3 15.5c0-1.5.6-3 1.8-4.2L7 9l2.6 2.4c.9.8 2.1 1.1 3.3.8l2.3-.6c1.6 2.4 4.1 3.4 6.3 3.9.3.1.5.4.5.7v1.3c0 .8-.7 1.5-1.5 1.5H5.5A2.5 2.5 0 0 1 3 16.5z"/></svg>',
+ me:sv2('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5"/>',26,2),
+ fork:sv2('<path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.2 1.2-3.5 3.6-3.5 6.5V13H17"/>',22,2),
+ sparkle:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 9 3 4M11 7l1-5M14 12h5"/></svg>'};
+// 거리 표시: 120m · 1.2km
+const distTxt=(k,ar)=>{const m=dkm(ar||S.loc,P[k])*1000*1.3;return m<1000?Math.round(m/10)*10+'m':(m/1000).toFixed(1)+'km'};
+// 시각 표시: 오후 3시 30분
+const ampm=m=>{m=((m%1440)+1440)%1440;const h=Math.floor(m/60),mi=m%60,h12=h%12||12;return `${h<12?'오전':'오후'} ${h12}시${mi?' '+mi+'분':''}`};
 const tabOf=()=>{const i=S.i;if(i=='prog')return S.active?'reg':'home';return {home:'home',done:'home',reg:'reg',map:'reg',confirm:'reg',my:'my',mc:'my'}[i]};
-const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg',h=S.i==='home';   // 홈에서는 떠 있는 둥근 메뉴(nav2) + 가운데 '코스'
- return `<nav class="nav${h?' nav2':''}" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home">${IC.home}<span>홈</span></button><button class="reg ${a=='reg'?'on':''}" data-go="${go}">${S.active||h?IC.route:IC.clock}<span>${S.active||h?'코스':'등록'}</span></button><button class="${a=='my'?'on':''}" data-go="my">${IC.user}<span>마이페이지</span></button></nav>`};
+// v18: 모든 화면에서 떠 있는 둥근 메뉴(nav2). 큰 원은 가운데(등록/코스) — 마이페이지에서는 마이페이지 버튼이 큰 원
+const nav=()=>{const a=tabOf(),go=S.active?(S.sel.length?'prog':'map'):'reg',my=a=='my',lbl=S.active||S.i=='home'||my?'코스':'등록';
+ return `<nav class="nav nav2" aria-label="메인 메뉴"><button class="${a=='home'?'on':''}" data-go="home"${a=='home'?' aria-current="page"':''}>${IC.home}<span>홈</span></button><button class="${my?'':'big '}${a=='reg'?'on':''}" data-go="${go}"${a=='reg'?' aria-current="page"':''}>${IC.route}<span>${lbl}</span></button><button class="${my?'big on':''}" data-go="my"${my?' aria-current="page"':''}>${my?IC.userF:IC.user}<span>마이페이지</span></button></nav>`};
 const LOGO=(()=>{const R=10.5,C=2*Math.PI*R,fr=[.3,.24,.2];let acc=0;   // 숫자 0 = 코스가 채워지는 원형 타이머 (색은 코스 선택 순서 색, 남은 구간은 복귀 여유)
  const seg=fr.map((f,j)=>{const len=f*C,o=-acc;acc+=len;return `<circle cx="16" cy="16" r="${R}" stroke="${COL[j]}" stroke-dasharray="${len-1.6} ${C}" stroke-dashoffset="${o}"/>`}).join('');
  return `<svg class="lg0" viewBox="0 0 32 32" aria-hidden="true"><circle class="tk" cx="16" cy="16" r="${R}"/><g transform="rotate(-90 16 16)">${seg}</g></svg>`})();
@@ -462,9 +505,11 @@ const ringBar=()=>`<div class="rb">${ringSvg()}<div class="rbs"><div><span class
 const cats=()=>CAT_ORDER.filter(c=>c=='카페'||P.some(p=>p.c==c));   // 카페는 API 연결 전이라도 항상 표시
 const CATS4=['서점','도서관','공원','카페','쇼핑','체험관광','미술관','박물관'];   // 지도 안 칩 · 관심 공간 필터 (지도 칩은 가로 스크롤)
 // 장소 종류 필터: 지도 안(위쪽 칩). 누르면 그 종류만 표시, 같은 칩을 다시 누르거나 '전체'를 누르면 전체
-const mapCats=()=>`<div class="mcats" role="group" aria-label="장소 종류 (누르면 해당 장소만 지도에 표시)"><button class="chip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}">${CE[c]} ${c}</button>`).join('')}</div>`;
-// 목록 위: 장소 이름 검색창(예전 필터 자리) + 영업중 · 정렬
-const mapFlt=()=>`<div class="flt" role="group" aria-label="필터"><input class="in" id="q" type="search" placeholder="장소 이름 검색" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색"><button class="chip ${S.onow?'on':''}" data-onow="1" aria-pressed="${S.onow}">영업중</button><select class="srt" id="sort" aria-label="정렬"><option value="near" ${S.sort=='near'?'selected':''}>거리 가까운 순</option><option value="def" ${S.sort=='def'?'selected':''}>기본순</option></select></div>`;
+// v18: 지도 위 한 줄 칩 (전체 = 네이비 채움 · 나머지는 흰 알약 + 카테고리 색 아이콘)
+const mapCats=()=>`<div class="mcats" role="group" aria-label="장소 종류 (누르면 해당 장소만 지도에 표시)"><button class="mchip ${S.cats.length?'':'on'}" aria-pressed="${!S.cats.length}" data-cat="">전체</button>${CATS4.map(c=>`<button class="mchip ${S.cats.includes(c)?'on':''}" aria-pressed="${S.cats.includes(c)}" data-cat="${c}" style="--c:${CC[c]}">${ico(c)}${c}</button>`).join('')}</div>`;
+// 목록 위: 장소 이름 검색 | 영업중 ▾ · 거리 가까운 순 ▾ (드롭다운)
+const dd=(id,label,opts,val)=>`<label class="dd"><select id="${id}" aria-label="${label}">${opts.map(([v,t])=>`<option value="${v}" ${val==v?'selected':''}>${t}</option>`).join('')}</select>${UI.down}</label>`;
+const mapFlt=()=>`<div class="flt3" role="group" aria-label="필터"><label class="fsr">${UI.searchS}<input id="q" type="search" placeholder="장소 이름 검색" value="${esc(S.q)}" autocomplete="off" aria-label="장소 이름 검색"></label><i class="fbar" aria-hidden="true"></i>${dd('onow','영업 여부',[['all','전체'],['on','영업중']],S.onow?'on':'all')}${dd('sort','정렬',[['near','거리 가까운 순'],['def','기본순']],S.sort)}</div>`;
 
 /* ---------- 지도/목록 계산 ---------- */
 // 반경(km)은 웨이팅 시간에 비례 (30분 0.6km · 60분 1.2km · 120분 2.4km · 240분 4.8km). 지도에 원은 그리지 않고, 반경 안 핀을 더 크고 진하게 강조
@@ -483,7 +528,8 @@ const list=()=>{const q=S.q.trim(),b=P.map((p,k)=>k).filter(k=>(!S.cats.length||
 // 등록 화면 "갈 수 있는 곳": 반경 안에서 시간이 되는 장소 수
 const avail=fresh=>P.map((p,k)=>k).filter(inRad).filter(k=>fresh?cost(k)<=S.wait-BUF:(!S.sel.includes(k)&&fit(k))).length;
 const CARTI=on=>`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>${on?'<path d="m10 10.8 2 2 4-4"/>':''}</svg>`;   // 카트 아이콘 (담으면 체크 표시)
-const addBtn=k=>{const on=S.sel.includes(k),ok=fit(k);return `<button class="add ci ${on?'on':''}" data-tog="${k}" ${!on&&!ok?'disabled':''} aria-pressed="${on}" aria-label="${esc(P[k].n)} ${on?'담음, 누르면 빼기':ok?'코스에 담기':'시간 부족'}" title="${on?'담음':ok?'담기':'시간 부족'}">${CARTI(on)}</button>`};
+// v18: 알약 버튼 (시안의 '길찾기' 자리) — 코스에 담기 / 담음 / 시간 부족
+const addBtn=k=>{const on=S.sel.includes(k),ok=fit(k);return `<button class="addp ${on?'on':''}" data-tog="${k}" ${!on&&!ok?'disabled':''} aria-pressed="${on}" aria-label="${esc(P[k].n)} ${on?'담음, 누르면 빼기':ok?'코스에 담기':'시간 부족'}">${on?sv2('<path d="m5 12.5 4.5 4.5L19 7.5"/>',18,2.6):ok?UI.plane:''}<span>${on?'담음':ok?'담기':'시간 부족'}</span></button>`};
 const chain=c=>c.sel.map(k=>P[k].e).join(' → ');
 const title=c=>c.sel.map(k=>esc(P[k].n)).join(' → ');
 // 코스는 항상 1개 항목으로 저장. 같은 코스를 다시 시작/저장하면 새로 쌓지 않고 덮어씀
@@ -533,10 +579,10 @@ const homePicks=()=>{const out=[];
   let b=-1,bw=1e9;P.forEach((p,k)=>{if(p.c!==c)return;const w=tt(k);if(w<bw){bw=w;b=k}});if(b>=0)out.push(b)}
  return out};
 const ppCard=k=>{const p=P[k],fv=S.favs.includes(k);
- return `<div class="pp"><button class="pp-b" data-hcat="${esc(p.c)}" aria-label="${esc(p.n)} · ${esc(p.c)} 둘러보기"><span class="pp-ph" style="--c:${CC[p.c]||'#4169E1'}">${ico(p.c)}</span><span class="pp-tx"><b>${esc(p.n)}</b><span>${HI.walk}${esc(p.c)} · ${tt(k)}분</span></span></button><button class="pp-hb${fv?' on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(p.n)} 관심 공간 ${fv?'해제':'저장'}">${HI.heart(fv)}</button></div>`};
+ return `<div class="pp"><button class="pp-b" data-hcat="${esc(p.c)}" aria-label="${esc(p.n)} · ${esc(p.c)} 둘러보기"><span class="pp-ph" style="--c:${CC[p.c]||'#4169E1'}">${ico(p.c)}</span><span class="pp-tx"><b>${UI.pin}${esc(p.n)}</b><span>${HI.walk}${tt(k)}분 · ${distTxt(k)}</span></span></button><button class="pp-hb${fv?' on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(p.n)} 관심 공간 ${fv?'해제':'저장'}">${HI.heart(fv)}</button></div>`};
 const RC=[{pop:'서점,공원|90',t:'서점 → 공원',n:2,c:['서점','공원']},{pop:'공원,카페|60',t:'공원 → 카페',n:2,c:['공원','카페']}];
 const rcCard=r=>{const w=+r.pop.split('|')[1];
- return `<button class="rc" data-pop="${r.pop}" aria-label="${r.t} 코스 · 웨이팅 ${fm(w)} 기준 · 이 코스로 시작"><span class="rc-ph" aria-hidden="true">${r.c.map(c=>`<i style="--c:${CC[c]}">${ico(c)}</i>`).join('')}</span><span class="rc-chip">${HI.clock.replace(/width="30" height="30"/,'width="18" height="18"')}${fm(w)} 남았을 때</span><b class="rc-t">${r.t} 코스</b><span class="rc-m">${HI.pin}${r.n}곳<i aria-hidden="true"></i>도보</span><span class="rc-go" aria-hidden="true">${HI.arrow}</span></button>`};
+ return `<button class="rc" data-pop="${r.pop}" aria-label="${r.t} 코스 · 웨이팅 ${fm(w)} 기준 · 이 코스로 시작"><span class="rc-ph" aria-hidden="true">${r.c.map(c=>`<i style="--c:${CC[c]}">${ico(c)}</i>`).join('')}</span><span class="rc-chip">${HI.clock.replace(/width="30" height="30"/,'width="18" height="18"')}${fm(w)} 남음</span><b class="rc-t">${r.t} 코스</b><span class="rc-m">${HI.pin}${r.n}곳<i aria-hidden="true"></i>도보</span><span class="rc-go" aria-hidden="true">${HI.arrow}</span></button>`};
 const home=()=>{const hs=HS[S.hs||0],pk=homePicks();
  return frame(`<section class="hero2" aria-label="0차 소개">
 <div class="h2-art">${SWATCH}</div>
@@ -575,7 +621,8 @@ function kSearch(q,size,cb){
   if(st===sv.Status.OK)cb(d.map(x=>({n:x.place_name,addr:x.road_address_name||x.address_name||'',cat:String(x.category_name||'').split(' > ').slice(-1)[0],lat:+x.y,lng:+x.x})));
   else if(st===sv.Status.ZERO_RESULT)cb([]);else cb(null)},{size,location:kLL(S.loc.lat,S.loc.lng)})}
 const SG_ERR='<p class="sub err">장소 검색을 불러오지 못했어요.<br>카카오 앱키·도메인 등록과 장소 검색(services) 사용 설정을 확인해주세요.</p>';
-const sgList=(h,l,w)=>`<div class="sg"><p class="sub sg-h">${h}</p><ul>${l.map((r,i)=>`<li><button class="sgb" data-pick="${w}:${i}" aria-label="${esc(r.n)} 웨이팅 장소로 선택"><b>${esc(r.n)}</b><span class="sub">${esc(r.cat?r.cat+' · ':'')}${esc(r.addr)}</span></button></li>`).join('')}</ul></div>`;
+// v18: 흰 카드 목록 — 이름(굵게) / 분류 | 주소 / 오른쪽 >
+const sgList=(h,l,w)=>`<div class="sg" role="group" aria-label="${esc(h)}"><ul>${l.map((r,i)=>`<li><button class="sgb" data-pick="${w}:${i}" aria-label="${esc(r.n)} 웨이팅 장소로 선택"><span class="sgt"><b>${esc(r.n)}</b><span class="sub">${r.cat?`${esc(r.cat)}<i aria-hidden="true">|</i>`:''}${esc(r.addr)}</span></span>${UI.chev}</button></li>`).join('')}</ul></div>`;
 const sgHtml=()=>{
  if(S.rstat=='ok')return sgList(`검색 결과 ${S.res.length}곳 · 눌러서 웨이팅 장소를 선택하세요`,S.res,'r');
  if(S.rstat=='none')return '<p class="sub sgi">검색 결과가 없어요. 다른 이름으로 검색해보세요</p>';
@@ -601,20 +648,31 @@ function runSearch(){   // 엔터: 검색 결과 목록
  const i=document.getElementById('wq');if(i)i.blur()}   // 키패드를 내려 목록이 보이게
 
 /* ---------- 웨이팅 장소 + 대기시간 (한 페이지) ---------- */
-// 대기시간 입력: 남은 시간만 입력
-const regWait=()=>`<div class="box timebox" role="group" aria-label="남은 시간 입력"><p class="sub c">식당에서 안내받은 남은 시간</p><div class="stp"><button data-adj="-10" aria-label="10분 줄이기">−</button><div class="big2" aria-live="polite">${fm(S.wait)}</div><button data-adj="10" aria-label="10분 늘리기">+</button></div>
-<div class="row ctr">${[30,60,90,120,180].map(m=>`<button class="chip ${S.wait==m?'on':''}" data-wait="${m}">${fm(m)}</button>`).join('')}</div></div>`;
-const reg=()=>{const pk=S.picked||S.active;
- const body=`${S.active?ttl('웨이팅 장소','주의','진행 중인 웨이팅이라 위치는 바꿀 수 없어요. 시간만 아래에서 조정할 수 있어요. 진행 중에 시간을 바꾸면 남은 시간이 새로 계산돼요.'):ttl('웨이팅 장소','안내','웨이팅 중인 장소를 검색해 목록에서 눌러 선택하세요. 고르면 아래에 대기시간 입력이 나타나요.')}
-<div class="srch"><input class="in" id="wq" type="search" enterkeyhint="search" placeholder="웨이팅 중인 장소 검색 (예: 성수 연무장길)" value="${esc(S.wq)}" autocomplete="off" ${S.active?'disabled':''} aria-label="웨이팅 장소 검색"><div class="sgbox" id="sgbox" aria-live="polite">${sgHtml()}</div></div>
-${!nearSeoul()?'<p class="sub err mt">서울 밖이에요. 지금은 서울 지역 장소만 있어요. 위치를 서울로 지정해주세요.</p>':''}
-${pk?`<div class="box how" id="waitsec"><div class="how-h"><span class="sub">웨이팅 장소</span><b>${esc(S.rest)}</b></div><p class="sub">${esc(S.area)}${S.area=='선택한 위치'?'':' 부근'}${S.active?'':' · 다른 곳이면 다시 검색해 바꿀 수 있어요'}</p></div>
-<h3 class="sec">대기시간 입력</h3>
+// 대기시간 입력 카드: 시계 아이콘 · −/+ 원형 버튼 · 빠른 선택(10분~3시간)
+const WCHIPS=[10,30,60,120,180];
+const regWait=()=>`<div class="wcard" role="group" aria-label="예상 대기 시간 입력"><span class="wc-ic" aria-hidden="true">${UI.clock.replace(/width="18" height="18"/,'width="46" height="46"')}<i>${UI.sparkle}</i></span><p class="wc-q">예상 대기 시간을 입력해주세요</p>
+<div class="wc-stp"><button class="wc-b" data-adj="-10" ${S.wait<=10?'disabled':''} aria-label="10분 줄이기">${UI.minus}</button><div class="wc-v" aria-live="polite">${fm(S.wait)}</div><button class="wc-b" data-adj="10" ${S.wait>=300?'disabled':''} aria-label="10분 늘리기">${UI.plus}</button></div>
+<div class="wc-chips">${WCHIPS.map(m=>`<button class="${S.wait==m?'on':''}" data-wait="${m}" aria-pressed="${S.wait==m}">${fm(m)}</button>`).join('')}</div></div>`;
+const reg=()=>{const pk=S.picked||S.active,av=avail(true);
+ let body,foot;
+ if(!pk){   // 1) 웨이팅 장소 검색
+  body=`${ttl('웨이팅 장소','안내','웨이팅 중인 장소를 검색해 목록에서 눌러 선택하세요. 고르면 대기시간 입력이 나타나요.')}
+<div class="srch2"><span class="s-ic">${UI.search}</span><input id="wq" type="search" enterkeyhint="search" placeholder="웨이팅 중인 장소 검색 (예: 성수 연무장길)" value="${esc(S.wq)}" autocomplete="off" aria-label="웨이팅 장소 검색"><button class="clr" data-wqclr="1" aria-label="검색어 지우기">${UI.x}</button></div>
+<div class="sgbox" id="sgbox" aria-live="polite">${sgHtml()}</div>
+<p class="rg-info">${UI.info}장소를 고르면 이 아래에 대기시간 입력이 나타나요.</p>
+${!nearSeoul()?'<p class="sub err c mt">서울 밖이에요. 지금은 서울 지역 장소만 있어요.</p>':''}`;
+  foot='<button class="btn" disabled>웨이팅 장소를 먼저 선택해주세요</button>';
+ }else{   // 2) 웨이팅 정보 (선택한 장소 + 대기시간 + 대기 완료 예정 시각)
+  body=`${S.active?ttl('웨이팅 정보','주의','진행 중인 웨이팅이라 장소는 바꿀 수 없어요. 대기시간만 조정할 수 있고, 남은 시간이 새로 계산돼요.'):ttl('웨이팅 정보','안내','선택한 장소를 누르면 다른 장소로 바꿀 수 있어요. 식당에서 안내받은 예상 대기 시간을 입력해주세요.')}
+<button class="selp" id="waitsec" data-repick="1" ${S.active?'disabled':''} aria-label="선택한 장소 ${esc(S.rest)}${S.active?'':' · 눌러서 다른 장소로 바꾸기'}"><span class="selp-k">선택한 장소</span><b class="selp-n">${esc(S.rest)}</b>${S.active?'':UI.chev}</button>
+<h3 class="sec3">대기시간 입력</h3>
 ${regWait()}
-<div class="box cur res" aria-live="polite"><p class="sub c">복귀 목표 시각</p><div class="big2">${f2(base()+S.wait)}</div><p class="sub c mt">반경 약 <b class="ink">${radTxt()}</b> 안에서 갈 수 있는 곳 <b class="ink">${avail(true)}곳</b> · ${esc(S.area)} 기준</p>${avail(true)?'':'<p class="sub err c mt">대기시간이 짧아 다녀올 수 있는 곳이 없어요. 시간을 늘려보세요.</p>'}</div>`
-:'<p class="sub c mt">장소를 고르면 이 아래에 대기시간 입력이 나타나요.</p>'}`;
- const foot=!pk?'<button class="btn" disabled>웨이팅 장소를 먼저 선택해주세요</button>'
-  :`<button class="btn" data-go="${S.active?(S.sel.length?'prog':'map'):'map'}">${S.active?'적용하고 돌아가기 →':'지도에서 코스 만들기 →'}</button>`;
+<h3 class="sec3 lt">예상 대기 시간 안내</h3>
+<div class="eta" aria-live="polite"><span class="eta-ic">${UI.cal}</span><span class="eta-bar" aria-hidden="true"></span><span class="eta-tx"><b>${ampm(base()+S.wait)}</b><span>에 대기 완료 예정이에요 !</span></span></div>
+<p class="rg-av${av?'':' err'}">${av?`${esc(S.area)} 기준 반경 약 ${radTxt()} 안에서 다녀올 수 있는 곳 <b>${av}곳</b>`:'대기시간이 짧아 다녀올 수 있는 곳이 없어요. 시간을 늘려보세요.'}</p>
+${!nearSeoul()?'<p class="sub err c mt">서울 밖이에요. 지금은 서울 지역 장소만 있어요.</p>':''}`;
+  foot=`<button class="btn" data-go="${S.active?(S.sel.length?'prog':'map'):'map'}">${S.active?'적용하고 돌아가기':'등록하기'}</button>`;
+ }
  return frame(body,foot)};
 
 /* ---------- 지도 ---------- */
@@ -626,7 +684,7 @@ const PIN='<svg viewBox="0 0 30 42" aria-hidden="true"><path class="bd" d="M15 1
 function kpin(k){
  const p=P[k],i=S.sel.indexOf(k),on=i>=0,ri=inRad(k),o=!on&&ri&&!fit(k),b=document.createElement('button');
  b.className='kp '+(on?'on':ri?'in':'out')+(o?' off':'')+(S.focus===k?' f':'');
- if(on)b.style.setProperty('--pc',colr(i));else if(ri&&!o)b.style.setProperty('--pc',CC[p.c]||'#475467');
+ if(on)b.style.setProperty('--pc',colr(i));else if(ri&&!o)b.style.setProperty('--pc','#4169E1');   // v18: 반경 안 = 로얄 블루 · 밖 = 그레이 블루(CSS)
  b.dataset.n=p.n;b.dataset.focus=k;
  b.setAttribute('aria-label',p.c+' '+p.n+' 도보 '+tt(k)+'분'+(on?' 담음':o?' 시간 부족':ri?'':' 반경 밖'));
  b.innerHTML=PIN+`<span class="pe">${ico(p.c)}</span>`+(on?`<i class="nb">${i+1}</i>`:'');
@@ -640,10 +698,10 @@ function kLayers(){
  if(S.sel.length){
   KM.line=new kakao.maps.Polyline({path:[c,...S.sel.map(k=>kLL(P[k].lat,P[k].lng)),c],strokeWeight:3,strokeColor:'#222',strokeOpacity:.8,strokeStyle:'shortdash'});
   KM.line.setMap(KM.map)}
- const add=(el,pos,z)=>{const o=new kakao.maps.CustomOverlay({position:pos,content:el,xAnchor:.5,yAnchor:1,zIndex:z,clickable:true});o.setMap(KM.map);KM.ov.push(o)};   // 핀 끝(아래 가운데)이 좌표
+ const add=(el,pos,z,ya)=>{const o=new kakao.maps.CustomOverlay({position:pos,content:el,xAnchor:.5,yAnchor:ya??1,zIndex:z,clickable:true});o.setMap(KM.map);KM.ov.push(o)};   // 핀 끝(아래 가운데)이 좌표
  list().forEach(k=>add(kpin(k),kLL(P[k].lat,P[k].lng),S.focus===k?9:S.sel.includes(k)?7:inRad(k)?5:3));
- const me=document.createElement('div');me.className='kp me';me.innerHTML=PIN+`<span class="pe">${TGT}</span>`;me.setAttribute('aria-label','웨이팅 장소');
- add(me,c,20);
+ const me=document.createElement('div');me.className='kme';me.innerHTML='<i></i>';me.setAttribute('role','img');me.setAttribute('aria-label','웨이팅 장소');   // v18: 웨이팅 장소 = 파란 점 + 퍼지는 원
+ add(me,c,20,.5);
 }
 function readView(){if(!KM.map)return;const b=KM.map.getBounds(),a=b.getSouthWest(),z=b.getNorthEast();KM.vb={s:a.getLat(),w:a.getLng(),n:z.getLat(),e:z.getLng()}}
 // 위치·대기시간이 바뀐 때: 반경(km)이 한눈에 들어오도록 확대/축소 (이후엔 사용자가 자유롭게 조절)
@@ -663,7 +721,6 @@ function mountKakaoMap(){
   ph.appendChild(KM.el);
   if(!KM.map){
    KM.map=new kakao.maps.Map(KM.el,{center:kLL(S.loc.lat,S.loc.lng),level:5});
-   KM.map.addControl(new kakao.maps.ZoomControl(),kakao.maps.ControlPosition.RIGHT);
    kakao.maps.event.addListener(KM.map,'idle',()=>{clearTimeout(KM.t);KM.t=setTimeout(()=>{if(!document.getElementById('kmap'))return;readView();refreshMap()},80)});
   }
   const keep=KM.map.getCenter();KM.map.relayout();KM.map.setCenter(keep);
@@ -678,12 +735,16 @@ const vrow=(t,v)=>v?`<div><dt>${t}</dt><dd>${esc(v)}</dd></div>`:'';
 const dtl=k=>{const p=P[k],tel=safeTel(p.tel),fv=S.favs.includes(k),h=todayHrs(p),cl=p.c=='도서관'?p.closed:(p.closedTxt||''),su=safeUrl(p.site);
  return `<div class="dti" role="region" aria-label="${esc(p.n)} 상세 정보"><dl class="inf"><div><dt>운영시간 안내</dt><dd>${h.t?`<b>${esc(h.t)}</b>`:''}${h.st?`<span class="st ${h.c}">${esc(h.st)}</span>`:''}</dd></div>${vrow('분류',p.sub)}${vrow('기간',p.period)}${cl?`<div><dt>휴무</dt><dd>${esc(cl)}</dd></div>`:''}${vrow('영업일',p.bizDays)}${vrow('이용요금',p.fee)}<div><dt>주소</dt><dd>${p.addr?esc(p.addr):'정보 없음'}</dd></div><div><dt>도보</dt><dd>약 ${tt(k)}분</dd></div><div><dt>전화</dt><dd>${tel?`<a href="tel:${tel}">${esc(p.tel)}</a>`:'정보 없음'}</dd></div>${su?`<div><dt>홈페이지</dt><dd><a href="${esc(su)}" target="_blank" rel="noopener noreferrer">${esc(su.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/$/,''))}</a></dd></div>`:''}${vrow('교통',p.subway)}${vrow('알아두세요',p.important)}${vrow('편의시설',p.access)}${vrow('소개',p.desc)}${vrow('태그',p.tags)}</dl><div class="acts"><a class="lk" href="${esc(kakaoLink(k))}" target="_blank" rel="noopener noreferrer">길찾기</a><button class="lk" data-fav="${k}" aria-pressed="${fv}">${fv?'♥ 관심 공간 저장됨':'♡ 관심 공간 저장'}</button></div></div>`};
 // 관심 공간 하트 버튼 (마이페이지 '관심 공간'에 저장/해제)
-const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${fv?'♥':'♡'}</button>`};
-const row=k=>`<div data-row="${k}"><div class="lr${S.focus===k?' f':''}"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cb(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">도보 ${tt(k)}분${!S.sel.includes(k)&&!fit(k)?' · 시간 부족':''}</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
+const heart=k=>{const fv=S.favs.includes(k);return `<button class="hb ${fv?'on':''}" data-fav="${k}" aria-pressed="${fv}" aria-label="${esc(P[k].n)} 관심 공간 ${fv?'해제':'저장'}">${HI.heart(fv).replace(/width="20" height="20"/,'width="26" height="26"').replace('stroke-width="2"','stroke-width="1.8"')}</button>`};
+// v18 장소 행: [카테고리 색 원 아이콘] 이름 / 📍 도보 N분 • 거리 ........ ♡ [담기]
+const cic=c=>`<span class="cic" style="--c:${CC[c]||'#6B7A99'}">${ico(c)}</span>`;
+const row=k=>`<div data-row="${k}" class="lrw${S.focus===k?' f':''}"><div class="lr2"><button class="lrn" data-focus="${k}" aria-expanded="${S.focus===k}">${cic(P[k].c)}<span class="tx"><b>${esc(P[k].n)}</b><span class="sub">${UI.pin}도보 ${tt(k)}분<i aria-hidden="true">•</i>${distTxt(k)}</span></span></button>${heart(k)}${addBtn(k)}</div>${S.focus===k?dtl(k):''}</div>`;
 const sheetList=()=>{
  if(!P.length)return `<div class="hint">${loadError?'데이터를 불러오지 못했어요.<br>로컬 서버(또는 GitHub Pages)에서 열어주세요.':'장소를 불러오는 중이에요…'}</div>`;
- const l=list();return l.length?`<div>${l.map(row).join('')}</div>`:`<div class="hint">${S.cats.length==1&&S.cats[0]=='카페'&&!P.some(p=>p.c=='카페')?'카페 정보를 준비 중이에요.':'지도에 보이는 범위에 맞는 장소가 없어요.<br>지도를 축소하거나 필터를 바꿔보세요.'+(S.onow?'<br>영업 정보가 있는 장소만 표시돼요.':'')}</div>`};
+ const l=list();return l.length?`<div class="lcard">${l.map(row).join('')}</div>`:`<div class="hint">${S.cats.length==1&&S.cats[0]=='카페'&&!P.some(p=>p.c=='카페')?'카페 정보를 준비 중이에요.':'지도에 보이는 범위에 맞는 장소가 없어요.<br>지도를 축소하거나 필터를 바꿔보세요.'+(S.onow?'<br>영업 정보가 있는 장소만 표시돼요.':'')}</div>`};
 const cntTxt=()=>{const l=list();return `${l.length}곳 · 반경 ${radTxt()} 안 ${l.filter(inRad).length}곳`};
+// v18 지도 위 버튼: 확대/축소 · 웨이팅 장소로 · 코스 길찾기
+const mapCtl=()=>`<div class="mzoom" role="group" aria-label="지도 확대·축소"><button data-mzoom="-1" aria-label="지도 확대">${UI.plus}</button><button data-mzoom="1" aria-label="지도 축소">${UI.minus}</button></div><button class="mfab l" data-mme="1" aria-label="웨이팅 장소로 지도 이동">${UI.me}</button><button class="mfab r" data-mroute="1" aria-label="담은 코스 길찾기 (구글지도)">${UI.planeO}</button>`;
 const refreshSearch=refreshMap;
 const cfm=()=>!S.sel.length?{t:'장소를 1곳 이상 담아주세요',d:true}:rem()<0?{t:`체류 시간을 줄여주세요 (${fm(-rem())} 초과)`,d:true}:{t:`코스 확인 (${S.sel.length}곳 · ${fm(total())}) →`,d:false};
 // 코스 수정 중인지 (저장된 코스를 불러와 고치는 중)
@@ -696,7 +757,7 @@ const map=()=>{const c=cfm(),ed=editing();
  if(KM.key!==mkey())KM.vb=null;   // 위치·대기시간이 바뀐 직후엔 예전 지도 범위를 쓰지 않음
  const sec=S.active?(S.sel.length?'<button class="btn g" data-go="prog">진행 화면으로</button>':'<button class="btn g" data-go="home">홈으로</button>'):ed?`<button class="btn g" data-cid="${S.editId}">코스 상세로</button>`:'';
  const main=`<button class="btn" id="cfm" data-go="confirm" ${c.d?'disabled':''}>${esc(sec&&!c.d?`코스 확인 (${S.sel.length}곳) →`:c.t)}</button>`;
- return frameM(`${tbar(mapBack(),'안내','핀을 눌러 장소를 보고 카트 아이콘으로 담아보세요. 진한 핀은 대기시간 반경 안이에요.')}<div class="mapw"><div class="mapx" id="kmap"></div>${mapCats()}</div>`,
+ return frameM(`${tbar(mapBack(),'안내','핀을 눌러 장소를 보고 담기 버튼으로 코스에 담아보세요. 파란 핀은 대기시간 반경 안에서 다녀올 수 있는 곳이에요.')}${mapCats()}<div class="mapw"><div class="mapx" id="kmap"></div>${mapCtl()}</div>`,
 `${mapFlt()}
 <div id="sheetlist">${sheetList()}</div>`,
  S.sel.length?(sec?`<div class="duo">${main}${sec}</div>`:main):'')};   // 장소를 담기 전엔 하단 버튼 없음 → 카트로 담으면 '코스 확인'이 나타남
@@ -758,37 +819,41 @@ const routeSheet=()=>!S.rsheet||S.i!='prog'||!S.sel.length?'':`<div class="rs" r
 <a class="rs-o" href="${esc(gUrl())}" target="_blank" rel="noopener noreferrer"><b>구글지도</b><span class="sub">PC·휴대폰 모두 가능 · 경유지 ${Math.min(S.sel.length,9)}곳 전체 입력</span></a>
 <button class="rs-o" data-nav="1"><b>네이버지도 앱</b><span class="sub">휴대폰에서 열려요 · 경유지 최대 5곳</span></button>
 <button class="btn g mt" data-rclose="1">닫기</button></div></div>`;
-const tline=(sel,stm,ar,w,nav)=>{let t=base();
- const r=(tm,name,sub,cls,go,sty)=>`<div class="${cls||''}${go?' hasgo':''}"${sty?` style="${sty}"`:''}><b class="tm">${f2(tm)}</b><span class="tx2"><b>${name}</b>${sub?`<span class="sub">${sub}</span>`:''}</span>${go?`<a class="lk go" href="${esc(go)}" target="_blank" rel="noopener noreferrer">길찾기</a>`:''}</div>`;
- let h='<div class="tl">'+r(t,'식당에서 출발','','s');
- sel.forEach((k,i)=>{const a=ttx(k,ar),st=sx(k,stm,w);t+=a;h+=r(t,esc(P[k].n),`도보 ${a}분 이동 · 체류 ${st}분`,'pl',null,'--pc:'+colr(i));t+=st+a});   // 도보·체류는 한 줄
+// v18 타임라인: [시각] ● [내용]. o.card='all' → 모든 장소를 연한 파란 카드로(코스 확인) / 숫자 → 그 순서 장소만 카드로 강조(진행 중) / o.hollow → 출발 점도 속 빈 원
+const tline=(sel,stm,ar,w,o)=>{o=o||{};let t=base();
+ const r=(tm,name,sub,cls,sty,ic)=>`<div class="t-r ${cls||''}"${sty?` style="${sty}"`:''}><b class="tm">${f2(tm)}</b><i class="t-d" aria-hidden="true"></i><div class="t-c">${ic||''}<span class="tx2"><b>${name}</b>${sub?`<span class="sub">${sub}</span>`:''}</span></div></div>`;
+ let h=`<div class="tl2">`+r(t,'식당에서 출발','','s'+(o.hollow?' ho':''));
+ sel.forEach((k,i)=>{const a=ttx(k,ar),st=sx(k,stm,w),cd=o.card==='all'||o.card===i;t+=a;
+  h+=r(t,esc(P[k].n),`도보 ${a}분 이동 · 체류 ${st}분`,'pl'+(cd?' cd':'')+(o.card===i?' cur':''),'--pc:'+colr(i),o.card==='all'?cic(P[k].c):'');t+=st+a});   // 도보·체류는 한 줄
  const last=sel.length?ttx(sel[sel.length-1],ar):0;
- return [h+r(t,'식당 복귀',sel.length?`도보 ${last}분 이동`:'','m')+'</div>',t]};
+ return [h+r(t,'식당 복귀',sel.length?`도보 ${last}분 이동`:'','m ho')+'</div>',t]};
 // 코스 확인(수정): 어디서 왔는지(S.from)에 따라 '돌아가기'가 지도 / 진행 화면 / 코스 상세로 이어진다
 const BK={prog:'진행 화면',mc:'코스 상세',map:'지도'};
-const confirmScr=()=>{const [h]=tline(S.sel,S.stay,S.loc),r=rem(),ed=editing(),dis=r<0||!S.sel.length?'disabled':'',
+const confirmScr=()=>{const [h]=tline(S.sel,S.stay,S.loc,null,{card:'all'}),r=rem(),ed=editing(),dis=r<0||!S.sel.length?'disabled':'',
  bf=(S.from=='prog'&&S.active)||(S.from=='mc'&&ed&&!S.active)?S.from:'map';
- return frame(`${ttl('오늘의 0차 코스','참고','⋮⋮로 순서를 바꾸고 체류 시간을 조절하세요. 이동시간은 도보 기준 참고값이에요.',{back:backBtn(bf,BK[bf]),x:`<button class="ib" data-go="map" aria-label="장소 더 담기 (지도)">${svg('<path d="M12 5v14M5 12h14"/>')}</button>`})}${ringBar()}
+ return frame(`${ttl('오늘의 0차 코스','참고','⋮⋮로 순서를 바꾸고 체류 시간을 조절하세요. 이동시간은 도보 기준 참고값이에요.',{back:backBtn(bf,BK[bf]),x:`<button class="ibx" data-go="map" aria-label="장소 더 담기 (지도)">${UI.plus.replace(/width="22" height="22"/,'width="28" height="28"')}</button>`})}${ringBar()}
 
-<div id="order">${S.sel.map((k,j)=>`<div class="pc2"><button class="ib sm dh" data-drag="${j}" aria-label="${esc(P[k].n)} 순서 변경 (끌어서 이동, 위·아래 방향키도 가능)">⋮⋮</button><span class="dot sm" style="background:${colr(j)}">${j+1}</span>${cb(P[k].c)}<h3 class="nm">${esc(P[k].n)}</h3><div class="st"><button class="ib sm" data-st="${k}:-10" ${stay(k)<=dstay()?'disabled':''} aria-label="체류 10분 줄이기">−</button><b>${stay(k)}분</b><button class="ib sm" data-st="${k}:10" ${stay(k)>=240?'disabled':''} aria-label="체류 10분 늘리기">+</button></div>${S.sel.length>1?`<button class="ib sm" data-rm="${k}" aria-label="${esc(P[k].n)} 빼기">✕</button>`:''}</div>`).join('')||'<div class="box sub">담은 장소가 없어요</div>'}</div>
-${h}<div class="box ${r<0?'errbox':''}"><span class="sub">복귀 여유</span> <b>${r<0?'⚠ '+fm(-r)+' 초과 — 체류를 줄이거나 장소를 빼주세요':fm(r)}</b></div>`,
+<div id="order">${S.sel.map((k,j)=>`<div class="pc2"><button class="dh" data-drag="${j}" aria-label="${esc(P[k].n)} 순서 변경 (끌어서 이동, 위·아래 방향키도 가능)"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></g></svg></button><span class="dot" style="background:${colr(j)}">${j+1}</span>${cic(P[k].c)}<h3 class="nm">${esc(P[k].n)}</h3><div class="st"><button class="sb m" data-st="${k}:-10" ${stay(k)<=dstay()?'disabled':''} aria-label="체류 10분 줄이기">${UI.minus}</button><b>${stay(k)}분</b><button class="sb p" data-st="${k}:10" ${stay(k)>=240?'disabled':''} aria-label="체류 10분 늘리기">${UI.plus}</button></div>${S.sel.length>1?`<button class="rmx" data-rm="${k}" aria-label="${esc(P[k].n)} 빼기">${UI.x.replace(/width="22" height="22"/,'width="18" height="18"')}</button>`:''}</div>`).join('')||'<div class="box sub">담은 장소가 없어요</div>'}</div>
+${h}<div class="rmb${r<0?' err':''}"><span class="rmb-ic">${UI.flag}</span><span>${r<0?`코스가 <b>${fm(-r)}</b> 초과됐어요 · 체류를 줄이거나 장소를 빼주세요`:`복귀 여유 <b>${fm(r)}</b>`}</span></div>`,
  S.active?`<button class="btn" data-apply="1" ${dis}>수정 완료 · 진행 화면으로</button>`
  :`<div class="ftr"><button class="btn" data-start="1" ${dis}>코스 시작하기</button><button class="btn g sv" data-later="1" ${S.sel.length?'':'disabled'}>저장</button></div>`)};
 
 /* ---------- 진행 / 완료 ---------- */
+// v18 진행 화면: '지금' 카드의 사진 자리 (사진 데이터가 없어 단계에 맞는 카테고리 색 + 아이콘으로 표시)
+const curIdx=()=>{const j=curStage();return j<S.sel.length*3&&j%3!=2?Math.floor(j/3):-1};   // 지금 이동·체류 중인 장소 순서 (복귀 중이면 -1)
+const nowPh=()=>{const i=curIdx(),c=i>=0?P[S.sel[i]].c:null;return `<span class="nw-ph" style="--c:${c?CC[c]:'#4169E1'}">${c?ico(c):UI.fork}<span class="nw-pin">${UI.pin}</span></span>`};
 const prog=()=>{
- if(!S.sel.length)return frame(`<h2>진행 중인 코스가 없어요</h2><div class="box sub c">지도에서 갈 곳을 담아 코스를 만들어보세요.</div>`,`<button class="btn" data-go="map">지도에서 코스 만들기 →</button>`);
- const [h]=tline(S.sel,S.stay,S.loc),b=banner(),si=stageInfo(),r=rem();
- return frame(`<p class="sub">${esc(S.rest)} · ${S.area}</p>
-<div class="rtop"><p class="rt"><b class="rt1">${backAt()}까지 복귀</b><span class="rt2" data-cd="left">${leftTxt()}</span></p><button class="chipb" data-wadj="1" aria-expanded="${S.wadj}">대기시간 조정</button></div>
+ if(!S.sel.length)return frame(`<h2>진행 중인 코스가 없어요</h2><div class="box sub c">지도에서 갈 곳을 담아 코스를 만들어보세요.</div>`,`<button class="btn" data-go="map">지도에서 코스 만들기</button>`);
+ const [h]=tline(S.sel,S.stay,S.loc,null,{card:curIdx(),hollow:true}),b=banner(),si=stageInfo(),r=rem(),cur=curIdx();
+ return frame(`<div class="pg-top">${backBtn('home','홈')}<div class="pg-t"><p class="pg-path">${esc(S.rest)} &gt; ${esc(S.area)}</p><p class="pg-rt"><b>${backAt()}까지 복귀</b><span data-cd="left">${leftTxt()}</span></p></div><button class="chipb" data-wadj="1" aria-expanded="${S.wadj}">대기시간 조정</button></div>
 ${S.wadj?`<div class="adj" role="group" aria-label="대기시간 조절"><button data-live="-10" aria-label="대기시간 10분 줄이기">−10분</button><span>대기시간</span><button data-live="10" aria-label="대기시간 10분 늘리기">+10분</button></div>`:''}
-<div class="nowc ${b.c}" data-cd="hero"><span class="nk">지금</span><b class="nt" data-cd="st1">${esc(si.t)}</b><span class="ns" data-cd="st2">${esc(si.s)}</span>
-<button class="btn rbtn" data-route="1"><svg class="ic2" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M6 15.8V10a4 4 0 0 1 4-4h5.8"/></svg>길찾기</button></div>
+<div class="nowc2 ${b.c}" data-cd="hero"><span data-cd="ph" data-cur="${cur}" class="nw-phw">${nowPh()}</span><div class="nw-r"><span class="nk">지금</span><b class="nt" data-cd="st1">${esc(si.t)}</b><span class="ns">${UI.clock}<span data-cd="st2">${esc(si.s)}</span></span>
+<button class="nw-go" data-route="1">${UI.planeO.replace(/width="22" height="22"/,'width="20" height="20"')}길찾기</button></div></div>
 <div class="bn ${b.c}" data-cd="banner" role="status" ${b.c=='ok'?'hidden':''}>${esc(b.t)}</div>
-<div class="slk"><span>복귀 여유</span><b class="${r<0?'err':''}">${r<0?'⚠ '+fm(-r)+' 초과':fm(r)}</b></div>
-<div class="rth"><h3>오늘의 코스</h3></div>
-${h}
-<div class="duo"><button class="btn g" data-go="confirm">✎ 순서·체류 수정</button><button class="btn g" data-go="map">＋ 장소 더 담기</button></div>`)};
+<div class="slk2"><h3 class="sec3">복귀 여유</h3><span class="gpill${r<0?' err':''}">${UI.clock.replace(/width="18" height="18"/,'width="24" height="24"')}<b>${r<0?fm(-r)+' 초과':fm(r)}</b></span></div>
+<h3 class="sec3">오늘의 코스</h3>
+<div data-cd="tl" data-cur="${cur}">${h}</div>
+<div class="duo2"><button class="obtn" data-go="confirm">${UI.shoe}순서 · 체류 수정</button><button class="obtn" data-go="map">${UI.plus}장소 더 담기</button></div>`)};
 const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0};
  return frame(`${ttl('0차 완료','안내','코스가 마이페이지 \'내 코스\'에 보관됐어요. 언제든 다시 시작하거나 수정할 수 있어요.')}<p class="sub">남은 대기 시간을 알차게 보냈어요.</p>
 <div class="box"><div class="row stats"><div><span class="sub">방문</span><br><b>${F.n}곳</b></div><div><span class="sub">활용</span><br><b>${fm(F.use)}</b></div><div><span class="sub">복귀 여유</span><br><b>${fm(F.rest)}</b></div></div></div>
@@ -801,7 +866,7 @@ const done=()=>{const F=S.fin||{n:0,use:0,rest:0,names:[],cid:null,wait:0};
 // 마이페이지: 코스를 원형 타이머로 표시 (선택 순서별 색 호 + 가운데 코스 소요 시간, 남은 구간은 복귀 여유)
 const cring=c=>{const R=48,C=2*Math.PI*R,w=c.wait,lc=locOf(c),cs=c.sel.map(k=>ttx(k,lc)*2+sx(k,c.stay,w)),tot=cs.reduce((a,b)=>a+b,0),over=tot>w;let acc=0;
  const segs=over?`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--err)" stroke-width="12"/>`:cs.map((m,j)=>{const len=Math.min(m/w*C,C-acc),g=len>4?1.5:0,o=-acc;acc+=len;return `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${colr(j)}" stroke-width="12" stroke-dasharray="${Math.max(len-g,0)} ${C}" stroke-dashoffset="${o}"/>`}).join('');
- return `<div class="rbc cr" role="img" aria-label="대기 ${fm(w)} 중 코스 ${fm(tot)}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/><g transform="rotate(-90 60 60)">${segs}</g></svg><div class="rbt"><span class="sub">소요</span><b class="${over?'ov':''}">${tot}<small>분</small></b></div></div>`};
+ return `<div class="rbc cr" role="img" aria-label="대기 ${fm(w)} 중 코스 ${fm(tot)}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--fill)" stroke-width="12"/><g transform="rotate(-90 60 60)">${segs}</g></svg><div class="rbt"><span class="sub">총</span><b class="${over?'ov':''}">${tot}<small>분</small></b></div></div>`};
 // 마이페이지 코스 카드: 한 행에 [원형 타이머 | 제목·날짜·대기 | 장소 목록] — 공백 없이 한눈에 보이게
 const ctitle=c=>String(c.rest||'').trim()||'웨이팅 중인 식당';   // 코스 제목 = 사용자가 정한 웨이팅 음식점 이름
 const cdate=c=>{const d=new Date(c.id),n=new Date();return d.toDateString()==n.toDateString()?'오늘':(d.getMonth()+1)+'/'+d.getDate()};   // 저장한 날(코스 id = 저장 시각)
@@ -811,9 +876,10 @@ const cfilter=()=>{const q=S.cq.trim().toLowerCase(),day=86400000,t0=new Date().
 const clistHtml=()=>{const l=cfilter();return l.length?l.map(ccard).join(''):'<div class="box sub c">조건에 맞는 코스가 없어요.<br>검색어나 기간을 바꿔보세요.</div>'};
 const cRow=()=>`<div class="flt"><input class="in" id="cq" type="search" placeholder="음식점·장소 이름 검색" value="${esc(S.cq)}" autocomplete="off" aria-label="코스 검색"></div>
 <div class="flt" role="group" aria-label="코스 필터"><select class="srt l" id="cperiod" aria-label="기간">${[['all','전체 기간'],['today','오늘'],['7','최근 7일'],['30','최근 30일']].map(([v,t])=>`<option value="${v}" ${S.cdate==v?'selected':''}>${t}</option>`).join('')}</select><select class="srt" id="csort" aria-label="정렬">${[['new','최신순'],['old','오래된 순'],['wait','대기 긴 순']].map(([v,t])=>`<option value="${v}" ${S.csort==v?'selected':''}>${t}</option>`).join('')}</select></div>`;
-const ccard=c=>{const vis=c.sel.slice(0,4),more=c.sel.length-vis.length;
- return `<button class="cc2" data-cid="${c.id}" aria-label="${esc(ctitle(c))} 코스 상세 보기"><span class="cc2-ring">${cring(c)}</span><span class="cc2-info"><b class="cc2-t">${esc(ctitle(c))}</b><span class="sub">${cdate(c)} · ${esc(c.area||'성수동')}</span><span class="sub">대기 ${fm(c.wait)} · ${c.sel.length}곳</span></span>`+
- `<span class="cc2-pl">${vis.map((k,j)=>`<span class="cc2-p"><i class="dot sm" style="background:${colr(j)}">${j+1}</i><span class="nm">${esc(P[k].n)}</span></span>`).join('')}${more>0?`<span class="sub cc2-m">외 ${more}곳</span>`:''}${missTxt(c)?`<span class="sub cc2-m">${missTxt(c)}</span>`:''}</span></button>`};
+// v18 코스 카드: [총 N분 링 | 제목 코스 · 🕘 날짜·동네 · 👣 대기·장소 수 | ① ② 장소 | >]
+const ccard=c=>{const vis=c.sel.slice(0,3),more=c.sel.length-vis.length;
+ return `<button class="cc3" data-cid="${c.id}" aria-label="${esc(ctitle(c))} 코스 상세 보기"><span class="cc3-ring">${cring(c)}</span><span class="cc3-info"><b class="cc3-t">${esc(ctitle(c))} 코스</b><span class="cc3-m">${UI.clock}${cdate(c)} · ${esc(c.area||'성수동')}</span><span class="cc3-m">${UI.feet}대기 ${fm(c.wait)} · ${c.sel.length}곳</span></span>`+
+ `<span class="cc3-pl">${vis.map((k,j)=>`<span class="cc3-p"><i class="dot" style="background:${colr(j)}">${j+1}</i><span class="nm">${esc(P[k].n)}</span></span>`).join('')}${more>0?`<span class="cc3-more">외 ${more}곳</span>`:''}${missTxt(c)?`<span class="cc3-more">${missTxt(c)}</span>`:''}</span><span class="cc3-go">${UI.chev}</span></button>`};
 const missTxt=c=>c._miss?(placesFinal?`장소 ${c._miss}곳을 찾지 못했어요`:`장소 ${c._miss}곳 불러오는 중`):'';
 // 관심 공간: 간략 주소(구 + 도로명 + 번호) · 필터는 지도 아래 필터와 같은 형태 (상태는 지도와 별도)
 const shortAddr=a=>String(a||'').replace(/\([^)]*\)/g,'').replace(/^서울(특별시|시)?\s*/,'').trim().split(/\s+/).slice(0,3).join(' ');
@@ -823,13 +889,15 @@ const favList=()=>{const b=S.favs.filter(k=>(!S.fcats.length||S.fcats.includes(P
  else if(S.fsort=='pop')b.sort((x,y)=>(P[y].pop||0)-(P[x].pop||0)||byDist(x,y));
  return b};
 const fcatLbl=()=>!S.fcats.length?'장소':'장소 · '+S.fcats[0]+(S.fcats.length>1?' 외 '+(S.fcats.length-1):'');
-const favRow=()=>`<div class="flt" role="group" aria-label="관심 공간 필터"><button class="chip ${S.fcats.length||S.fcatOpen?'on':''}" data-fcatmenu="1" aria-expanded="${S.fcatOpen}">${esc(fcatLbl())} ${S.fcatOpen?'▴':'▾'}</button><button class="chip ${S.fonow?'on':''}" data-fonow="1" aria-pressed="${S.fonow}">영업중</button><select class="srt" id="fsort" aria-label="정렬"><option value="def" ${S.fsort=='def'?'selected':''}>기본순</option><option value="near" ${S.fsort=='near'?'selected':''}>거리 가까운 순</option><option value="pop" ${S.fsort=='pop'?'selected':''}>인기순</option></select></div>
+const favRow=()=>`<div class="flt4" role="group" aria-label="관심 공간 필터"><button class="ddb${S.fcats.length?' on':''}" data-fcatmenu="1" aria-expanded="${S.fcatOpen}"><span>${esc(fcatLbl())}</span>${UI.down}</button>${dd('fonow','영업 여부',[['all','전체'],['on','영업중']],S.fonow?'on':'all')}<span class="sp"></span>${dd('fsort','정렬',[['def','기본순'],['near','거리 가까운 순'],['pop','인기순']],S.fsort)}</div>
 ${S.fcatOpen?`<div class="catp"><div class="row cats" role="group" aria-label="장소 카테고리 (여러 개 선택 가능)"><button class="chip ${S.fcats.length?'':'on'}" aria-pressed="${!S.fcats.length}" data-fcat="">전체</button>${CATS4.map(c=>`<button class="chip ${S.fcats.includes(c)?'on':''}" aria-pressed="${S.fcats.includes(c)}" data-fcat="${c}">${CE[c]} ${c}</button>`).join('')}</div></div>`:''}`;
-const favItem=k=>{const ad=shortAddr(P[k].addr);return `<div class="pc">${cb(P[k].c)}<div><h3>${esc(P[k].n)}</h3><p class="sub">${esc(P[k].c)}${ad?' · '+esc(ad):''}</p></div><button class="add ci del" data-fav="${k}" aria-label="${esc(P[k].n)} 관심 공간에서 삭제" title="삭제">${svg('<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>')}</button></div>`};
-const my=()=>frame(`${ttl('마이페이지','안내','만든 코스와 하트(♡)로 저장한 공간을 모아봐요. 코스를 눌러 수정하거나 다시 시작할 수 있어요.')}<p class="sub">내가 만든 코스와 저장한 공간</p><div class="seg"><button class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
-(S.seg=='c'?(S.courses.length?cRow()+`<div class="clist"><div class="dc" id="cl">${clistHtml()}</div><button class="cc2 new" data-go="reg" aria-label="새 코스 만들기"><span class="nw" aria-hidden="true">+</span><span class="cc2-info"><b class="cc2-t">새 코스 만들기</b><span class="sub">웨이팅 등록하기</span></span></button></div>`:'<div class="box sub c">보관된 코스가 없어요.<br>등록 탭에서 만들어보세요.</div>')
-:(favMiss.length&&!placesFinal?`<p class="sub c mt">저장한 관심 공간 ${favMiss.length}곳을 불러오는 중이에요</p>`:'')+(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>'))+
-(S.user?`<div class="lo"><span class="sub">${esc(S.user.id)} 님으로 로그인 중</span><button class="dl" data-logout="1">로그아웃</button></div>`:''));
+// v18 관심 공간 카드: [카테고리 색 네모 아이콘] 이름 / 📍 분류 · 간략 주소 ........ [휴지통]
+const favItem=k=>{const ad=shortAddr(P[k].addr),c=P[k].c;return `<div class="fv"><span class="fv-ic" style="--c:${CC[c]||'#E07B2E'}">${ico(c)}</span><div class="fv-tx"><h3>${esc(P[k].n)}</h3><p>${UI.pin}<span>${esc(c)}${ad?' · '+esc(ad):''}</span></p></div><button class="fv-del" data-fav="${k}" aria-label="${esc(P[k].n)} 관심 공간에서 삭제">${UI.trash}</button></div>`};
+const newCourse=()=>`<button class="cc3 new" data-go="reg" aria-label="새 코스 만들기 · 웨이팅 등록하기"><span class="nw" aria-hidden="true">${UI.plus.replace(/width="22" height="22"/,'width="34" height="34"')}</span><span class="cc3-info"><b class="cc3-t">새 코스 만들기</b><span class="cc3-m">웨이팅 등록하기</span></span><span class="cc3-go">${UI.chev}</span></button>`;
+const profile=()=>S.user?`<div class="prof"><span class="prof-av" aria-hidden="true">${IC.userF.replace(/width="22" height="22"/,'width="50" height="50"')}</span><div class="prof-tx"><b>${esc(S.user.id)}</b><span class="prof-lv">${UI.crown}일반 회원</span></div><button class="prof-lo" data-logout="1">로그아웃${UI.chev}</button></div>`:'';
+const my=()=>frame(`${ttl('마이페이지','안내','만든 코스와 하트(♡)로 저장한 공간을 모아봐요. 코스를 눌러 수정하거나 다시 시작할 수 있어요.')}<p class="mysub">내가 만든 코스와 저장한 공간</p>${profile()}<div class="seg2${S.seg=='f'?' f':''}" role="tablist"><button role="tab" aria-selected="${S.seg=='c'}" class="${S.seg=='c'?'on':''}" data-seg="c">내 코스 ${S.courses.length}</button><button role="tab" aria-selected="${S.seg=='f'}" class="${S.seg=='f'?'on':''}" data-seg="f">관심 공간 ${S.favs.length}</button></div>`+
+(S.seg=='c'?(S.courses.length?(S.courses.length>=3?cRow():'')+`<div class="clist"><div class="dc" id="cl">${clistHtml()}</div>${newCourse()}</div>`:`<div class="clist">${newCourse()}</div>`)   // 검색·기간·정렬은 코스가 3개 이상일 때만
+:(favMiss.length&&!placesFinal?`<p class="sub c mt">저장한 관심 공간 ${favMiss.length}곳을 불러오는 중이에요</p>`:'')+(S.favs.length?favRow()+(favList().length?favList().map(favItem).join(''):'<div class="box sub c">조건에 맞는 관심 공간이 없어요.<br>필터를 바꿔보세요.</div>'):'<div class="box sub c">지도 장소 목록의 ♡를 눌러 저장해보세요.</div>')));
 // 코스 상세: 하단은 '다시 시작(주) + 장소 바꾸기' 한 줄. 삭제는 자주 쓰지 않으므로 본문 맨 아래로
 const mc=()=>{const c=S.courses.find(x=>x.id==S.cid);if(!c)return my();const [h]=tline(c.sel,c.stay,locOf(c),c.wait);
  return frame(`${ttl(esc(ctitle(c)),'참고','저장 당시 대기시간 기준이에요. 장소·순서·체류 시간을 수정하거나 이 코스로 다시 시작할 수 있어요.',{back:backBtn('my','내 코스')})}<p class="cs-r">${title(c)}</p><p class="sub">${cdate(c)} · ${esc(c.area||'성수동')}</p>${missTxt(c)?`<p class="sub err mt">${missTxt(c)}${placesFinal?' (데이터에서 빠진 장소예요. 수정하면 그 장소는 코스에서 빠져요)':' · 잠시 후 다시 확인해주세요'}</p>`:''}
@@ -850,36 +918,38 @@ const LGI={
  apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#111" d="M16.37 12.62c-.03-2.7 2.2-4 2.3-4.06-1.26-1.83-3.2-2.08-3.89-2.11-1.65-.17-3.23.97-4.07.97-.85 0-2.14-.95-3.52-.92-1.8.03-3.47 1.05-4.4 2.67-1.88 3.26-.48 8.08 1.35 10.73.9 1.29 1.96 2.74 3.36 2.69 1.35-.05 1.86-.87 3.49-.87 1.63 0 2.09.87 3.51.84 1.45-.02 2.37-1.31 3.26-2.61 1.03-1.5 1.45-2.95 1.47-3.03-.03-.01-2.83-1.08-2.86-4.3zM13.7 4.71c.74-.9 1.24-2.15 1.1-3.4-1.07.04-2.36.71-3.13 1.61-.69.8-1.29 2.07-1.13 3.3 1.19.09 2.41-.61 3.16-1.51z"/></svg>',
  google:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.53 5.53 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.62H1.29A11.99 11.99 0 0 0 0 12c0 1.94.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/></svg>',
  naver:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#03C75A" d="M16.27 12.85 7.38 0H0v24h7.73V11.16L16.62 24H24V0h-7.73z"/></svg>'};
+// v18: 상단 [로그인 | 회원가입] 탭 · 로그인 상태 유지 + 비밀번호 찾기 한 줄 · 아래 '아직 회원이 아니신가요? 회원가입'
+const lgTabs=a=>`<div class="lg-tabs" role="tablist" aria-label="로그인 · 회원가입"><button role="tab" aria-selected="${a=='login'}" class="${a=='login'?'on':''}" data-lnk="login">로그인</button><button role="tab" aria-selected="${a=='join'}" class="${a=='join'?'on':''}" data-lnk="join">회원가입</button></div>`;
 const login=()=>`<div class="lg">
 <div class="lg-top"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button></div>
 <div class="lg-main">
-<h1 class="lg-brand" aria-label="0차">${LOGO}<span aria-hidden="true">차</span></h1>
-<p class="lg-cap">로그인하고 웨이팅 시간을 0차로 채워보세요</p>
+<h1 class="vh">0차 로그인</h1>
+${lgTabs('login')}
 <form id="lgf" class="lg-form" novalidate>
 <div class="lg-f"><span class="lg-ic">${LGI.user}</span><input id="lid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="아이디를 입력해주세요" value="${esc(S.lid)}" aria-label="아이디"></div>
 <div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="lpw" type="password" autocomplete="current-password" placeholder="비밀번호를 입력해주세요" value="${esc(S.lpw)}" aria-label="비밀번호"><button type="button" class="lg-eye" data-lgeye="lpw" aria-pressed="false" aria-label="비밀번호 보기">${LGI.eyeOff}</button></div>
 ${S.lerr?`<p class="lg-err" id="lgerr" role="alert">${esc(S.lerr)}</p>`:''}
-<label class="lg-keep"><input type="checkbox" id="lkeep" ${S.lkeep?'checked':''}><span class="lg-cb" aria-hidden="true">${LGI.check}</span>로그인 상태 유지</label>
+<div class="lg-row"><label class="lg-keep"><input type="checkbox" id="lkeep" ${S.lkeep?'checked':''}><span class="lg-cb" aria-hidden="true">${LGI.check}</span>로그인 상태 유지</label><button type="button" class="lg-find" data-lnk="pw">비밀번호 찾기${UI.chevS}</button></div>
 <button type="submit" class="lg-btn"${S.lbusy?' disabled':''}>${S.lbusy?'로그인 중…':'로그인 '+LGI.arrow}</button>
 </form>
-<div class="lg-links"><button data-lnk="id">아이디 찾기</button><i aria-hidden="true"></i><button data-lnk="pw">비밀번호 찾기</button><i aria-hidden="true"></i><button class="em" data-lnk="join">회원가입</button></div>
 <div class="lg-or"><span>간편 로그인</span></div>
 <div class="lg-sns"><button data-sns="apple" aria-label="Apple로 로그인">${LGI.apple}</button><button data-sns="google" aria-label="Google로 로그인">${LGI.google}</button><button data-sns="naver" aria-label="네이버로 로그인">${LGI.naver}</button></div>
-</div></div>${toastH()}`;
+</div>
+<p class="lg-bot">아직 회원이 아니신가요?<button class="em" data-lnk="join">회원가입${UI.chevS}</button></p></div>${toastH()}`;
 const joinScr=()=>`<div class="lg">
 <div class="lg-top"><button class="logo" data-go="home" aria-label="0차 홈으로 이동">${LOGO}<span>차</span></button></div>
 <div class="lg-main">
-<h1 class="lg-brand" aria-label="0차">${LOGO}<span aria-hidden="true">차</span></h1>
-<p class="lg-cap">회원가입하고 웨이팅 시간을 0차로 채워보세요</p>
+<h1 class="vh">0차 회원가입</h1>
+${lgTabs('join')}
 <form id="jf" class="lg-form" novalidate>
 <div class="lg-f"><span class="lg-ic">${LGI.user}</span><input id="jid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="20" placeholder="아이디 (영문·숫자·_ 4~20자)" value="${esc(S.jid)}" aria-label="아이디"></div>
 <div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="jpw" type="password" autocomplete="new-password" placeholder="비밀번호 (4자 이상)" value="${esc(S.jpw)}" aria-label="비밀번호"><button type="button" class="lg-eye" data-lgeye="jpw" aria-pressed="false" aria-label="비밀번호 보기">${LGI.eyeOff}</button></div>
 <div class="lg-f"><span class="lg-ic">${LGI.lock}</span><input id="jpw2" type="password" autocomplete="new-password" placeholder="비밀번호를 한 번 더 입력해주세요" value="${esc(S.jpw2)}" aria-label="비밀번호 확인"><button type="button" class="lg-eye" data-lgeye="jpw2" aria-pressed="false" aria-label="비밀번호 확인 보기">${LGI.eyeOff}</button></div>
 ${S.jerr?`<p class="lg-err" id="jgerr" role="alert">${esc(S.jerr)}</p>`:''}
-<button type="submit" class="lg-btn"${S.lbusy?' disabled':''}>${S.lbusy?'가입 중…':'회원가입'}</button>
+<button type="submit" class="lg-btn mt2"${S.lbusy?' disabled':''}>${S.lbusy?'가입 중…':'회원가입 '+LGI.arrow}</button>
 </form>
-<div class="lg-links"><button class="em" data-lnk="login">이미 계정이 있어요. 로그인</button></div>
-</div></div>${toastH()}`;
+</div>
+<p class="lg-bot">이미 회원이신가요?<button class="em" data-lnk="login">로그인${UI.chevS}</button></p></div>${toastH()}`;
 const SNS={apple:'Apple',google:'Google',naver:'네이버'};
 function signIn(id,via){
  S.user={id,via};S.lpw='';S.lerr='';loadAccount();   // 이 계정의 관심 공간 · 코스 불러오기
@@ -909,7 +979,7 @@ function draw(){
  if(S.i==='reg'&&S.swait){S.swait=false;const w=root.querySelector('#waitsec');if(w)w.scrollIntoView({block:'start',behavior:'smooth'})}   // 장소를 고르면 대기시간 입력이 보이게
  lastScr=S.i;S.top=0;save();saveCourses();
 }
-const clampWait=w=>Math.min(240,Math.max(30,w));
+const clampWait=w=>Math.min(300,Math.max(10,w));   // v18: 10분 ~ 5시간
 // 저장된 코스를 불러와 수정 모드로 (위치·대기시간·장소·체류 시간 복원)
 function loadCourse(c){S.sel=[...c.sel];S.stay={...c.stay};S.wait=c.wait;{const l=locOf(c);S.loc={lat:l.lat,lng:l.lng};S.area=c.area||areaLabel(S.loc);GC.clear();recenter=true}S.rest=c.rest||'웨이팅 중인 식당';S.editId=c.id;S.cid=c.id;S.from='mc';S.picked=true}
 const closeTips=keep=>document.querySelectorAll('.tipw.open').forEach(w=>{if(w===keep)return;w.classList.remove('open');const b=w.querySelector('[data-tip]');if(b)b.setAttribute('aria-expanded','false')});
@@ -973,6 +1043,11 @@ document.addEventListener('click',e=>{
  else if(has('sns')){signIn(SNS[d.sns]+' 사용자',d.sns);return}
  else if(has('logout'))signOut();
  else if(has('hslide')){setHs(+d.hslide);return}
+ else if(has('repick')){if(S.active)return;S.picked=false;S.wq='';S.sugg=[];S.sgst='';clearRes();draw();const i=document.getElementById('wq');if(i)i.focus();return}   // v18: 선택한 장소 카드 → 다시 검색
+ else if(has('wqclr')){S.wq='';S.sugg=[];S.sgst='';clearRes();PL.seq++;draw();const i=document.getElementById('wq');if(i)i.focus();return}   // 검색어 지우기(✕)
+ else if(has('mzoom')){if(KM.map)KM.map.setLevel(Math.min(14,Math.max(1,KM.map.getLevel()+ +d.mzoom)),{animate:true});return}   // 지도 확대·축소
+ else if(has('mme')){if(KM.map){fitRadius()}return}   // 웨이팅 장소(반경 전체)로 이동
+ else if(has('mroute')){if(!S.sel.length){toast('장소를 1곳 이상 담으면 코스 전체 길찾기를 열 수 있어요');draw();return}window.open(gUrl(),'_blank','noopener');return}
  else if(has('seg'))S.seg=d.seg;
  else if(has('redo')||has('edit')){if(S.active){toast('진행 중인 코스가 있어요. 먼저 종료해주세요');draw();return}
   const c=S.courses.find(x=>x.id==+(d.redo??d.edit));if(!c)return;
@@ -1018,6 +1093,8 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('change',e=>{   // 입력을 마치면 범위(5~240)에 맞춰 표시값 정리
  if(e.target.id=='lkeep'){S.lkeep=e.target.checked;return}
  if(e.target.id=='sort'){S.sort=e.target.value;draw();return}
+ if(e.target.id=='onow'){S.onow=e.target.value=='on';draw();return}
+ if(e.target.id=='fonow'){S.fonow=e.target.value=='on';draw();return}
  if(e.target.id=='fsort'){S.fsort=e.target.value;draw();return}
  if(e.target.id=='cperiod'){S.cdate=e.target.value;draw();return}
  if(e.target.id=='csort'){S.csort=e.target.value;draw();return}
@@ -1082,7 +1159,9 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
  else if(k=='mpc')el.className='mp '+banner().c;
  else if(k=='st1')el.textContent=stageInfo().t;
  else if(k=='st2')el.textContent=stageInfo().s;
- else if(k=='hero')el.className='nowc '+banner().c;
+ else if(k=='hero')el.className='nowc2 '+banner().c;
+ else if(k=='ph'){const c=curIdx();if(+el.dataset.cur!==c){el.dataset.cur=c;el.innerHTML=nowPh()}}
+ else if(k=='tl'){const c=curIdx();if(+el.dataset.cur!==c){el.dataset.cur=c;el.innerHTML=tline(S.sel,S.stay,S.loc,null,{card:c,hollow:true})[0]}}
  else if(k=='banner'){const b=banner();el.className='bn '+b.c;el.textContent=b.t;el.hidden=b.c=='ok'}})},1000);
 
 /* ===== 비짓서울 API 연동 (v15) =====
