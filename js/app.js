@@ -842,15 +842,20 @@ ${h}<div class="rmb${r<0?' err':''}"><span class="rmb-ic">${UI.flag}</span><span
 // v18 진행 화면: '지금' 카드의 사진 자리 (사진 데이터가 없어 단계에 맞는 카테고리 색 + 아이콘으로 표시)
 const curIdx=()=>{const j=curStage();return j<S.sel.length*3&&j%3!=2?Math.floor(j/3):-1};   // 지금 이동·체류 중인 장소 순서 (복귀 중이면 -1)
 const nowPh=()=>{const i=curIdx(),c=i>=0?P[S.sel[i]].c:null;return `<span class="nw-ph" style="--c:${c?CC[c]:'#4169E1'}">${c?ico(c):UI.fork}<span class="nw-pin">${UI.pin}</span></span>`};
+// v18.6 진행 화면 위쪽: 흰색 진행 카드 하나로 (식당 · 대기시간 조정 / 남은 대기 원형 타이머 · 복귀 시각 · 복귀 여유 / 지금 할 일 + 길찾기)
+const RC2=2*Math.PI*50;
+const ringDash=()=>`${(Math.max(0,Math.min(1,remSec()/(S.wait*60||1)))*RC2).toFixed(1)} ${RC2.toFixed(1)}`;   // 남은 대기 비율만큼 파란 호
 const prog=()=>{
  if(!S.sel.length)return frame(`<h2>진행 중인 코스가 없어요</h2><div class="box sub c">지도에서 갈 곳을 담아 코스를 만들어보세요.</div>`,`<button class="btn" data-go="map">지도에서 코스 만들기</button>`);
- const [h]=tline(S.sel,S.stay,S.loc,null,{card:curIdx(),hollow:true}),b=banner(),si=stageInfo(),r=rem(),cur=curIdx();
- return frame(`<div class="pg-top">${backBtn('home','홈')}<div class="pg-t"><p class="pg-path">${esc(S.rest)} &gt; ${esc(S.area)}</p><p class="pg-rt"><b>${backAt()}까지 복귀</b><span data-cd="left">${leftTxt()}</span></p></div><button class="chipb" data-wadj="1" aria-expanded="${S.wadj}">대기시간 조정</button></div>
+ const [h]=tline(S.sel,S.stay,S.loc,null,{card:curIdx(),hollow:true}),b=banner(),si=stageInfo(),r=rem(),cur=curIdx(),ci=cur>=0?P[S.sel[cur]].c:null;
+ return frame(`<section class="live2 ${b.c}" data-cd="hero" aria-label="진행 중인 웨이팅">
+<div class="lv-top"><span class="lv-rest">${esc(S.rest)} 웨이팅 중</span><button class="lv-adj" data-wadj="1" aria-expanded="${S.wadj}">대기시간 조정</button></div>
 ${S.wadj?`<div class="adj" role="group" aria-label="대기시간 조절"><button data-live="-10" aria-label="대기시간 10분 줄이기">−10분</button><span>대기시간</span><button data-live="10" aria-label="대기시간 10분 늘리기">+10분</button></div>`:''}
-<div class="nowc2 ${b.c}" data-cd="hero"><span data-cd="ph" data-cur="${cur}" class="nw-phw">${nowPh()}</span><div class="nw-r"><span class="nk">지금</span><b class="nt" data-cd="st1">${esc(si.t)}</b><span class="ns">${UI.clock}<span data-cd="st2">${esc(si.s)}</span></span>
-<button class="nw-go" data-route="1">${UI.planeO.replace(/width="22" height="22"/,'width="20" height="20"')}길찾기</button></div></div>
+<div class="lv-mid"><div class="lv-ring" role="timer" aria-label="남은 대기 시간"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="tr"/><circle cx="60" cy="60" r="50" class="ar" data-cd="ring" stroke-dasharray="${ringDash()}" transform="rotate(-90 60 60)"/></svg><div><small>남은 대기</small><b data-cd="cdn">${hms(remSec())}</b></div></div>
+<div class="lv-rt"><b>${backAt()}까지 복귀</b><span>코스 ${fm(total())} · ${S.sel.length}곳</span><span class="lv-ok${r<0?' err':''}">${r<0?`${fm(-r)} 초과`:`복귀 여유 ${fm(r)}`}</span></div></div>
+<div class="lv-now"><span class="lv-ci" data-cd="ph" data-cur="${cur}" style="--c:${ci?CC[ci]:'#4169E1'}">${ci?ico(ci):UI.fork}</span><div class="lv-tx"><small class="nk">지금</small><b data-cd="st1">${esc(si.t)}</b><span data-cd="st2">${esc(si.s)}</span></div><button class="lv-go" data-route="1">${UI.plane.replace(/width="18" height="18"/,'width="16" height="16"')}길찾기</button></div>
+</section>
 <div class="bn ${b.c}" data-cd="banner" role="status" ${b.c=='ok'?'hidden':''}>${esc(b.t)}</div>
-<div class="slk2"><h3 class="sec3">복귀 여유</h3><span class="gpill${r<0?' err':''}">${UI.clock.replace(/width="18" height="18"/,'width="24" height="24"')}<b>${r<0?fm(-r)+' 초과':fm(r)}</b></span></div>
 <h3 class="sec3">오늘의 코스</h3>
 <div data-cd="tl" data-cur="${cur}">${h}</div>
 <div class="duo2"><button class="obtn" data-go="confirm">${UI.shoe}순서 · 체류 수정</button><button class="obtn" data-go="map">${UI.plus}장소 더 담기</button></div>`)};
@@ -1180,8 +1185,10 @@ setInterval(()=>{if(!S.active)return;if(S.start&&remSec()<=0){finishCourse();ret
  else if(k=='mpc')el.className='mp '+banner().c;
  else if(k=='st1')el.textContent=stageInfo().t;
  else if(k=='st2')el.textContent=stageInfo().s;
- else if(k=='hero')el.className='nowc2 '+banner().c;
- else if(k=='ph'){const c=curIdx();if(+el.dataset.cur!==c){el.dataset.cur=c;el.innerHTML=nowPh()}}
+ else if(k=='hero')el.className='live2 '+banner().c;
+ else if(k=='cdn')el.textContent=hms(remSec());
+ else if(k=='ring')el.setAttribute('stroke-dasharray',ringDash());
+ else if(k=='ph'){const c=curIdx();if(+el.dataset.cur!==c){el.dataset.cur=c;const ct=c>=0?P[S.sel[c]].c:null;el.style.setProperty('--c',ct?CC[ct]:'#4169E1');el.innerHTML=ct?ico(ct):UI.fork}}
  else if(k=='tl'){const c=curIdx();if(+el.dataset.cur!==c){el.dataset.cur=c;el.innerHTML=tline(S.sel,S.stay,S.loc,null,{card:c,hollow:true})[0]}}
  else if(k=='banner'){const b=banner();el.className='bn '+b.c;el.textContent=b.t;el.hidden=b.c=='ok'}})},1000);
 
