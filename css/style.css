@@ -716,7 +716,6 @@ body{background:var(--bg);color:var(--nv)}
 .nav.nav2 .big{flex:none;width:72px;height:72px;margin:-22px 20px 0;border-radius:50%;border:0;background:linear-gradient(140deg,#628AF8,#3A62DE);color:#fff;font-size:13px;box-shadow:0 10px 22px rgba(65,105,225,.38)}
 .nav.nav2 .big.on{color:#fff;outline:0}
 .nav.nav2 .big svg{width:26px;height:26px}
-.nav.nav2 button:last-child.big{margin:-22px 24px 0 10px}
 .ft{padding:8px 20px 22px;border:0;background:transparent}   /* 아래 22px: 하단 메뉴 큰 원(위로 22px 튀어나옴)과 겹치지 않게 */
 
 /* 제목 행 · ? · 뒤로 */
@@ -917,7 +916,7 @@ a.rs-o{border-color:#AFC0F2;background:var(--lb)}
 .rmb.err .rmb-ic{background:#FADAD7;color:var(--err)}
 .ftr{gap:10px}
 .ftr .btn{border-radius:20px;min-height:56px}
-.ftr .btn.sv{width:30%;min-height:56px;padding:0;border:1.5px solid #8EA6EE;background:#fff;color:var(--rb);font-size:17px;font-weight:800;box-shadow:none}
+.ftr .btn.sv{flex:none;width:56px;min-height:56px;display:grid;place-items:center;padding:0;border:1.5px solid #8EA6EE;background:#fff;color:var(--rb);font-size:17px;font-weight:800;box-shadow:none}
 .ftr .btn.sv[disabled]{color:var(--gb);border-color:var(--line)}
 
 /* ---------- 진행 화면 ---------- */
@@ -1063,3 +1062,49 @@ a.rs-o{border-color:#AFC0F2;background:var(--lb)}
 .cs-r{color:var(--nv)}
 .dl{color:var(--err)}
 .duo .btn{border-radius:99px}
+
+/* ===== v18.1: 지도 시트 드래그 · 카테고리 색 핀 · 코스 확인 정리 · 홈 가로 스크롤 제거 ===== */
+/* 홈: 가로 스크롤바 없음 (히어로 장식이 옆으로 넘쳐 생기던 바) · 추천 코스는 세로로 */
+.body{overflow-x:hidden}
+.rcs{grid-auto-flow:row;grid-auto-columns:auto;overflow:visible;margin:0;padding:0 0 14px;scroll-snap-type:none}
+.rcs:has(.rc+.rc){grid-auto-columns:auto}
+
+/* 지도 핀: 카테고리 색. 반경 밖·시간 부족은 흐리게 */
+.kp.off{opacity:.55;filter:none}
+
+/* 지도 화면: 지도는 남는 높이 전부 · 장소 목록은 아래 시트 (작게 36% ↔ 크게 58%) */
+.mapbody{position:relative;min-height:0}
+.mtop{flex:1;min-height:0;display:flex;flex-direction:column}
+.mtop .mapw{flex:1;min-height:150px;display:flex}
+.mtop .mapx{flex:1;height:auto;min-height:0}
+.mfab{bottom:34px}
+.mzoom{transform:translateY(-75%)}
+.bsheet{position:relative;z-index:8;flex:none;display:flex;flex-direction:column;height:36%;margin-top:-22px;border-radius:24px 24px 0 0;background:var(--wb);box-shadow:0 -8px 24px rgba(31,45,91,.10);transition:height .25s ease}
+.bsheet.ex{height:58%}
+.bsheet.drg{transition:none}
+.sh-h{flex:none;display:grid;place-items:center;width:100%;height:26px;padding:0;border:0;background:none;cursor:grab;touch-action:none}
+.sh-h i{width:42px;height:5px;border-radius:3px;background:#C9D2E8}
+.bsheet.drg .sh-h{cursor:grabbing}
+.bsheet .sheet{flex:1;min-height:0;padding-top:4px}
+@media (prefers-reduced-motion:reduce){.bsheet{transition:none}}
+
+/* 코스 확인: 번호 점 삭제 · + 를 여유 카드 우측 상단으로 · 저장은 아이콘 · 시작하기 버튼 길게 */
+.rb.hasx{position:relative}
+.rbx{position:absolute;top:12px;right:12px;width:38px;height:38px;margin:0;border-radius:12px;background:#EEF2FD;box-shadow:none;color:var(--rb)}
+.rbx svg{width:22px;height:22px}
+.rb.hasx .rbs{padding-top:30px}
+.ftr .btn:first-child{flex:1}
+
+/* ===== v18.2: 홈 히어로 정지 · 진행 중 코스 카드(미니 플레이어) 파란 테두리 ===== */
+.sw-hand,.sw-pin,.h2-tag.fade,.h2-s.fade{animation:none!important}   /* 스톱워치 바늘·핀 움직임 없음 */
+.h2-copy{min-height:0}
+.cta2{margin-top:34px}
+.hero2{padding-bottom:16px}
+.mp{border:1.5px solid #9DB3F2;border-radius:20px;box-shadow:0 8px 22px rgba(65,105,225,.16)}
+.mp-ic{background:var(--lb);color:var(--rb)}
+.mp-big{color:var(--nv)}
+.mp-go{color:var(--rb)}
+.mp.warn{border-color:var(--warn)}
+.mp.err{border-color:var(--err)}
+.mp.warn .mp-ic{background:var(--warnbg);color:var(--warn)}
+.mp.err .mp-ic{background:var(--errbg);color:var(--err)}
